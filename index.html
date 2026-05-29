@@ -38,6 +38,27 @@
         -webkit-appearance: none;
       }
       #freeze-btn.active { background-color: #FF6B35; }
+
+      /* [ปุ่มเปิดเสียงแบบใหม่] เป็นปุ่มบนหน้าจอจริง แต่จะวิ่งไปลอยใต้รูป Ingot ตามพิกัดกล้อง */
+      #ingot-audio-btn {
+        position: absolute;
+        display: none; /* ซ่อนไว้ก่อนจนกว่าจะสแกนเจอภาพ */
+        pointer-events: auto;
+        padding: 10px 16px;
+        background-color: #28a745; 
+        color: white;
+        border: 2px solid white;
+        border-radius: 20px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 14px;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+        cursor: pointer;
+        transform: translate(-50%, -50%);
+        z-index: 99999;
+        -webkit-appearance: none;
+      }
+      
       .mindar-ui-scanning { background: none !important; }
     </style>
   </head>
@@ -45,9 +66,11 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
+      
+      <button id="ingot-audio-btn" onclick="speakIngot()">🔊 LISTEN</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -56,18 +79,13 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image class="clickable" src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakIngot()"></a-image>
-          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakIngot()"></a-text>
-          
-          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.28" height="0.08" color="#00FF66" material="shader: flat" onclick="speakIngot()"></a-plane>
+          <a-image id="ingot-track" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
 
-
-          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-
-
-          <a-image src="./Overhead.png" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
         </a-entity>
       </a-entity>
@@ -76,15 +94,51 @@
     <script>
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
-      const btn = document.getElementById('freeze-btn');
+      const freezeBtn = document.getElementById('freeze-btn');
+      const audioBtn = document.getElementById('ingot-audio-btn');
+      
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
+      const ingotTrack = document.getElementById('ingot-track');
 
+      // เจอภาพ -> เปิดแสดงกลุ่มภาพ และเปิดปุ่มเสียง HTML ให้ทำงาน
       arTarget.addEventListener("targetFound", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
+          audioBtn.style.display = "block";
         }
       });
+
+      // หลุดจากภาพ -> ซ่อนปุ่มเสียง
+      arTarget.addEventListener("targetLost", () => {
+        if (!isFrozen) {
+          audioBtn.style.display = "none";
+        }
+      });
+
+      // ระบบคำนวณตำแหน่ง: ดึงพิกัดของรูป Ingot ในฉาก 3D มาแปะเป็นพิกัดปุ่มบนหน้าจอ 2D แบบเรียลไทม์
+      function syncButtonPos() {
+        if (ingotTrack && ingotTrack.object3D && (arContent.getAttribute('visible') === 'true' || isFrozen)) {
+          const vector = new THREE.Vector3();
+          ingotTrack.object3D.getWorldPosition(vector); //ดึงตำแหน่งรูป Ingot
+          
+          const camera = sceneEl.camera;
+          if (camera) {
+            vector.project(camera); // แปลงเข้ามุมมองกล้อง
+            
+            // แปลงเป็นพิกัดพิกเซลบนหน้าจอมือถือจริง
+            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
+            
+            // บังคับให้ปุ่ม HTML สีเขียว ไปลอยอยู่ตำแหน่งใต้รูปภาพพอดีเป๊ะ (ยืดหยุ่นตามจอมือถือทุกรุ่น)
+            audioBtn.style.left = x + 'px';
+            audioBtn.style.top = (y + 60) + 'px'; // เลข 60 คือระยะห่างให้ลงไปอยู่ข้างใต้รูปพอดีครับ
+          }
+        }
+        requestAnimationFrame(syncButtonPos);
+      }
+      // เริ่มรันระบบล็อกพิกัดปุ่มตามรูปภาพ
+      requestAnimationFrame(syncButtonPos);
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
@@ -92,21 +146,23 @@
         
         if (isFrozen) {
           if (mindarSystem) mindarSystem.pause(true);
-          btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
-          btn.classList.add("active");
+          freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
+          freezeBtn.classList.add("active");
+          audioBtn.style.display = "block"; // ล็อกภาพแล้วยังเปิดให้กดฟังเสียงได้ปกติ
         } else {
           if (arContent) arContent.setAttribute("visible", "false"); 
           if (mindarSystem) {
             mindarSystem.unpause(); 
           }
-          btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
-          btn.classList.remove("active");
+          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
+          freezeBtn.classList.remove("active");
+          audioBtn.style.display = "none";
         }
       }
 
-      // ฟังก์ชันเสียงพูดภาษาไทยของ Ingot
+      // ฟังก์ชันเสียงพูดอธิบายภาษาไทย (พิมพ์แก้ไขข้อความในนี้ได้ตามใจชอบครับ)
       function speakIngot() {
-        window.speechSynthesis.cancel(); // ล้างคิวเสียงเก่า
+        window.speechSynthesis.cancel(); // ล้างคิวเสียงเก่าทันทีเพื่อไม่ให้เสียงซ้อนกัน
         
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
