@@ -79,16 +79,20 @@
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // สั่งหยุดระบบตรวจจับพิกัดกล้อง (แต่ภาพ AR จะถูกสตัฟฟ์นิ่งค้างไว้บนจอทันที ไม่หายวับ)
-          sceneEl.systems["mindar-image-system"].pause(true);
+          // สั่งหยุดล็อกพิกัดกล้องชั่วคราว (ภาพแช่นิ่งค้างหน้าจอ)
+          if (mindarSystem) mindarSystem.pause(true);
           
-          btn.innerText = "🔄 ปล่อยภาพคืนกระดาษ";
+          btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // สั่งให้ระบบตรวจจับกล้องกลับมาทำงานต่อทันที
-          sceneEl.systems["mindar-image-system"].play();
+          // สั่งปิดระบบ และ สั่งเปิดระบบสแกนใหม่ทันที (ล้างค่าแคชพิกัดเก่าทิ้งทั้งหมด)
+          if (mindarSystem) {
+            mindarSystem.stop();  // สั่งเคลียร์และปิดตัวจับคู่ภาพตัวเก่า
+            mindarSystem.start(); // สั่งเริ่มต้นระบบ SCAN หาใบงานแผ่นสีส้มใหม่อีกครั้ง
+          }
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
