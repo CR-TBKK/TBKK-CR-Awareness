@@ -59,13 +59,13 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakThai('วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-image>
+          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-text>
 
-          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
         </a-entity>
@@ -87,6 +87,9 @@
       });
 
       function toggleFreeze() {
+        // บังคับกระตุ้นระบบเสียงของเบราว์เซอร์ทันทีก่อนล็อก เพื่อแก้กฎความปลอดภัย
+        speakThai(''); 
+
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
@@ -104,14 +107,15 @@
         }
       }
 
-      // [จุดแก้ไขสำคัญที่ 3] ฟังก์ชันสำหรับสั่งให้โทรศัพท์ส่งเสียงพูดอธิบายภาษาไทย
+      // ระบบเสียงพูด
       function speakThai(message) {
-        // สั่งให้หยุดพูดประโยคเก่าทันทีในกรณีที่เด็กๆ กดรูปภาพรัวๆ เพื่อไม่ให้เสียงพูดซ้อนกัน
-        window.speechSynthesis.cancel();
+        if (!message) return; // ถ้าส่งค่าว่างมาให้ข้ามไป
+        
+        window.speechSynthesis.cancel(); // ตัดเสียงเก่า
         
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = "th-TH"; // กำหนดให้พูดเป็นภาษาไทย สำเนียงไทย
-        utterance.rate = 1.0;     // กำหนดความเร็วของเสียงพูด (1.0 คือระดับปกติ)
+        utterance.lang = "th-TH"; 
+        utterance.rate = 0.9; // ปรับให้พูดช้าลงนิดนึงเพื่อให้เด็กๆ ฟังทันชัดเจนขึ้นครับ
         
         window.speechSynthesis.speak(utterance);
       }
