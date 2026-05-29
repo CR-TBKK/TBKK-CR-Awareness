@@ -19,7 +19,7 @@
         pointer-events: none;
       }
 
-      /* ปุ่มล็อกภาพไว้ที่มุมขวาบนเหมือนเดิม */
+      /* ปุ่มล็อกภาพบนหน้าจอมือถือ */
       #freeze-btn {
         position: absolute;
         top: 20px;
@@ -56,20 +56,14 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
-          
-          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.32" height="0.09" color="#28a745" material="shader: flat" onclick="speakIngot()">
-            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.28 0.28 0.28" position="0 0 0.01"></a-text>
-          </a-plane>
+          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakIngot()"></a-image>
+          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakIngot()"></a-text>
 
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-
-
-          <a-image src="./Overhead.png" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
         </a-entity>
       </a-entity>
@@ -79,26 +73,27 @@
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
       const btn = document.getElementById('freeze-btn');
-      
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
 
+      // ถ้าระบบตรวจเจอแผ่นภาพใบงานสีส้ม ให้รูปแสดงผลขึ้นมาปกติ
       arTarget.addEventListener("targetFound", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
         }
       });
 
+      // ฟังก์ชันปุ่มล็อกภาพระบบแบบเดิมที่เสถียรที่สุด
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          if (mindarSystem) mindarSystem.pause(true);
+          if (mindarSystem) mindarSystem.pause(true); // แช่ภาพล็อกนิ่งคาจอ หันกล้องหนีได้
           btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           btn.classList.add("active");
         } else {
-          if (arContent) arContent.setAttribute("visible", "false"); 
+          if (arContent) arContent.setAttribute("visible", "false"); // เคลียร์ภาพเพื่อสแตนด์บายสแกนต่อ
           if (mindarSystem) {
             mindarSystem.unpause(); 
           }
@@ -107,13 +102,15 @@
         }
       }
 
-      // ฟังก์ชันเสียงพูดอธิบายภาษาไทย (คุณพิมพ์ข้อความในเครื่องหมายคำพูดได้เลยครับ)
+      // 🔊 ฟังก์ชันเสียงพูดภาษาไทยชื่อ "speakIngot" ตรงตามที่คุณกำหนดไว้เป๊ะๆ
       function speakIngot() {
-        window.speechSynthesis.cancel(); // ล้างคำพูดเก่าทันทีป้องกันการกดเบิ้ล
+        // ล้างเสียงเก่าออกทันทีก่อนพูดประโยคใหม่
+        window.speechSynthesis.cancel(); 
         
+        // คำพูดภาษาไทยที่คุณกำหนดไว้
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
+        utterance.rate = 0.95; // ปรับความเร็วเสียงพูดให้ชัดเจนน่าฟังสำหรับเด็กๆ
         
         window.speechSynthesis.speak(utterance);
       }
