@@ -19,7 +19,7 @@
         pointer-events: none;
       }
 
-      /* ปุ่มล็อกภาพ */
+      /* ปุ่มล็อกภาพไว้ที่มุมขวาบนเหมือนเดิม */
       #freeze-btn {
         position: absolute;
         top: 20px;
@@ -38,26 +38,6 @@
         -webkit-appearance: none;
       }
       #freeze-btn.active { background-color: #FF6B35; }
-
-      /* [ปรับปรุงใหม่] สไตล์ของปุ่มกดฟังเสียง ให้ลอยตามตำแหน่งวัตถุในฉาก AR */
-      #audio-btn {
-        position: absolute;
-        display: none; /* เริ่มต้นจะซ่อนไว้ก่อน จนกว่ากล้องจะสแกนเจอภาพ */
-        pointer-events: auto;
-        padding: 8px 16px;
-        background-color: #28a745; 
-        color: white;
-        border: 2px solid white;
-        border-radius: 20px;
-        font-weight: bold;
-        font-family: sans-serif;
-        font-size: 14px;
-        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
-        cursor: pointer;
-        transform: translate(-50%, -50%); /* จัดให้ปุ่มอยู่กึ่งกลางพอดี */
-        -webkit-appearance: none;
-      }
-      
       .mindar-ui-scanning { background: none !important; }
     </style>
   </head>
@@ -65,24 +45,32 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
-      <button id="audio-btn" onclick="speakIngot()">🔊 LISTEN</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
+          
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image id="ingot-mesh" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          
+          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.32" height="0.09" color="#28a745" material="shader: flat" onclick="speakIngot()">
+            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.28 0.28 0.28" position="0 0 0.01"></a-text>
+          </a-plane>
 
-          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+
+          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+
+
+          <a-image src="./Overhead.png" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+
         </a-entity>
       </a-entity>
     </a-scene>
@@ -90,53 +78,16 @@
     <script>
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
-      const freezeBtn = document.getElementById('freeze-btn');
-      const audioBtn = document.getElementById('audio-btn');
+      const btn = document.getElementById('freeze-btn');
       
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
-      const ingotMesh = document.getElementById('ingot-mesh');
 
-      // ดักจับเมื่อสแกนเจอภาพสีส้ม -> ให้แสดงผลปุ่มเสียงด้วย
       arTarget.addEventListener("targetFound", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
-          audioBtn.style.display = "block";
         }
       });
-
-      // ดักจับเมื่อกล้องหลุดจากภาพสีส้ม -> ให้ซ่อนปุ่มเสียงไป
-      arTarget.addEventListener("targetLost", () => {
-        if (!isFrozen) {
-          audioBtn.style.display = "none";
-        }
-      });
-
-      // ระบบคำนวณตำแหน่งภาพ AR ในฉาก 3D แล้วแปลงพิกัดมาเป็นตำแหน่งบนหน้าจอมือถือแบบ Real-time
-      function updateButtonPosition() {
-        if ((arContent.getAttribute('visible') === 'true' || isFrozen) && ingotMesh) {
-          const vector = new THREE.Vector3();
-          //ดึงพิกัดตำแหน่งของรูปภาพ Ingot ในระบบ 3D
-          ingotMesh.object3D.getWorldPosition(vector);
-          
-          // แปลงพิกัด 3D เข้าสู่พิกัดหน้าจอ 2D (Screen Coordinates)
-          const camera = sceneEl.camera;
-          if (!camera) return;
-          vector.project(camera);
-
-          // แปลงค่าให้เป็นเปอร์เซ็นต์หน้าจอของมือถือ
-          const x = (vector.x * .5 + .5) * window.innerWidth;
-          const y = (vector.y * -.5 + .5) * window.innerHeight;
-
-          // สั่งให้ปุ่มสีเขียววิ่งไปแปะอยู่ตำแหน่ง X (ตรงกลางรูป) และ Y (ถอยลงมาข้างล่างรูปพอดีสายตา)
-          audioBtn.style.left = x + 'px';
-          audioBtn.style.top = (y + 55) + 'px'; // บวกเพิ่ม 55 พิกเซลเพื่อให้มันอยู่ใต้รูปพอดี
-        }
-        requestAnimationFrame(updateButtonPosition);
-      }
-      
-      // เรียกใช้งานการคำนวณตำแหน่งปุ่มลอยตามวัตถุ
-      requestAnimationFrame(updateButtonPosition);
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
@@ -144,26 +95,26 @@
         
         if (isFrozen) {
           if (mindarSystem) mindarSystem.pause(true);
-          freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
-          freezeBtn.classList.add("active");
-          audioBtn.style.display = "block"; // ล็อกหน้าจอแล้วให้ปุ่มเสียงยังคงอยู่
+          btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
+          btn.classList.add("active");
         } else {
           if (arContent) arContent.setAttribute("visible", "false"); 
           if (mindarSystem) {
             mindarSystem.unpause(); 
           }
-          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
-          freezeBtn.classList.remove("active");
-          audioBtn.style.display = "none";
+          btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
+          btn.classList.remove("active");
         }
       }
 
-      // พิมพ์คำพูดเสียงภาษาไทยตรงนี้ได้เหมือนเดิมครับ
+      // ฟังก์ชันเสียงพูดอธิบายภาษาไทย (คุณพิมพ์ข้อความในเครื่องหมายคำพูดได้เลยครับ)
       function speakIngot() {
-        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.cancel(); // ล้างคำพูดเก่าทันทีป้องกันการกดเบิ้ล
+        
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
         utterance.rate = 0.95; 
+        
         window.speechSynthesis.speak(utterance);
       }
     </script>
