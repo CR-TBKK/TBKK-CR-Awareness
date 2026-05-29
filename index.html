@@ -19,7 +19,7 @@
         pointer-events: none;
       }
 
-      /* ปุ่มล็อกภาพ (ปุ่มเดิม) */
+      /* เหลือเฉพาะปุ่มล็อกภาพไว้บนหน้าจอมือถือ */
       #freeze-btn {
         position: absolute;
         top: 20px;
@@ -38,26 +38,6 @@
         -webkit-appearance: none;
       }
       #freeze-btn.active { background-color: #FF6B35; }
-
-      /* [เพิ่มใหม่] ปุ่มไอคอนลำโพงเสียงบรรยาย ลอยถัดลงมาจากปุ่มล็อกภาพ */
-      #audio-btn {
-        position: absolute;
-        top: 85px; /* ขยับลงมาด้านล่างเพื่อไม่ให้ทับปุ่มล็อกภาพ */
-        right: 20px;
-        pointer-events: auto;
-        padding: 14px 24px;
-        background-color: #28a745; /* ใช้สีเขียวให้เด่นชัดว่าเป็นปุ่มเสียง */
-        color: white;
-        border: 2px solid white;
-        border-radius: 8px;
-        font-weight: bold;
-        font-family: sans-serif;
-        font-size: 16px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
-        cursor: pointer;
-        -webkit-appearance: none;
-      }
-      
       .mindar-ui-scanning { background: none !important; }
     </style>
   </head>
@@ -65,11 +45,9 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
-      
-      <button id="audio-btn" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')">🔊 กดฟังเสียงบรรยาย</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -78,14 +56,28 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#FF6B35" align="center"></a-text>
+          
+          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.3" height="0.08" color="#28a745" material="shader: flat" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')">
+            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
+          </a-plane>
 
-          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#004E98" align="center"></a-text>
+          
+          <a-plane class="clickable" position="0 -0.27 0" width="0.3" height="0.08" color="#004E98" material="shader: flat" onclick="speakThai('สอง ค่าแรงทางตรง แดแร็ก เลเบอร์ คือค่าจ้างของพนักงานในสายการผลิตโดยตรงครับ')">
+            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
+          </a-plane>
+
+
+          <a-image src="./Overhead.png" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#06D6A0" align="center"></a-text>
+          
+          <a-plane class="clickable" position="0.4 -0.27 0" width="0.3" height="0.08" color="#06D6A0" material="shader: flat" onclick="speakThai('สาม ค่าใช้จ่ายการผลิต โอเวอร์เฮด คือค่าไฟ ค่าน้ำ หรือค่าเสื่อมเครื่องจักรในโรงงานครับ')">
+            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
+          </a-plane>
 
         </a-entity>
       </a-entity>
@@ -123,14 +115,13 @@
         }
       }
 
-      // ฟังก์ชันแปลงข้อความเป็นเสียงพูดภาษาไทย (Web Speech API)
+      // ระบบสั่งงานเสียงพูด
       function speakThai(message) {
-        // ล้างเสียงเก่าออกทันทีก่อนพูดประโยคใหม่
-        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.cancel(); // ตัดเสียงเก่าทันทีเวลาเด็กกดสลับไปมา
         
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = "th-TH"; // บังคับภาษาไทย
-        utterance.rate = 0.95;    // ปรับความเร็วเสียงพูดให้ชัดเจนน่าฟัง
+        utterance.lang = "th-TH"; 
+        utterance.rate = 0.95; 
         
         window.speechSynthesis.speak(utterance);
       }
