@@ -19,6 +19,7 @@
         pointer-events: none;
       }
 
+      /* ปุ่มล็อกภาพ (ปุ่มเดิม) */
       #freeze-btn {
         position: absolute;
         top: 20px;
@@ -36,9 +37,25 @@
         cursor: pointer;
         -webkit-appearance: none;
       }
-      
-      #freeze-btn.active {
-        background-color: #FF6B35;
+      #freeze-btn.active { background-color: #FF6B35; }
+
+      /* [เพิ่มใหม่] ปุ่มไอคอนลำโพงเสียงบรรยาย ลอยถัดลงมาจากปุ่มล็อกภาพ */
+      #audio-btn {
+        position: absolute;
+        top: 85px; /* ขยับลงมาด้านล่างเพื่อไม่ให้ทับปุ่มล็อกภาพ */
+        right: 20px;
+        pointer-events: auto;
+        padding: 14px 24px;
+        background-color: #28a745; /* ใช้สีเขียวให้เด่นชัดว่าเป็นปุ่มเสียง */
+        color: white;
+        border: 2px solid white;
+        border-radius: 8px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 16px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+        cursor: pointer;
+        -webkit-appearance: none;
       }
       
       .mindar-ui-scanning { background: none !important; }
@@ -48,9 +65,11 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
+      
+      <button id="audio-btn" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')">🔊 กดฟังเสียงบรรยาย</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -59,8 +78,8 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-image>
-          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
 
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
@@ -87,9 +106,6 @@
       });
 
       function toggleFreeze() {
-        // บังคับกระตุ้นระบบเสียงของเบราว์เซอร์ทันทีก่อนล็อก เพื่อแก้กฎความปลอดภัย
-        speakThai(''); 
-
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
@@ -107,15 +123,14 @@
         }
       }
 
-      // ระบบเสียงพูด
+      // ฟังก์ชันแปลงข้อความเป็นเสียงพูดภาษาไทย (Web Speech API)
       function speakThai(message) {
-        if (!message) return; // ถ้าส่งค่าว่างมาให้ข้ามไป
-        
-        window.speechSynthesis.cancel(); // ตัดเสียงเก่า
+        // ล้างเสียงเก่าออกทันทีก่อนพูดประโยคใหม่
+        window.speechSynthesis.cancel(); 
         
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.9; // ปรับให้พูดช้าลงนิดนึงเพื่อให้เด็กๆ ฟังทันชัดเจนขึ้นครับ
+        utterance.lang = "th-TH"; // บังคับภาษาไทย
+        utterance.rate = 0.95;    // ปรับความเร็วเสียงพูดให้ชัดเจนน่าฟัง
         
         window.speechSynthesis.speak(utterance);
       }
