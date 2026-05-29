@@ -50,7 +50,7 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -74,25 +74,21 @@
 
     <script>
       let isFrozen = false;
-      const sceneEl = document.getElementById('scene');
+      const targetEntity = document.getElementById('ar-target');
       const btn = document.getElementById('freeze-btn');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // สั่งหยุดล็อกพิกัดกล้องชั่วคราว (ภาพแช่นิ่งค้างหน้าจอ)
-          if (mindarSystem) mindarSystem.pause(true);
+          // สั่งตัดการสแกนเป้าหมาย (ทำให้ออบเจกต์หยุดนิ่งอยู่กับที่ทันที ไม่ขยับตามกล้อง)
+          targetEntity.setAttribute("mindar-image-target", "targetIndex: -1");
           
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // สั่งปิดระบบ และ สั่งเปิดระบบสแกนใหม่ทันที (ล้างค่าแคชพิกัดเก่าทิ้งทั้งหมด)
-          if (mindarSystem) {
-            mindarSystem.stop();  // สั่งเคลียร์และปิดตัวจับคู่ภาพตัวเก่า
-            mindarSystem.start(); // สั่งเริ่มต้นระบบ SCAN หาใบงานแผ่นสีส้มใหม่อีกครั้ง
-          }
+          // สั่งให้ระบบโยนเป้าหมายกลับมาจับคู่ที่ใบงานตัวเดิม (ระบบจะบังคับเริ่มต้นรีเซ็ตและสแกนหาภาพสีส้มใหม่ทันที)
+          targetEntity.setAttribute("mindar-image-target", "targetIndex: 0");
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
