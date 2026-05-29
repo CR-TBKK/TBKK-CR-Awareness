@@ -50,18 +50,16 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
       
-      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
-        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
-      </a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakThai('วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-image>
           <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
 
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
@@ -76,54 +74,46 @@
 
     <script>
       let isFrozen = false;
-      let hasFoundTargetOnce = false;
-      const arContent = document.getElementById('ar-content');
-      const arTarget = document.getElementById('ar-target');
-      const cameraHud = document.getElementById('camera-hud');
+      const sceneEl = document.getElementById('scene');
       const btn = document.getElementById('freeze-btn');
+      
+      const arContent = document.getElementById('ar-content'); 
+      const arTarget = document.getElementById('ar-target');
 
-      // ดักจับระบบสแกน: ถ้าเจอภาพใบงานสีส้ม ให้เปิดการแสดงผลรูปภาพขึ้นมาปกติ
       arTarget.addEventListener("targetFound", () => {
-        hasFoundTargetOnce = true;
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
-        }
-      });
-
-      // ถ้ากล้องหลุดจากใบงาน (และไม่ได้กดล็อกไว้) ให้ซ่อนรูปภาพทันที
-      arTarget.addEventListener("targetLost", () => {
-        if (!isFrozen) {
-          arContent.setAttribute("visible", "false");
         }
       });
 
       function toggleFreeze() {
-        // ถ้ากล้องยังสแกนไม่เจอภาพเลยสักครั้งเดียว จะไม่ยอมให้กดล็อกเพื่อป้องกันบั๊กหน้าจอว่างเปล่า
-        if (!hasFoundTargetOnce) return;
-
         isFrozen = !isFrozen;
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // [จังหวะกดล็อกภาพ] ย้ายภาพจากกระดาษมาแปะไว้ที่กล้องหน้าจอตรงๆ (ติดหนึบ ยกมือถือหนีได้)
-          cameraHud.appendChild(arContent);
-          arContent.setAttribute("visible", "true");
-          cameraHud.setAttribute("visible", "true");
-          
+          if (mindarSystem) mindarSystem.pause(true);
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // [จังหวะกดปล่อยสแกนใหม่] ล้างภาพออกจากจอกล้อง
-          cameraHud.setAttribute("visible", "false");
-          
-          // โยนเนื้อหากลับไปให้ระบบสแกน AR ของแผ่นงาน
-          arTarget.appendChild(arContent);
-          
-          // สั่งให้ภาพซ่อนตัว (หายไปทันที) เพื่อบังคับให้ผู้เรียนต้องเอากล้องไปส่องสแกนหาแผ่นงานสีส้มใหม่อีกรอบ
-          arContent.setAttribute("visible", "false");
-          
+          if (arContent) arContent.setAttribute("visible", "false"); 
+          if (mindarSystem) {
+            mindarSystem.unpause(); 
+          }
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
         }
+      }
+
+      // [จุดแก้ไขสำคัญที่ 3] ฟังก์ชันสำหรับสั่งให้โทรศัพท์ส่งเสียงพูดอธิบายภาษาไทย
+      function speakThai(message) {
+        // สั่งให้หยุดพูดประโยคเก่าทันทีในกรณีที่เด็กๆ กดรูปภาพรัวๆ เพื่อไม่ให้เสียงพูดซ้อนกัน
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.lang = "th-TH"; // กำหนดให้พูดเป็นภาษาไทย สำเนียงไทย
+        utterance.rate = 1.0;     // กำหนดความเร็วของเสียงพูด (1.0 คือระดับปกติ)
+        
+        window.speechSynthesis.speak(utterance);
       }
     </script>
   </body>
