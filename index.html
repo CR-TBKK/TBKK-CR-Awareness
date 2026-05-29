@@ -50,67 +50,76 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false">
-        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false">
-          <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
-          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
-          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
-        </a-entity>
+      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
       </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
+          
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
+
           <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+
           <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+
         </a-entity>
       </a-entity>
     </a-scene>
 
     <script>
       let isFrozen = false;
+      let hasFoundTargetOnce = false;
       const arContent = document.getElementById('ar-content');
+      const arTarget = document.getElementById('ar-target');
       const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
-      const sceneEl = document.getElementById('scene');
+
+      // ดักจับระบบสแกน: ถ้าเจอภาพใบงานสีส้ม ให้เปิดการแสดงผลรูปภาพขึ้นมาปกติ
+      arTarget.addEventListener("targetFound", () => {
+        hasFoundTargetOnce = true;
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "true");
+        }
+      });
+
+      // ถ้ากล้องหลุดจากใบงาน (และไม่ได้กดล็อกไว้) ให้ซ่อนรูปภาพทันที
+      arTarget.addEventListener("targetLost", () => {
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "false");
+        }
+      });
 
       function toggleFreeze() {
+        // ถ้ากล้องยังสแกนไม่เจอภาพเลยสักครั้งเดียว จะไม่ยอมให้กดล็อกเพื่อป้องกันบั๊กหน้าจอว่างเปล่า
+        if (!hasFoundTargetOnce) return;
+
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // [จังหวะกดล็อกภาพ] 
-          if (mindarSystem) mindarSystem.pause(true); // 1. สั่งให้ตัวคำนวณตำแหน่ง AR หยุดชั่วคราว
-          arContent.setAttribute("visible", "false"); // 2. ซ่อนภาพฝั่งกระดาษลงไป
-          cameraHud.setAttribute("visible", "true");  // 3. เปิดภาพจำลองให้ติดหนึบคาหน้าจอมือถือ (ยกหนีได้ทันที)
+          // [จังหวะกดล็อกภาพ] ย้ายภาพจากกระดาษมาแปะไว้ที่กล้องหน้าจอตรงๆ (ติดหนึบ ยกมือถือหนีได้)
+          cameraHud.appendChild(arContent);
+          arContent.setAttribute("visible", "true");
+          cameraHud.setAttribute("visible", "true");
           
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // [จังหวะกดปล่อยเพื่อสแกนใหม่]
-          cameraHud.setAttribute("visible", "false"); // 1. เคลียร์เอาภาพล็อกหน้าจอออกไป
-          arContent.setAttribute("visible", "false"); // 2. มั่นใจว่าภาพเก่าฝั่งสแกนยังไม่แสดงผลจนกว่าจะเจอภาพใหม่
+          // [จังหวะกดปล่อยสแกนใหม่] ล้างภาพออกจากจอกล้อง
+          cameraHud.setAttribute("visible", "false");
           
-          if (mindarSystem) {
-            mindarSystem.stop();  // 3. สั่งปิดกระบวนการสแกนตัวเก่าที่ค้างคาอยู่
-            mindarSystem.start(); // 4. บังคับรื้อระบบสแกนกล้องใหม่ทันที กรอบสีขาวสแกนจะเริ่มนับหนึ่งใหม่
-          }
+          // โยนเนื้อหากลับไปให้ระบบสแกน AR ของแผ่นงาน
+          arTarget.appendChild(arContent);
           
-          // ดักจับเมื่อกล้องตัวใหม่ส่องสแกนเจอแผ่นภาพสีส้มอีกครั้ง ค่อยยอมให้แสดงภาพคืนมา
-          const arTarget = document.getElementById('ar-target');
-          arTarget.addEventListener("targetFound", () => {
-            arContent.setAttribute("visible", "true");
-          });
+          // สั่งให้ภาพซ่อนตัว (หายไปทันที) เพื่อบังคับให้ผู้เรียนต้องเอากล้องไปส่องสแกนหาแผ่นงานสีส้มใหม่อีกรอบ
+          arContent.setAttribute("visible", "false");
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
