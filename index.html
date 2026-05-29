@@ -50,7 +50,7 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene id="scene-container" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
         <a-entity id="camera-hud" position="0 0 0" visible="false"></a-entity>
@@ -80,13 +80,13 @@
       const arTarget = document.getElementById('ar-target');
       const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
+      const sceneEl = document.getElementById('scene-container');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
         if (isFrozen) {
-          // ย้ายวัตถุเข้าสู่มุมมองติดหน้าจอตรงๆ
+          // 1. ย้ายวัตถุเข้าหน้าจอ
           cameraHud.appendChild(arContent);
-          // ปรับตำแหน่งแกน Z ให้อยู่ห่างจากตัวตาเบราว์เซอร์ลึกเข้าไปลบ 1 เมตรพอดีสายตาจอมือถือ
           arContent.setAttribute("position", "0 0 -1.2");
           arContent.setAttribute("scale", "0.7 0.7 0.7");
           arContent.setAttribute("rotation", "0 0 0");
@@ -95,12 +95,18 @@
           btn.innerText = "🔄 ปล่อยภาพคืนกระดาษ";
           btn.classList.add("active");
         } else {
-          // ย้ายวัตถุกลับไปผูกติดไว้ที่แผ่นภาพบนกระดาษตามพิกัดเดิม
+          // 2. ย้ายวัตถุกลับเข้าสู่ระบบกระดาษ
           arTarget.appendChild(arContent);
           arContent.setAttribute("position", "0 0 0");
           arContent.setAttribute("scale", "1 1 1");
           arContent.setAttribute("rotation", "0 0 0");
           cameraHud.setAttribute("visible", "false");
+          
+          // 3. [เพิ่มพิเศษ] สั่งรีเซ็ตและบังคับให้ระบบกล้องเปิดโหมดค้นหาใบงานแผ่นสีส้มใหม่อีกครั้งทันที
+          const mindarSystem = sceneEl.systems["mindar-image-system"];
+          if (mindarSystem) {
+            mindarSystem.start(); // สั่งให้เซนเซอร์กล้องตื่นตัวสแกนหาจุดอ้างอิงใหม่
+          }
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
