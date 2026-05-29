@@ -52,7 +52,9 @@
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
+      </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
@@ -74,36 +76,42 @@
 
     <script>
       let isFrozen = false;
-      const sceneEl = document.getElementById('scene');
-      const targetEntity = document.getElementById('ar-target');
+      const arContent = document.getElementById('ar-content');
+      const arTarget = document.getElementById('ar-target');
+      const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // [ล็อกภาพ] สั่งให้ระบบหยุดคำนวณพิกัดการเคลื่อนไหว แต่เปิดการแสดงผลค้างไว้ ภาพจะแช่นิ่งอยู่บนจอทันที
-          if (mindarSystem) {
-            mindarSystem.shouldTrack = false; 
-          }
+          // [จังหวะกดล็อก] ย้ายเนื้อหาทั้งหมดมาแปะไว้ที่กล่องหน้าจอกล้องตรงๆ ทันที (ล็อกแน่นยกหนีได้)
+          cameraHud.appendChild(arContent);
+          cameraHud.setAttribute("visible", "true");
           
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // [ปล่อยสแกนใหม่] ซ่อนรูปภาพชั่วคราวเพื่อให้เคลียร์หน้าจอ จากนั้นสั่งรื้อระบบเพื่อเริ่ม SCAN หาใบงานสีส้มใหม่อีกครั้ง
-          const arContent = document.getElementById('ar-content');
-          if (arContent) arContent.setAttribute("visible", "false");
+          // [จังหวะกดปล่อยสแกนใหม่] ซ่อนตัวภาพก่อนเพื่อไม่ให้ค้างคาจอ
+          cameraHud.setAttribute("visible", "false");
           
+          // โยนเนื้อหากลับไปให้ฐานระบบกระดาษ AR
+          arTarget.appendChild(arContent);
+          
+          // หลอกระบบโดยการปิดตา entity เพื่อให้มันซ่อนตัวจนกว่าจะเจอจุดสแกนใหม่จริงๆ
+          arContent.setAttribute("visible", "false");
+          
+          // บังคับให้เริ่มระบบ SCAN หาภาพสีส้มแผ่นใหม่ทันที
+          const sceneEl = document.getElementById('scene');
+          const mindarSystem = sceneEl.systems["mindar-image-system"];
           if (mindarSystem) {
-            mindarSystem.shouldTrack = true; // เปิดระบบคำนวณพิกัดคืนมา
-            mindarSystem.stop();             // สั่งปิดการจำพิกัดเก่า
-            mindarSystem.start();            // สั่งเริ่ม SCAN ใหม่ทันที ตัวสแกนจะเริ่มนับหนึ่งใหม่
+            mindarSystem.stop();
+            mindarSystem.start();
           }
           
-          // ตัวดักจับเมื่อกล้องเริ่มเจอภาพอีกครั้ง ให้แสดงรูปภาพกลับมาปกติ
-          targetEntity.addEventListener("targetFound", () => {
-             if (arContent) arContent.setAttribute("visible", "true");
+          // เมื่อสแกนเจอแผ่นงานใหม่อีกครั้ง ค่อยสั่งให้ภาพแสดงขึ้นมา
+          arTarget.addEventListener("targetFound", () => {
+            arContent.setAttribute("visible", "true");
           });
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
