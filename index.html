@@ -59,9 +59,9 @@
           <a-image class="clickable" src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakIngot()"></a-image>
           <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakIngot()"></a-text>
           
-          <a-circle class="clickable" position="-0.4 -0.27 0" radius="0.06" color="#28a745" material="shader: flat" onclick="speakIngot()">
-            <a-text value="OBJ" color="white" align="center" scale="0.3 0.3 0.3" position="0 0 0.01"></a-text>
-          </a-circle>
+          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.3" height="0.09" color="#28a745" material="shader: flat" onclick="speakIngot()">
+            <a-text value="SOUND" color="white" align="center" scale="0.32 0.32 0.32" position="0 0 0.02"></a-text>
+          </a-plane>
 
 
           <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
@@ -106,7 +106,7 @@
         }
       }
 
-      // ฟังก์ชันเสียงพูดภาษาไทยของ Ingot (พิมพ์เปลี่ยนคำพูดในเครื่องหมายคำพูดได้เลยครับ)
+      // ฟังก์ชันเสียงพูดอธิบายภาษาไทย (แก้ไขคำพูดในเครื่องหมายคำพูดได้เลยครับ)
       function speakIngot() {
         window.speechSynthesis.cancel(); 
         
