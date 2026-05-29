@@ -39,24 +39,26 @@
       }
       #freeze-btn.active { background-color: #FF6B35; }
 
-      /* [ปุ่มเปิดเสียงแบบใหม่] เป็นปุ่มบนหน้าจอจริง แต่จะวิ่งไปลอยใต้รูป Ingot ตามพิกัดกล้อง */
+      /* [ปรับตำแหน่งดีไซน์ปุ่มเสียงใหม่] แก้ไขให้ตรงและกระชับขึ้น */
       #ingot-audio-btn {
         position: absolute;
-        display: none; /* ซ่อนไว้ก่อนจนกว่าจะสแกนเจอภาพ */
+        display: none; 
         pointer-events: auto;
-        padding: 10px 16px;
+        padding: 8px 16px;
         background-color: #28a745; 
         color: white;
         border: 2px solid white;
         border-radius: 20px;
         font-weight: bold;
         font-family: sans-serif;
-        font-size: 14px;
+        font-size: 13px;
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        transform: translate(-50%, -50%);
+        /* ใช้ transform ช่วยดึงแกนปุ่มให้อยู่กึ่งกลางพอดี ไม่เบี้ยวไปข้างใดข้างหนึ่ง */
+        transform: translate(-50%, -50%); 
         z-index: 99999;
         -webkit-appearance: none;
+        white-space: nowrap;
       }
       
       .mindar-ui-scanning { background: none !important; }
@@ -66,7 +68,6 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
-      
       <button id="ingot-audio-btn" onclick="speakIngot()">🔊 LISTEN</button>
     </div>
 
@@ -79,8 +80,8 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image id="ingot-track" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image id="ingot-track" src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
 
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
@@ -101,7 +102,6 @@
       const arTarget = document.getElementById('ar-target');
       const ingotTrack = document.getElementById('ingot-track');
 
-      // เจอภาพ -> เปิดแสดงกลุ่มภาพ และเปิดปุ่มเสียง HTML ให้ทำงาน
       arTarget.addEventListener("targetFound", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
@@ -109,35 +109,37 @@
         }
       });
 
-      // หลุดจากภาพ -> ซ่อนปุ่มเสียง
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           audioBtn.style.display = "none";
         }
       });
 
-      // ระบบคำนวณตำแหน่ง: ดึงพิกัดของรูป Ingot ในฉาก 3D มาแปะเป็นพิกัดปุ่มบนหน้าจอ 2D แบบเรียลไทม์
+      // [จุดปรับปรุงสูตรคำนวณตำแหน่งปุ่ม]
       function syncButtonPos() {
         if (ingotTrack && ingotTrack.object3D && (arContent.getAttribute('visible') === 'true' || isFrozen)) {
           const vector = new THREE.Vector3();
-          ingotTrack.object3D.getWorldPosition(vector); //ดึงตำแหน่งรูป Ingot
+          
+          // ดึงพิกัดจากรูปภาพหลักของ Ingot ตรงๆ
+          ingotTrack.object3D.getWorldPosition(vector); 
           
           const camera = sceneEl.camera;
           if (camera) {
-            vector.project(camera); // แปลงเข้ามุมมองกล้อง
+            vector.project(camera); 
             
-            // แปลงเป็นพิกัดพิกเซลบนหน้าจอมือถือจริง
             const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
             const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
             
-            // บังคับให้ปุ่ม HTML สีเขียว ไปลอยอยู่ตำแหน่งใต้รูปภาพพอดีเป๊ะ (ยืดหยุ่นตามจอมือถือทุกรุ่น)
+            // สั่งจัดตำแหน่งปุ่ม HTML สีเขียวให้อยู่ตรงกลางของรูป Ingot ในแนวแกน X
             audioBtn.style.left = x + 'px';
-            audioBtn.style.top = (y + 60) + 'px'; // เลข 60 คือระยะห่างให้ลงไปอยู่ข้างใต้รูปพอดีครับ
+            
+            // ปรับระยะเลื่อนลงมา (offset) ให้พอดีกับตำแหน่งใต้ตัวหนังสือยึดตามขนาดหน้าจอมือถือจริง
+            // รอบนี้ปรับให้กระชับขึ้น ปุ่มจะขยับเข้าไปใกล้ตัวหนังสือและรูปภาพ ไม่ลอยห่างแล้วครับ
+            audioBtn.style.top = (y + (window.innerHeight * 0.09)) + 'px'; 
           }
         }
         requestAnimationFrame(syncButtonPos);
       }
-      // เริ่มรันระบบล็อกพิกัดปุ่มตามรูปภาพ
       requestAnimationFrame(syncButtonPos);
 
       function toggleFreeze() {
@@ -148,7 +150,7 @@
           if (mindarSystem) mindarSystem.pause(true);
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
-          audioBtn.style.display = "block"; // ล็อกภาพแล้วยังเปิดให้กดฟังเสียงได้ปกติ
+          audioBtn.style.display = "block"; 
         } else {
           if (arContent) arContent.setAttribute("visible", "false"); 
           if (mindarSystem) {
@@ -160,14 +162,11 @@
         }
       }
 
-      // ฟังก์ชันเสียงพูดอธิบายภาษาไทย (พิมพ์แก้ไขข้อความในนี้ได้ตามใจชอบครับ)
       function speakIngot() {
-        window.speechSynthesis.cancel(); // ล้างคิวเสียงเก่าทันทีเพื่อไม่ให้เสียงซ้อนกัน
-        
+        window.speechSynthesis.cancel(); 
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
         utterance.rate = 0.95; 
-        
         window.speechSynthesis.speak(utterance);
       }
     </script>
