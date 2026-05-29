@@ -50,9 +50,11 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
+      </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
@@ -74,25 +76,50 @@
 
     <script>
       let isFrozen = false;
-      const sceneEl = document.getElementById('scene');
+      let hasFoundTargetOnce = false;
+      const arContent = document.getElementById('ar-content');
+      const arTarget = document.getElementById('ar-target');
+      const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
 
+      // ดักจับระบบสแกน: ถ้าเจอภาพใบงานสีส้ม ให้เปิดการแสดงผลรูปภาพขึ้นมาปกติ
+      arTarget.addEventListener("targetFound", () => {
+        hasFoundTargetOnce = true;
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "true");
+        }
+      });
+
+      // ถ้ากล้องหลุดจากใบงาน (และไม่ได้กดล็อกไว้) ให้ซ่อนรูปภาพทันที
+      arTarget.addEventListener("targetLost", () => {
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "false");
+        }
+      });
+
       function toggleFreeze() {
+        // ถ้ากล้องยังสแกนไม่เจอภาพเลยสักครั้งเดียว จะไม่ยอมให้กดล็อกเพื่อป้องกันบั๊กหน้าจอว่างเปล่า
+        if (!hasFoundTargetOnce) return;
+
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // สั่งหยุดล็อกพิกัดกล้องชั่วคราว (ภาพแช่นิ่งค้างหน้าจอ)
-          if (mindarSystem) mindarSystem.pause(true);
+          // [จังหวะกดล็อกภาพ] ย้ายภาพจากกระดาษมาแปะไว้ที่กล้องหน้าจอตรงๆ (ติดหนึบ ยกมือถือหนีได้)
+          cameraHud.appendChild(arContent);
+          arContent.setAttribute("visible", "true");
+          cameraHud.setAttribute("visible", "true");
           
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // สั่งปิดระบบ และ สั่งเปิดระบบสแกนใหม่ทันที (ล้างค่าแคชพิกัดเก่าทิ้งทั้งหมด)
-          if (mindarSystem) {
-            mindarSystem.stop();  // สั่งเคลียร์และปิดตัวจับคู่ภาพตัวเก่า
-            mindarSystem.start(); // สั่งเริ่มต้นระบบ SCAN หาใบงานแผ่นสีส้มใหม่อีกครั้ง
-          }
+          // [จังหวะกดปล่อยสแกนใหม่] ล้างภาพออกจากจอกล้อง
+          cameraHud.setAttribute("visible", "false");
+          
+          // โยนเนื้อหากลับไปให้ระบบสแกน AR ของแผ่นงาน
+          arTarget.appendChild(arContent);
+          
+          // สั่งให้ภาพซ่อนตัว (หายไปทันที) เพื่อบังคับให้ผู้เรียนต้องเอากล้องไปส่องสแกนหาแผ่นงานสีส้มใหม่อีกรอบ
+          arContent.setAttribute("visible", "false");
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
