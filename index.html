@@ -65,7 +65,7 @@
   <body>
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
-      <button id="audio-btn" onclick="speakThai()">🔊 กดฟังเสียงบรรยาย</button>
+      <button id="audio-btn" onclick="speakIngot()">🔊 กดฟังเสียงบรรยาย</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -122,8 +122,8 @@
         }
       }
 
-      // ระบบเสียงพูดตามประโยคที่คุณกำหนดไว้เป๊ะๆ
-      function speakThai() {
+      /* [เปลี่ยนชื่อตรงนี้] ฟังก์ชันเสียงพูดภาษาไทยเฉพาะของ Ingot */
+      function speakIngot() {
         window.speechSynthesis.cancel(); 
         
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
