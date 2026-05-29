@@ -36,35 +36,9 @@
         cursor: pointer;
         -webkit-appearance: none;
       }
-      #freeze-btn.active { background-color: #FF6B35; }
-
-      /* [เพิ่มใหม่] สไตล์หน้าต่างต้อนรับเพื่อกดปลดล็อกระบบเสียง */
-      #welcome-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        z-index: 100000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-family: sans-serif;
-        padding: 20px;
-        box-sizing: border-box;
-        text-align: center;
-      }
-      #start-btn {
-        margin-top: 20px;
-        padding: 16px 32px;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 30px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+      
+      #freeze-btn.active {
+        background-color: #FF6B35;
       }
       
       .mindar-ui-scanning { background: none !important; }
@@ -72,43 +46,29 @@
   </head>
 
   <body>
-    <div id="welcome-overlay">
-      <h2>🔊 AR สื่อการสอนต้นทุนโรงงาน</h2>
-      <p>กรุณากดปุ่มด้านล่างเพื่อเปิดใช้งานระบบเสียงบรรยายภาษาไทย</p>
-      <button id="start-btn" onclick="initAudio()">เปิดใช้งานสื่อการสอน</button>
-    </div>
-
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
+      </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content">
+        <a-entity id="ar-content" position="0 0 0" rotation="0 0 0" scale="1 1 1">
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#FF6B35" align="center"></a-text>
-          
-          <a-plane class="clickable" position="-0.4 -0.27 0" width="0.3" height="0.08" color="#28a745" material="shader: flat" onclick="speakThai('วัตถุดิบทางตรง แดแร็ก แมตทีเรียลส์ วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')">
-            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
-          </a-plane>
+          <a-image class="clickable" src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakThai('วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-image>
+          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakThai('วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม')"></a-text>
 
-          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#004E98" align="center"></a-text>
-          <a-plane class="clickable" position="0 -0.27 0" width="0.3" height="0.08" color="#004E98" material="shader: flat" onclick="speakThai('สอง ค่าแรงทางตรง แดแร็ก เลเบอร์ คือค่าจ้างของพนักงานในสายการผลิตโดยตรงครับ')">
-            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
-          </a-plane>
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-          <a-image src="./Overhead.png" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.12 0" rotation="0 0 0" scale="0.32 0.32 0.32" color="#06D6A0" align="center"></a-text>
-          <a-plane class="clickable" position="0.4 -0.27 0" width="0.3" height="0.08" color="#06D6A0" material="shader: flat" onclick="speakThai('สาม ค่าใช้จ่ายการผลิต โอเวอร์เฮด คือค่าไฟ ค่าน้ำ หรือค่าเสื่อมเครื่องจักรในโรงงานครับ')">
-            <a-text value="LISTEN 🔊" color="white" align="center" scale="0.25 0.25 0.25" position="0 0 0.01"></a-text>
-          </a-plane>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
         </a-entity>
       </a-entity>
@@ -116,53 +76,39 @@
 
     <script>
       let isFrozen = false;
-      const sceneEl = document.getElementById('scene');
-      const btn = document.getElementById('freeze-btn');
-      const arContent = document.getElementById('ar-content'); 
+      const arContent = document.getElementById('ar-content');
       const arTarget = document.getElementById('ar-target');
-
-      // ฟังก์ชันเปิดประตูระบบเสียง (เมื่อผู้ใช้กดปุ่มเริ่มต้นสีเขียวตอนเข้าเว็บ)
-      function initAudio() {
-        // บังคับสั่งให้ระบบ Speech ลองพูดคำสั้นๆ เบาๆ ทันทีเพื่อล้างสถานะล็อกของเบราว์เซอร์
-        const utterance = new SpeechSynthesisUtterance('ยินดีต้อนรับ');
-        utterance.volume = 0; // เปิดเสียงเป็น 0 เพื่อไม่ให้รบกวน
-        window.speechSynthesis.speak(utterance);
-        
-        // ซ่อนหน้าต่างต้อนรับออกไปเพื่อเปิดให้เล่นกล้อง AR ปกติ
-        document.getElementById('welcome-overlay').style.display = 'none';
-      }
-
-      arTarget.addEventListener("targetFound", () => {
-        if (!isFrozen) {
-          arContent.setAttribute("visible", "true");
-        }
-      });
+      const cameraHud = document.getElementById('camera-hud');
+      const btn = document.getElementById('freeze-btn');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          if (mindarSystem) mindarSystem.pause(true);
-          btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
+          // [จังหวะกดล็อกภาพ] ย้ายกลุ่มภาพมาแปะไว้ที่ตัวกล้องตรงๆ (ภาพแช่นิ่งคาจอ ยกมือถือหนีได้ และยังกดจิ้มรูปฟังเสียงได้ปกติ)
+          cameraHud.appendChild(arContent);
+          cameraHud.setAttribute("visible", "true");
+          
+          btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           btn.classList.add("active");
         } else {
-          if (arContent) arContent.setAttribute("visible", "false"); 
-          if (mindarSystem) {
-            mindarSystem.unpause(); 
-          }
+          // [จังหวะกดปล่อยภาพ] ย้ายกลุ่มภาพกลับคืนสู่พิกัดแผ่นกระดาษสแกน AR ตามปกติ
+          cameraHud.setAttribute("visible", "false");
+          arTarget.appendChild(arContent);
+          
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
         }
       }
 
-      // ระบบเสียงบรรยายภาษาไทย
+      // ระบบเสียงพูดอธิบายภาษาไทย (Web Speech API)
       function speakThai(message) {
-        window.speechSynthesis.cancel(); // ล้างประโยคเก่ากรณีเด็กกดรัวๆ
+        // สั่งเคลียร์เสียงเก่าทิ้งทันทีป้องกันเสียงพูดซ้อนกันเวลากดซ้ำ
+        window.speechSynthesis.cancel(); 
         
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
+        utterance.lang = "th-TH"; // บังคับสำเนียงภาษาไทย
+        utterance.rate = 0.95;    // ปรับความเร็วให้พอดี ฟังง่ายสำหรับนักเรียน
         
         window.speechSynthesis.speak(utterance);
       }
