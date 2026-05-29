@@ -52,24 +52,27 @@
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
-        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false"></a-entity>
+      <a-camera position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1.2" scale="0.7 0.7 0.7" visible="false">
+          <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+        </a-entity>
       </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content">
-          
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
-
           <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
-
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-
           <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
-
         </a-entity>
       </a-entity>
     </a-scene>
@@ -77,39 +80,34 @@
     <script>
       let isFrozen = false;
       const arContent = document.getElementById('ar-content');
-      const arTarget = document.getElementById('ar-target');
       const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
+      const sceneEl = document.getElementById('scene');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          // [จังหวะกดล็อก] ย้ายเนื้อหาทั้งหมดมาแปะไว้ที่กล่องหน้าจอกล้องตรงๆ ทันที (ล็อกแน่นยกหนีได้)
-          cameraHud.appendChild(arContent);
-          cameraHud.setAttribute("visible", "true");
+          // [จังหวะกดล็อกภาพ] 
+          if (mindarSystem) mindarSystem.pause(true); // 1. สั่งให้ตัวคำนวณตำแหน่ง AR หยุดชั่วคราว
+          arContent.setAttribute("visible", "false"); // 2. ซ่อนภาพฝั่งกระดาษลงไป
+          cameraHud.setAttribute("visible", "true");  // 3. เปิดภาพจำลองให้ติดหนึบคาหน้าจอมือถือ (ยกหนีได้ทันที)
           
           btn.innerText = "🔄 ปล่อยภาพเพื่อ SCAN ใหม่";
           btn.classList.add("active");
         } else {
-          // [จังหวะกดปล่อยสแกนใหม่] ซ่อนตัวภาพก่อนเพื่อไม่ให้ค้างคาจอ
-          cameraHud.setAttribute("visible", "false");
+          // [จังหวะกดปล่อยเพื่อสแกนใหม่]
+          cameraHud.setAttribute("visible", "false"); // 1. เคลียร์เอาภาพล็อกหน้าจอออกไป
+          arContent.setAttribute("visible", "false"); // 2. มั่นใจว่าภาพเก่าฝั่งสแกนยังไม่แสดงผลจนกว่าจะเจอภาพใหม่
           
-          // โยนเนื้อหากลับไปให้ฐานระบบกระดาษ AR
-          arTarget.appendChild(arContent);
-          
-          // หลอกระบบโดยการปิดตา entity เพื่อให้มันซ่อนตัวจนกว่าจะเจอจุดสแกนใหม่จริงๆ
-          arContent.setAttribute("visible", "false");
-          
-          // บังคับให้เริ่มระบบ SCAN หาภาพสีส้มแผ่นใหม่ทันที
-          const sceneEl = document.getElementById('scene');
-          const mindarSystem = sceneEl.systems["mindar-image-system"];
           if (mindarSystem) {
-            mindarSystem.stop();
-            mindarSystem.start();
+            mindarSystem.stop();  // 3. สั่งปิดกระบวนการสแกนตัวเก่าที่ค้างคาอยู่
+            mindarSystem.start(); // 4. บังคับรื้อระบบสแกนกล้องใหม่ทันที กรอบสีขาวสแกนจะเริ่มนับหนึ่งใหม่
           }
           
-          // เมื่อสแกนเจอแผ่นงานใหม่อีกครั้ง ค่อยสั่งให้ภาพแสดงขึ้นมา
+          // ดักจับเมื่อกล้องตัวใหม่ส่องสแกนเจอแผ่นภาพสีส้มอีกครั้ง ค่อยยอมให้แสดงภาพคืนมา
+          const arTarget = document.getElementById('ar-target');
           arTarget.addEventListener("targetFound", () => {
             arContent.setAttribute("visible", "true");
           });
