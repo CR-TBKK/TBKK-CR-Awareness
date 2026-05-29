@@ -9,22 +9,21 @@
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
       
-      /* บังคับสร้าง UI ชั้นบนสุดแยกส่วนเด็ดขาดไม่ให้กล้องถมทับ */
       .ar-ui-layer {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 99999; /* ตั้งค่าความสูงเลเยอร์ให้สูงสุดในระบบ */
-        pointer-events: none; /* ยอมให้กล้องข้างหลังขยับได้ปกติ */
+        z-index: 99999;
+        pointer-events: none;
       }
 
       #freeze-btn {
         position: absolute;
         top: 20px;
         right: 20px;
-        pointer-events: auto; /* เปิดให้ปุ่มชั้นบนสุดสามารถกดนิ้วคลิกได้ */
+        pointer-events: auto;
         padding: 14px 24px;
         background-color: #004E98;
         color: white;
@@ -48,58 +47,60 @@
 
   <body>
     <div class="ar-ui-layer">
-      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้อยู่กับที่</button>
+      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
+        <a-entity id="camera-hud" position="0 0 -1" visible="false"></a-entity>
+      </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        
-        <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
+        <a-entity id="ar-content">
+          
+          <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-        <a-image 
-          src="./Ingot.png" 
-          position="-0.4 0 0" 
-          rotation="0 0 0"
-          scale="0.35 0.25 1">
-        </a-image>
-        <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
 
-        <a-image 
-          src="./Labor.png" 
-          position="0 0 0" 
-          rotation="0 0 0"
-          scale="0.35 0.25 1">
-        </a-image>
-        <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+          <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-        <a-image 
-          src="./Overhead.png" 
-          position="0.4 0 0" 
-          rotation="0 0 0"
-          scale="0.35 0.25 1">
-        </a-image>
-        <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
+        </a-entity>
       </a-entity>
     </a-scene>
 
     <script>
       let isFrozen = false;
-      const targetEntity = document.getElementById('ar-target');
+      const arContent = document.getElementById('ar-content');
+      const arTarget = document.getElementById('ar-target');
+      const cameraHud = document.getElementById('camera-hud');
       const btn = document.getElementById('freeze-btn');
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
         if (isFrozen) {
-          targetEntity.setAttribute("mindar-image-target", "targetIndex: -1");
-          btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
+          // ย้ายกลุ่มรูปภาพไปแปะไว้ที่กล้องหน้าจอตรงๆ
+          cameraHud.appendChild(arContent);
+          // สั่งจัดตำแหน่งและย่อสเกลนิดหน่อยเพื่อให้พอดีกับสายตาหน้าจอโทรศัพท์
+          arContent.setAttribute("position", "0 0 0");
+          arContent.setAttribute("scale", "0.8 0.8 0.8");
+          cameraHud.setAttribute("visible", "true");
+          
+          btn.innerText = "🔄 ปล่อยภาพคืนกระดาษ";
           btn.classList.add("active");
         } else {
-          targetEntity.setAttribute("mindar-image-target", "targetIndex: 0");
-          btn.innerText = "📌 ล็อกภาพให้อยู่กับที่";
+          // ย้ายรูปภาพกลับมาผูกเข้ากับระบบสแกนบนกระดาษตามเดิม
+          arTarget.appendChild(arContent);
+          arContent.setAttribute("position", "0 0 0");
+          arContent.setAttribute("scale", "1 1 1");
+          cameraHud.setAttribute("visible", "false");
+          
+          btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           btn.classList.remove("active");
         }
       }
