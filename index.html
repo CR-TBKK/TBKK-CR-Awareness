@@ -8,28 +8,41 @@
     
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-      .mindar-ui-scanning { background: none !important; }
       
-      /* สร้างปุ่มกดค้างหน้าจอไว้มุมขวาบน */
-      #freeze-btn {
+      /* จัดการให้ฉากกล้อง AR อยู่ด้านหลัง */
+      a-scene {
         position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      /* บังคับให้ปุ่มล็อกภาพลอยขึ้นมาอยู่บนสุดเหนือจอกล้อง (z-index: 9999) */
+      #freeze-btn {
+        position: fixed;
         top: 20px;
         right: 20px;
-        z-index: 999;
-        padding: 12px 24px;
+        z-index: 9999;
+        padding: 14px 28px;
         background-color: #004E98;
         color: white;
-        border: none;
+        border: 2px solid white;
         border-radius: 8px;
         font-weight: bold;
         font-family: sans-serif;
         font-size: 16px;
         cursor: pointer;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+        -webkit-appearance: none; /* ป้องกันหน้าจอเบราว์เซอร์มือถือบางรุ่นปรับแต่งปุ่มเอง */
       }
+      
       #freeze-btn.active {
         background-color: #FF6B35;
       }
+
+      .mindar-ui-scanning { background: none !important; z-index: 2; }
     </style>
   </head>
 
@@ -46,12 +59,27 @@
 
         <a-image 
           src="./Ingot.png" 
+          position="-0.4 0 0" 
+          rotation="0 0 0"
+          scale="0.35 0.25 1">
+        </a-image>
+        <a-text value="1. Direct Materials" position="-0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+
+        <a-image 
+          src="./Labor.png" 
           position="0 0 0" 
           rotation="0 0 0"
-          scale="0.6 0.4 1">
+          scale="0.35 0.25 1">
         </a-image>
+        <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
-        <a-text value="1. Direct Materials (Ingot)" position="0 -0.3 0" rotation="0 0 0" scale="0.5 0.5 0.5" color="#FF6B35" align="center"></a-text>
+        <a-image 
+          src="./Overhead.png" 
+          position="0.4 0 0" 
+          rotation="0 0 0"
+          scale="0.35 0.25 1">
+        </a-image>
+        <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
       </a-entity>
     </a-scene>
@@ -64,12 +92,12 @@
       function toggleFreeze() {
         isFrozen = !isFrozen;
         if (isFrozen) {
-          // สั่งตัดการเชื่อมต่อกับกล้องชั่วคราว เพื่อให้วัตถุค้างอยู่ตำแหน่งเดิมบนหน้าจอ
+          // สั่งตัดการเชื่อมต่อกล้อง เพื่อล็อกตำแหน่งวัตถุให้อยู่คาหน้าจอ
           targetEntity.setAttribute("mindar-image-target", "targetIndex: -1");
           btn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           btn.classList.add("active");
         } else {
-          // เปิดให้กล้องกลับมาสแกนตามปกติ
+          // เปิดให้อ่านค่าจากกล้องตามปกติ
           targetEntity.setAttribute("mindar-image-target", "targetIndex: 0");
           btn.innerText = "📌 ล็อกภาพให้อยู่กับที่";
           btn.classList.remove("active");
