@@ -53,11 +53,11 @@
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false">
-        <a-entity id="camera-hud" position="0 0 -1" visible="false"></a-entity>
+        <a-entity id="camera-hud" position="0 0 0" visible="false"></a-entity>
       </a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content">
+        <a-entity id="ar-content" position="0 0 0" rotation="0 0 0" scale="1 1 1">
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
@@ -84,20 +84,22 @@
       function toggleFreeze() {
         isFrozen = !isFrozen;
         if (isFrozen) {
-          // ย้ายกลุ่มรูปภาพไปแปะไว้ที่กล้องหน้าจอตรงๆ
+          // ย้ายวัตถุเข้าสู่มุมมองติดหน้าจอตรงๆ
           cameraHud.appendChild(arContent);
-          // สั่งจัดตำแหน่งและย่อสเกลนิดหน่อยเพื่อให้พอดีกับสายตาหน้าจอโทรศัพท์
-          arContent.setAttribute("position", "0 0 0");
-          arContent.setAttribute("scale", "0.8 0.8 0.8");
+          // ปรับตำแหน่งแกน Z ให้อยู่ห่างจากตัวตาเบราว์เซอร์ลึกเข้าไปลบ 1 เมตรพอดีสายตาจอมือถือ
+          arContent.setAttribute("position", "0 0 -1.2");
+          arContent.setAttribute("scale", "0.7 0.7 0.7");
+          arContent.setAttribute("rotation", "0 0 0");
           cameraHud.setAttribute("visible", "true");
           
           btn.innerText = "🔄 ปล่อยภาพคืนกระดาษ";
           btn.classList.add("active");
         } else {
-          // ย้ายรูปภาพกลับมาผูกเข้ากับระบบสแกนบนกระดาษตามเดิม
+          // ย้ายวัตถุกลับไปผูกติดไว้ที่แผ่นภาพบนกระดาษตามพิกัดเดิม
           arTarget.appendChild(arContent);
           arContent.setAttribute("position", "0 0 0");
           arContent.setAttribute("scale", "1 1 1");
+          arContent.setAttribute("rotation", "0 0 0");
           cameraHud.setAttribute("visible", "false");
           
           btn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
