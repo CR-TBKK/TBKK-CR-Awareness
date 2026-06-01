@@ -9,18 +9,16 @@
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
       
-      /* จัดเลเยอร์ปุ่มหน้าจอปกติให้ลอยอยู่ชั้นบนสุดเสมอ เพื่อไม่ให้หายหรือโดนฉาก AR บัง */
       .ar-ui-layer {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 999999; /* เพิ่ม z-index ให้สูงที่สุด ป้องกันปุ่มหาย */
+        z-index: 999999;
         pointer-events: none;
       }
 
-      /* ปุ่มล็อกภาพสีน้ำเงินมุมขวาบน */
       #freeze-btn {
         position: absolute;
         top: 20px;
@@ -48,7 +46,7 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
       
       <a-assets>
         <video id="video-over" src="./Over.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
@@ -61,16 +59,20 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image class="clickable" src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="speakIngot()"></a-image>
-          <a-text class="clickable" value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center" onclick="speakIngot()"></a-text>
+          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
+          
+          <a-plane class="clickable" position="-0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakIngot()"></a-plane>
 
 
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
 
 
-          <a-video class="clickable" id="video-mesh" src="#video-over" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" onclick="clickVideo()"></a-video>
+          <a-video id="video-mesh" src="#video-over" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-video>
           <a-text value="3. Overhead (VDO)" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+          
+          <a-plane class="clickable" position="0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="clickVideo()"></a-plane>
 
         </a-entity>
       </a-entity>
@@ -80,47 +82,43 @@
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
-      
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
       const videoEl = document.getElementById('video-over');
 
-      // ดักจับเมื่อกล้องเจอใบงานสีส้ม
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
       });
 
-      // ดักจับเมื่อกล้องหลุดจากใบงาน
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
-          if (videoEl) videoEl.pause(); // สั่งหยุดวิดีโออัตโนมัติเมื่อละสายตากล้อง
+          if (videoEl) videoEl.pause();
         }
       });
 
-      // 🎬 ฟังก์ชันเมื่อใช้นิ้วคลิกจิ้มที่ตัวหน้าจอวิดีโอ Over ตรงๆ ในฉาก AR
+      // ฟังก์ชันเปิดเล่น/หยุดวิดีโอ Over
       function clickVideo() {
         if (!videoEl) return;
         
-        // สั่งเปิดประตูระบบเสียงของเบราว์เซอร์ไปในตัวเพื่อความชัวร์
+        // ยิงคำสั่งเสียงเปล่าล้างแคชบราวเซอร์ป้องกันการบล็อกวิดีโอ
         const dummy = new SpeechSynthesisUtterance("");
         window.speechSynthesis.speak(dummy);
         
         if (videoEl.paused) {
-          window.speechSynthesis.cancel(); // ตัดเสียงพูด Ingot ถ้าเปิดค้างอยู่
-          videoEl.play();  // สั่งเล่นวิดีโอ
+          window.speechSynthesis.cancel(); 
+          videoEl.play();  
         } else {
-          videoEl.pause(); // สั่งหยุดวิดีโอ
+          videoEl.pause(); 
         }
       }
 
-      // 📌 ฟังก์ชันปุ่มล็อกภาพระบบเสถียรดั้งเดิมของคุณ
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          if (mindarSystem) mindarSystem.pause(true); // แช่ภาพนิ่งค้างหน้าจอ ยกหนีได้
+          if (mindarSystem) mindarSystem.pause(true);
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
@@ -134,11 +132,9 @@
         }
       }
 
-      // 🔊 ฟังก์ชันเสียงพูดภาษาไทยอธิบายของก้อน Ingot
       function speakIngot() {
-        if (videoEl) videoEl.pause(); // สั่งหยุดวิดีโอก่อนเพื่อไม่ให้เสียงตีกัน
-
-        window.speechSynthesis.cancel(); // ล้างคิวเสียงเก่า
+        if (videoEl) videoEl.pause(); 
+        window.speechSynthesis.cancel(); 
         
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
