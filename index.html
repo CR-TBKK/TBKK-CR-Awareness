@@ -39,7 +39,7 @@
       }
       #freeze-btn.active { background-color: #FF6B35; }
 
-      /* [ปรับตำแหน่งดีไซน์ปุ่มเสียงใหม่] แก้ไขให้ตรงและกระชับขึ้น */
+      /* ปุ่มเสียงบรรยายสีเขียวของ Ingot */
       #ingot-audio-btn {
         position: absolute;
         display: none; 
@@ -54,7 +54,27 @@
         font-size: 13px;
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        /* ใช้ transform ช่วยดึงแกนปุ่มให้อยู่กึ่งกลางพอดี ไม่เบี้ยวไปข้างใดข้างหนึ่ง */
+        transform: translate(-50%, -50%); 
+        z-index: 99999;
+        -webkit-appearance: none;
+        white-space: nowrap;
+      }
+
+      /* [เพิ่มใหม่] ปุ่มควบคุมวิดีโอ Over สีน้ำเงิน ลอยตามวิดีโอ */
+      #video-control-btn {
+        position: absolute;
+        display: none; 
+        pointer-events: auto;
+        padding: 8px 16px;
+        background-color: #17a2b8; 
+        color: white;
+        border: 2px solid white;
+        border-radius: 20px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 13px;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+        cursor: pointer;
         transform: translate(-50%, -50%); 
         z-index: 99999;
         -webkit-appearance: none;
@@ -69,10 +89,15 @@
     <div class="ar-ui-layer">
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
       <button id="ingot-audio-btn" onclick="speakIngot()">🔊 LISTEN</button>
+      <button id="video-control-btn" onclick="toggleVideo()">▶️ PLAY OVER</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
+      <a-assets>
+        <video id="video-over" src="./Over.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
+      </a-assets>
+
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
@@ -85,8 +110,9 @@
 
           <a-image src="./Labor.png" position="0 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
           <a-text value="2. Direct Labor" position="0 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-          <a-image src="./Overhead.png" position="0.4 0 0" rotation="0 0 0" scale="0.35 0.25 1" visible="false"></a-image>
-          <a-text value="3. Overhead" position="0.4 -0.2 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
+
+          <a-video id="video-track" src="#video-over" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-video>
+          <a-text value="3. Overhead (VDO)" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
 
         </a-entity>
       </a-entity>
@@ -97,50 +123,81 @@
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
       const audioBtn = document.getElementById('ingot-audio-btn');
+      const videoBtn = document.getElementById('video-control-btn');
       
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
       const ingotTrack = document.getElementById('ingot-track');
+      const videoTrack = document.getElementById('video-track');
+      const videoEl = document.getElementById('video-over');
 
       arTarget.addEventListener("targetFound", () => {
-        if (!isFrozen) {
-          arContent.setAttribute("visible", "true");
-          audioBtn.style.display = "block";
-        }
+        arContent.setAttribute("visible", "true");
+        audioBtn.style.display = "block";
+        videoBtn.style.display = "block"; // เปิดปุ่มควบคุมวิดีโอเมื่อสแกนเจอภาพ
       });
 
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
+          arContent.setAttribute("visible", "false");
           audioBtn.style.display = "none";
+          videoBtn.style.display = "none"; // ซ่อนปุ่มวิดีโอเมื่อกล้องหลุด
+          if (videoEl) videoEl.pause();    // สั่งหยุดวิดีโออัตโนมัติเมื่อเด็กหันกล้องหนี
         }
       });
 
-      // [จุดปรับปรุงสูตรคำนวณตำแหน่งปุ่ม]
-      function syncButtonPos() {
-        if (ingotTrack && ingotTrack.object3D && (arContent.getAttribute('visible') === 'true' || isFrozen)) {
-          const vector = new THREE.Vector3();
-          
-          // ดึงพิกัดจากรูปภาพหลักของ Ingot ตรงๆ
-          ingotTrack.object3D.getWorldPosition(vector); 
-          
+      // ระบบคำนวณพิกัดให้ทั้งปุ่มเสียง Ingot และปุ่มเล่นวิดีโอ Over เกาะติดวัตถุตรงเป๊ะทั้งตอนถือสดและกดล็อก
+      function syncAllButtonsPos() {
+        if (arContent.getAttribute('visible') === 'true' || isFrozen) {
           const camera = sceneEl.camera;
-          if (camera) {
-            vector.project(camera); 
-            
-            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
-            
-            // สั่งจัดตำแหน่งปุ่ม HTML สีเขียวให้อยู่ตรงกลางของรูป Ingot ในแนวแกน X
-            audioBtn.style.left = x + 'px';
-            
-            // ปรับระยะเลื่อนลงมา (offset) ให้พอดีกับตำแหน่งใต้ตัวหนังสือยึดตามขนาดหน้าจอมือถือจริง
-            // รอบนี้ปรับให้กระชับขึ้น ปุ่มจะขยับเข้าไปใกล้ตัวหนังสือและรูปภาพ ไม่ลอยห่างแล้วครับ
-            audioBtn.style.top = (y + (window.innerHeight * 0.09)) + 'px'; 
+          if (!camera) {
+            requestAnimationFrame(syncAllButtonsPos);
+            return;
+          }
+
+          // 1. คำนวณพิกัดปุ่มเสียง Ingot (ฝั่งซ้าย)
+          if (ingotTrack && ingotTrack.object3D) {
+            const v1 = new THREE.Vector3();
+            ingotTrack.object3D.getWorldPosition(v1); 
+            v1.project(camera); 
+            const x1 = (v1.x * 0.5 + 0.5) * window.innerWidth;
+            const y1 = (v1.y * -0.5 + 0.5) * window.innerHeight;
+            audioBtn.style.left = x1 + 'px';
+            const offset1 = Math.max(50, window.innerHeight * 0.085);
+            audioBtn.style.top = (y1 + offset1) + 'px'; 
+          }
+
+          // 2. คำนวณพิกัดปุ่มเล่นวิดีโอ Over (ฝั่งขวา) ให้ลอยอยู่ใต้ตัววิดีโอพอดีเป๊ะ
+          if (videoTrack && videoTrack.object3D) {
+            const v2 = new THREE.Vector3();
+            videoTrack.object3D.getWorldPosition(v2); 
+            v2.project(camera); 
+            const x2 = (v2.x * 0.5 + 0.5) * window.innerWidth;
+            const y2 = (v2.y * -0.5 + 0.5) * window.innerHeight;
+            videoBtn.style.left = x2 + 'px';
+            const offset2 = Math.max(50, window.innerHeight * 0.085);
+            videoBtn.style.top = (y2 + offset2) + 'px'; 
           }
         }
-        requestAnimationFrame(syncButtonPos);
+        requestAnimationFrame(syncAllButtonsPos);
       }
-      requestAnimationFrame(syncButtonPos);
+      requestAnimationFrame(syncAllButtonsPos);
+
+      // ฟังก์ชันเปิด/ปิด วิดีโอ Over เมื่อกดปุ่มควบคุม
+      function toggleVideo() {
+        if (!videoEl) return;
+        
+        if (videoEl.paused) {
+          window.speechSynthesis.cancel(); // ตัดเสียงพูดอินกอตออกก่อนหากเปิดค้างไว้
+          videoEl.play();
+          videoBtn.innerText = "⏸️ PAUSE";
+          videoBtn.style.backgroundColor = "#dc3545"; // เปลี่ยนปุ่มเป็นสีแดงตอนกำลังเล่น
+        } else {
+          videoEl.pause();
+          videoBtn.innerText = "▶️ PLAY OVER";
+          videoBtn.style.backgroundColor = "#17a2b8"; // เปลี่ยนกลับเป็นสีฟ้าเมื่อหยุด
+        }
+      }
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
@@ -151,18 +208,29 @@
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
           audioBtn.style.display = "block"; 
+          videoBtn.style.display = "block";
         } else {
           if (arContent) arContent.setAttribute("visible", "false"); 
           if (mindarSystem) {
             mindarSystem.unpause(); 
           }
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
-          freezeBtn.classList.remove("active");
+          freezeBtn.remove("active");
           audioBtn.style.display = "none";
+          videoBtn.style.display = "none";
+          if (videoEl) {
+            videoEl.pause();
+            videoBtn.innerText = "▶️ PLAY OVER";
+            videoBtn.style.backgroundColor = "#17a2b8";
+          }
         }
       }
 
       function speakIngot() {
+        if (videoEl) videoEl.pause(); // สั่งหยุดวิดีโอก่อนหากกำลังเล่นอยู่ เพื่อไม่ให้เสียงตีกันครับ
+        videoBtn.innerText = "▶️ PLAY OVER";
+        videoBtn.style.backgroundColor = "#17a2b8";
+
         window.speechSynthesis.cancel(); 
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
