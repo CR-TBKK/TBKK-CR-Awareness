@@ -19,24 +19,25 @@
         pointer-events: none;
       }
 
-      /* ปุ่มกดเล่นเสียงบนหน้าจอ (ดีไซน์เดียวกับปุ่มล็อกภาพ) */
-      #M1 {
+      /* ดีไซน์ปุ่มเล่นเสียงที่จะวิ่งตามรูปลำโพง */
+      #speak-ui-btn {
         position: absolute;
-        bottom: 95px; /* ลอยอยู่ด้านบนของปุ่มล็อกภาพ */
-        right: 20px;
         pointer-events: auto;
-        padding: 14px 24px;
-        background-color: #0077B6; /* สีน้ำเงินสว่าง */
+        padding: 8px 14px;
+        background-color: #0077B6;
         color: white;
         border: 2px solid white;
-        border-radius: 8px;
+        border-radius: 6px;
         font-weight: bold;
         font-family: sans-serif;
-        font-size: 16px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+        font-size: 13px;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        display: none; /* เริ่มต้นจะซ่อนไว้ก่อน จะแสดงเมื่อส่องเจอภาพ */
+        display: none; /* ซ่อนไว้ก่อนจนกว่าจะเจอภาพ */
+        transform: translate(-50%, -50%); /* จัดให้อยู่กึ่งกลางพิกัดพอดี */
+        z-index: 100000;
         -webkit-appearance: none;
+        white-space: nowrap;
       }
 
       #freeze-btn {
@@ -63,13 +64,13 @@
 
   <body>
     <div class="ar-ui-layer">
-      <button id="M1" onclick="speakCustomIngot()">🔊</button>
+      <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊 ฟังเสียง</button>
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content" visible="false">
@@ -78,7 +79,8 @@
           <a-image src="./Admin_Cost_sign.png" position="0.22 0.16 0" scale="0.45 0.039 1"></a-image>
 
           <a-image src="./1M.png" position="-0.42 0.12 0" scale="0.18 0.05 1"></a-image> 
-          <a-image src="./1.M_SPK.png" position="-0.22 0.12 0" scale="0.05 0.05 1"></a-image>
+          
+          <a-image id="speaker-3d-pos" src="./1.M_SPK.png" position="-0.22 0.12 0" scale="0.05 0.05 1"></a-image>
           
           <a-image src="./ingot.png" position="-0.38 0.04 0" scale="0.09 0.07 1"></a-image> 
         
@@ -93,25 +95,52 @@
 
     <script>
       let isFrozen = false;
+      let targetFound = false;
+      
       const sceneEl = document.getElementById('scene');
+      const cameraEl = document.getElementById('camera');
       const freezeBtn = document.getElementById('freeze-btn');
-      const speakUiBtn = document.getElementById('speak-ui-btn'); // ดึงปุ่มเสียงมาควบคุม
+      const speakUiBtn = document.getElementById('speak-ui-btn');
+      const speaker3D = document.getElementById('speaker-3d-pos');
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
-      // เมื่อกล้องส่องเจอรูปภาพเป้าหมาย
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
-        speakUiBtn.style.display = "block"; // เปิดกล่องปุ่มกดเสียงให้แสดงบนหน้าจอ
+        speakUiBtn.style.display = "block";
+        targetFound = true;
       });
 
-      // เมื่อกล้องหลุดจากรูปภาพเป้าหมาย
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none"; // ซ่อนกล่องปุ่มกดเสียงไป
+          speakUiBtn.style.display = "none";
+          targetFound = false;
         }
       });
+
+      // ระบบคำนวณพิกัดให้ปุ่มวิ่งตามวัตถุ AR ทุกๆ เฟรม (เปิดใช้งานตลอดเวลา)
+      const tempV = new THREE.Vector3();
+      function updateButtonPosition() {
+        if ((targetFound || isFrozen) && speaker3D && cameraEl) {
+          // 1. ดึงพิกัด 3D จากตัวลำโพงในโลก AR
+          speaker3D.object3D.getWorldPosition(tempV);
+          
+          // 2. แปลงพิกัด 3D ให้กลายเป็นพิกัด 2D บนหน้าจอมือถือโดยอิงจากมุมมองกล้อง
+          tempV.project(cameraEl.components.camera.camera);
+          
+          // 3. แปลงค่าพิกัดให้เป็นพิกัด Pixel (CSS Left/Top)
+          const x = (tempV.x * .5 + .5) * window.innerWidth;
+          const y = (tempV.y * -.5 + .5) * window.innerHeight;
+          
+          // 4. สั่งให้ปุ่มเลื่อนไปแปะตรงพิกัดนั้นทันที (ขยับขึ้นข้างบนลำโพงนิดหน่อยเพื่อความสวยงาม -30px)
+          speakUiBtn.style.left = `${x}px`;
+          speakUiBtn.style.top = `${y - 30}px`; 
+        }
+        requestAnimationFrame(updateButtonPosition);
+      }
+      // เริ่มรันระบบติดตามตำแหน่ง
+      requestAnimationFrame(updateButtonPosition);
 
       function toggleFreeze() {
         isFrozen = !isFrozen;
@@ -123,7 +152,8 @@
           freezeBtn.classList.add("active");
         } else {
           arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none"; // ซ่อนปุ่มเสียงเมื่อปลดล็อกและภาพหายไป
+          speakUiBtn.style.display = "none";
+          targetFound = false;
           
           if (mindarSystem) {
             mindarSystem.unpause();
@@ -151,6 +181,7 @@
         utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
       }
 
+      // ค่าแรงงานทางตรง และค่าใช้จ่ายในการบริหาร คงเดิมไว้
       function speakLabor() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานฝ่ายผลิตที่มีหน้าที่เปลี่ยนสภาพวัตถุดิบให้เป็นสินค้าโดยตรง");
