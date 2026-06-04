@@ -203,9 +203,9 @@
       // เสียงตัวที่ 1: วัตถุดิบทางตรง
       function speakCustomIngot() {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
+        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
+        utterance.rate = 0.90; 
         window.speechSynthesis.speak(utterance);
       }
 
@@ -214,7 +214,7 @@
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง");
         utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
+        utterance.rate = 0.90; 
         window.speechSynthesis.speak(utterance);
       }
 
