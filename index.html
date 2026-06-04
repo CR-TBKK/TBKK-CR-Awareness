@@ -46,7 +46,7 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
       
       <a-assets>
         <video id="video-over" src="./Over.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
@@ -54,68 +54,51 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity id="ar-target-dm" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content-dm">
+      <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
+        <a-entity id="ar-content">
+          
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
           <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
           <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
           <a-plane class="clickable" position="-0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakIngot()"></a-plane>
 
+          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="true"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
+          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakLabor()"></a-plane>
+
           <a-video id="video-mesh" src="#video-over" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-video>
           <a-text value="3. Overhead (VDO)" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
           <a-plane class="clickable" position="0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="clickVideo()"></a-plane>
+
         </a-entity>
       </a-entity>
-
-      <a-entity id="ar-target-dl" mindar-image-target="targetIndex: 1">
-        <a-entity id="ar-content-dl">
-          <a-image src="./Labor.png" position="0 0.1 0" rotation="0 0 0" scale="0.45 0.32 1" visible="true"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.15 0" rotation="0 0 0" scale="0.45 0.45 0.45" color="#004E98" align="center"></a-text>
-          
-          <a-plane class="clickable" position="0 0.1 0.02" width="0.5" height="0.5" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakLabor()"></a-plane>
-        </a-entity>
-      </a-entity>
-
     </a-scene>
 
     <script>
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
+      const arContent = document.getElementById('ar-content'); 
+      const arTarget = document.getElementById('ar-target');
       const videoEl = document.getElementById('video-over');
 
-      // ดึง Element ของทั้งสองเป้าหมายแยกกัน
-      const arTargetDM = document.getElementById('ar-target-dm');
-      const arContentDM = document.getElementById('ar-content-dm');
-      
-      const arTargetDL = document.getElementById('ar-target-dl');
-      const arContentDL = document.getElementById('ar-content-dl');
-
-      // --- Event Listeners สำหรับ Target 1 (Direct Materials) ---
-      arTargetDM.addEventListener("targetFound", () => {
-        arContentDM.setAttribute("visible", "true");
+      // ลิสเนอร์จัดการซ่อน/แสดงผลอิงตาม Target ตัวเดียว
+      arTarget.addEventListener("targetFound", () => {
+        arContent.setAttribute("visible", "true");
       });
-      arTargetDM.addEventListener("targetLost", () => {
+
+      arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
-          arContentDM.setAttribute("visible", "false");
+          arContent.setAttribute("visible", "false");
           if (videoEl) videoEl.pause();
         }
       });
 
-      // --- Event Listeners สำหรับ Target 2 (Direct Labor) ---
-      arTargetDL.addEventListener("targetFound", () => {
-        arContentDL.setAttribute("visible", "true");
-      });
-      arTargetDL.addEventListener("targetLost", () => {
-        if (!isFrozen) {
-          arContentDL.setAttribute("visible", "false");
-        }
-      });
-
-      // ฟังก์ชันเล่น/หยุดวิดีโอ
+      // ฟังก์ชันเปิดเล่น/หยุดวิดีโอ Over
       function clickVideo() {
         if (!videoEl) return;
+        
         const dummy = new SpeechSynthesisUtterance("");
         window.speechSynthesis.speak(dummy);
         
@@ -127,7 +110,7 @@
         }
       }
 
-      // ฟังก์ชันล็อกหน้าจอ (ปรับปรุงให้ค้างค่าไว้ทั้งสอง Content)
+      // ฟังก์ชันล็อกหน้าจอค้างไว้
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
@@ -137,8 +120,7 @@
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
-          if (arContentDM) arContentDM.setAttribute("visible", "false"); 
-          if (arContentDL) arContentDL.setAttribute("visible", "false"); 
+          if (arContent) arContent.setAttribute("visible", "false"); 
           if (mindarSystem) mindarSystem.unpause(); 
           
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
@@ -147,7 +129,7 @@
         }
       }
 
-      // เสียงอ่าน Target 1
+      // เสียงอ่าน 1. Direct Materials
       function speakIngot() {
         if (videoEl) videoEl.pause(); 
         window.speechSynthesis.cancel(); 
@@ -158,7 +140,7 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงอ่าน Target 2 (เพิ่มใหม่)
+      // เสียงอ่าน 2. Direct Labor
       function speakLabor() {
         if (videoEl) videoEl.pause(); 
         window.speechSynthesis.cancel(); 
