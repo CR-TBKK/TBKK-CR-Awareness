@@ -46,9 +46,9 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable; far: 100;" cursor="fuse: false; rayOrigin: mouse"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content" visible="false">
@@ -58,7 +58,8 @@
 
           <a-image src="./1M.png" position="-0.42 0.12 0" scale="0.18 0.05 1"></a-image> 
           <a-image src="./1.M_SPK.png" position="-0.22 0.12 0" scale="0.05 0.05 1"></a-image>
-          <a-plane class="clickable" position="-0.22 0.12 1" width="0.06" height="0.06" material="opacity: 0.0; transparent: true" onclick="speakCustomIngot()"></a-plane>
+          
+          <a-plane class="clickable" position="-0.22 0.12 0.01" width="0.06" height="0.06" material="opacity: 0.0; transparent: true" onclick="speakCustomIngot()"></a-plane>
           
           <a-image src="./ingot.png" position="-0.38 0.04 0" scale="0.09 0.07 1"></a-image> 
         
@@ -66,8 +67,8 @@
           <a-image src="./Direct_Labor.png" position="-0.40 -0.12 0" scale="0.17 0.11 1"></a-image>
           
           <a-image src="./Office.png" position="0.28 0.01 0" scale="0.09 0.09 1"></a-image>
-          
-      </a-entity>
+
+        </a-entity>
       </a-entity>
     </a-scene>
 
@@ -111,7 +112,6 @@
         }
       }
 
-      // ฟังก์ชันใหม่สำหรับลำโพงข้าง 1M.png
       function speakCustomIngot() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
