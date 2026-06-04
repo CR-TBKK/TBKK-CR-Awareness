@@ -115,7 +115,6 @@
 
   <body>
     <div class="ar-ui-layer">
-      <!-- แถบเลือกภาษาแบบแยกธงชาติสามภาษา (ไทย, อังกฤษ, ญี่ปุ่น) -->
       <div class="lang-container">
         <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
         <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
@@ -153,7 +152,8 @@
     <script>
       let isFrozen = false;
       let targetFound = false;
-      let currentLang = 'th'; // ตัวแปรเก็บสถานะภาษาเริ่มต้น (th = ไทย, en = อังกฤษ, jp = ญี่ปุ่น)
+      let currentLang = 'th'; 
+      let allVoices = []; // [เพิ่มใหม่] อาร์เรย์สำหรับเก็บรายชื่อเสียงทั้งหมดในเครื่อง
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
@@ -165,12 +165,32 @@
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
-      // ฟังก์ชันสำหรับเลือกภาษาโดยตรงจากธงชาติ
-      function setLanguage(lang) {
-        window.speechSynthesis.cancel(); // หยุดเสียงพูดเก่าทันที
-        currentLang = lang;
+      // [เพิ่มใหม่] โหลดรายชื่อเสียงของระบบมาเก็บไว้ (เบราว์เซอร์จะโหลดแบบ Async)
+      function loadVoices() {
+        if ('speechSynthesis' in window) {
+          allVoices = window.speechSynthesis.getVoices();
+        }
+      }
+      loadVoices();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = loadVoices; // ป้องกันปัญหาบางเบราว์เซอร์โหลดช้า
+      }
 
-        // เคลียร์คลาส active จากธงทุกผืน แล้วไปใส่ให้ผืนที่เลือก
+      // [เพิ่มใหม่] ฟังก์ชันคัดเลือกสำเนียงที่ดีที่สุดตามรหัสภาษา
+      function getBestVoice(langCode) {
+        // ค้นหาเสียงที่ตรงกับรหัสภาษา เช่น th-TH, en-US, ja-JP
+        let voices = allVoices.filter(voice => voice.lang.toLowerCase().replace('_', '-') === langCode.toLowerCase());
+        
+        if (voices.length === 0) return null;
+
+        // ทริคเสริม: พยายามเลือกเสียงพรีเมียมหรือเสียงของ Google ก่อนเพราะจะชัดเจนกว่าเสียงพื้นฐาน
+        let premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural'));
+        return premiumVoice ? premiumVoice : voices[0];
+      }
+
+      function setLanguage(lang) {
+        window.speechSynthesis.cancel(); 
+        currentLang = lang;
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`flag-${lang}`).classList.add('active');
       }
@@ -191,14 +211,11 @@
         }
       });
 
-      // ระบบอัปเดตพิกัด Real-time ของทั้ง 2 ปุ่ม
       const tempV = new THREE.Vector3();
       const tempV2 = new THREE.Vector3(); 
       
       function updateButtonPosition() {
         if ((targetFound || isFrozen) && cameraEl) {
-          
-          // --- คำนวณและเลื่อนปุ่มที่ 1 (ต่อท้าย 1M) ---
           if (material1M) {
             material1M.object3D.getWorldPosition(tempV);
             tempV.project(cameraEl.components.camera.camera);
@@ -207,8 +224,6 @@
             speakUiBtn.style.left = `${x1 + 75}px`; 
             speakUiBtn.style.top = `${y1 - 8}px`; 
           }
-
-          // --- คำนวณและเลื่อนปุ่มที่ 2 (ต่อท้าย 2M) ---
           if (labor2M) {
             labor2M.object3D.getWorldPosition(tempV2);
             tempV2.project(cameraEl.components.camera.camera);
@@ -225,7 +240,6 @@
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
-        
         if (isFrozen) {
           if (mindarSystem) mindarSystem.pause(true); 
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
@@ -235,20 +249,18 @@
           speakUiBtn.style.display = "none";
           speakUiBtn2.style.display = "none"; 
           targetFound = false;
-          
           if (mindarSystem) {
             mindarSystem.unpause();
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
               mindarSystem.activeTargetIndex = -1; 
             }
           }
-          
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           freezeBtn.classList.remove("active");
         }
       }
 
-      // เสียงตัวที่ 1: วัตถุดิบทางตรง (ไทย / อังกฤษ / ญี่ปุ่น)
+      // เสียงตัวที่ 1: วัตถุดิบทางตรง
       function speakCustomIngot() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance();
@@ -256,22 +268,24 @@
         if (currentLang === 'th') {
           utterance.text = "วัตถุดิบทางตรง หมายถึง  วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
           utterance.lang = "th-TH"; 
-          utterance.rate = 0.80; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("th-TH"); // [เพิ่มใหม่] ผูกสำเนียงไทยที่ดีที่สุด
         } else if (currentLang === 'en') {
           utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
           utterance.lang = "en-US"; 
-          utterance.rate = 0.85; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("en-US"); // [เพิ่มใหม่] ของอังกฤษสามารถลองเปลี่ยนเป็น "en-GB" (สำเนียงบริติช) ได้นะครับถ้าชอบ
         } else if (currentLang === 'jp') {
-          // ภาษาญี่ปุ่น: วัตถุดิบทางตรง หมายถึง วัตถุดิบหลัก...
           utterance.text = "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。";
           utterance.lang = "ja-JP"; 
-          utterance.rate = 0.85; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("ja-JP"); // [เพิ่มใหม่] ผูกสำเนียงญี่ปุ่นที่ดีที่สุด
         }
         
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงตัวที่ 2: ค่าแรงทางตรง (ไทย / อังกฤษ / ญี่ปุ่น)
+      // เสียงตัวที่ 2: ค่าแรงทางตรง
       function speakCustomLabor() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance();
@@ -279,22 +293,22 @@
         if (currentLang === 'th') {
           utterance.text = "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง";
           utterance.lang = "th-TH"; 
-          utterance.rate = 0.80; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("th-TH"); // [เพิ่มใหม่]
         } else if (currentLang === 'en') {
           utterance.text = "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.";
           utterance.lang = "en-US"; 
-          utterance.rate = 0.85; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("en-US"); // [เพิ่มใหม่]
         } else if (currentLang === 'jp') {
-          // ภาษาญี่ปุ่น: ค่าแรงทางตรง หมายถึง...
           utterance.text = "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。";
           utterance.lang = "ja-JP"; 
-          utterance.rate = 0.85; 
+          utterance.rate = 0.80;
+          utterance.voice = getBestVoice("ja-JP"); // [เพิ่มใหม่]
         }
         
         window.speechSynthesis.speak(utterance);
       }
-
-      // ลบฟังก์ชันเสียงเก่าที่ไม่ได้ใช้งานออก เพื่อให้โค้ดกระชับขึ้น
     </script>
   </body>
 </html>
