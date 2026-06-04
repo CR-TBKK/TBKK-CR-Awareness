@@ -19,18 +19,25 @@
         pointer-events: none;
       }
 
-      /* แถบกล่องเลือกภาษาที่มุมขวาบน */
+      /* แถบกล่องควบคุมภาษาและสำเนียงที่มุมขวาบน */
       .lang-container {
         position: absolute;
         top: 20px;
         right: 20px;
         pointer-events: auto;
         display: flex;
-        gap: 10px;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
         background-color: rgba(0, 0, 0, 0.6);
-        padding: 6px 12px;
-        border-radius: 30px;
+        padding: 10px 14px;
+        border-radius: 16px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+      }
+
+      .flags-row {
+        display: flex;
+        gap: 10px;
       }
 
       /* ดีไซน์ปุ่มธงชาติ */
@@ -43,10 +50,22 @@
         transition: all 0.2s ease;
         object-fit: cover;
       }
-      /* ไฮไลท์ธงชาติที่กำลังเลือกอยู่ */
       .flag-btn.active {
         border-color: #FF6B35;
         transform: scale(1.1);
+      }
+
+      /* [เพิ่มใหม่] ดีไซน์ Drop-down List เลือกสำเนียง */
+      #voice-select {
+        width: 150px;
+        padding: 4px;
+        font-size: 11px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: white;
+        color: #333;
+        font-family: sans-serif;
+        outline: none;
       }
 
       /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง (ท้ายรูป 1M.png) */
@@ -116,9 +135,15 @@
   <body>
     <div class="ar-ui-layer">
       <div class="lang-container">
-        <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
-        <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
-        <img id="flag-jp" class="flag-btn" src="https://flagcdn.com/w40/jp.png" onclick="setLanguage('jp')" title="日本語" />
+        <div class="flags-row">
+          <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
+          <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
+          <img id="flag-jp" class="flag-btn" src="https://flagcdn.com/w40/jp.png" onclick="setLanguage('jp')" title="日本語" />
+        </div>
+        <div>
+          <label style="color: white; font-size: 11px; font-family: sans-serif; margin-right: 4px;">🗣️:</label>
+          <select id="voice-select"></select>
+        </div>
       </div>
       
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
@@ -153,39 +178,62 @@
       let isFrozen = false;
       let targetFound = false;
       let currentLang = 'th'; 
-      let allVoices = []; // [เพิ่มใหม่] อาร์เรย์สำหรับเก็บรายชื่อเสียงทั้งหมดในเครื่อง
+      let allVoices = []; 
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       const freezeBtn = document.getElementById('freeze-btn');
       const speakUiBtn = document.getElementById('speak-ui-btn');
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
+      const voiceSelect = document.getElementById('voice-select'); // ดึงค่า Droplist
       const material1M = document.getElementById('material-1m');
       const labor2M = document.getElementById('labor-2m'); 
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
-      // [เพิ่มใหม่] โหลดรายชื่อเสียงของระบบมาเก็บไว้ (เบราว์เซอร์จะโหลดแบบ Async)
-      function loadVoices() {
-        if ('speechSynthesis' in window) {
-          allVoices = window.speechSynthesis.getVoices();
+      // [ปรับปรุงใหม่] ฟังก์ชันดึงรายชื่อเสียงและแสดงผลใน Droplist ตามภาษาที่กำลังเลือก
+      function updateVoiceList() {
+        if (!('speechSynthesis' in window)) return;
+        
+        allVoices = window.speechSynthesis.getVoices();
+        voiceSelect.innerHTML = ''; // ล้างค่าเดิมใน Droplist
+
+        // กำหนด Keyword รหัสภาษาเพื่อเอาไว้กรองเสียง
+        let filterLang = 'th-TH';
+        if (currentLang === 'en') filterLang = 'en-'; // รองรับทั้ง en-US, en-GB ฯลฯ
+        if (currentLang === 'jp') filterLang = 'ja-JP';
+
+        // กรองเสียงในเครื่องเฉพาะที่ตรงกับรหัสภาษาปัจจุบัน
+        let filteredVoices = allVoices.filter(voice => 
+          voice.lang.toLowerCase().replace('_', '-').startsWith(filterLang.toLowerCase())
+        );
+
+        // นำรายชื่อเสียงที่กรองแล้วมาสร้างตัวเลือกใน Droplist
+        filteredVoices.forEach((voice, index) => {
+          const option = document.createElement('option');
+          option.value = voice.name;
+          option.innerText = `${voice.name} (${voice.lang})`;
+          voiceSelect.appendChild(option);
+        });
+
+        // ถ้าไม่มีเสียงภาษาตรงกันเลย ให้ใส่คำว่าไม่พบสำเนียง
+        if(filteredVoices.length === 0) {
+          const option = document.createElement('option');
+          option.innerText = "ไม่พบสำเนียงในเครื่องนี้";
+          voiceSelect.appendChild(option);
         }
       }
-      loadVoices();
+
+      // ตรวจสอบและอัปเดตเสียงเมื่อเปิดหน้าเว็บ
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = loadVoices; // ป้องกันปัญหาบางเบราว์เซอร์โหลดช้า
+        window.speechSynthesis.onvoiceschanged = updateVoiceList;
+        updateVoiceList();
       }
 
-      // [เพิ่มใหม่] ฟังก์ชันคัดเลือกสำเนียงที่ดีที่สุดตามรหัสภาษา
-      function getBestVoice(langCode) {
-        // ค้นหาเสียงที่ตรงกับรหัสภาษา เช่น th-TH, en-US, ja-JP
-        let voices = allVoices.filter(voice => voice.lang.toLowerCase().replace('_', '-') === langCode.toLowerCase());
-        
-        if (voices.length === 0) return null;
-
-        // ทริคเสริม: พยายามเลือกเสียงพรีเมียมหรือเสียงของ Google ก่อนเพราะจะชัดเจนกว่าเสียงพื้นฐาน
-        let premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural'));
-        return premiumVoice ? premiumVoice : voices[0];
+      // [เพิ่มใหม่] ฟังก์ชันสำหรับดึงเสียงที่ผู้ใช้จิ้มเลือกจากหน้าจอ Droplist
+      function getSelectedVoice() {
+        const selectedName = voiceSelect.value;
+        return allVoices.find(voice => voice.name === selectedName) || null;
       }
 
       function setLanguage(lang) {
@@ -193,6 +241,9 @@
         currentLang = lang;
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`flag-${lang}`).classList.add('active');
+        
+        // เมื่อเปลี่ยนภาษาผ่านธงชาติ ให้ Droplist ทำการกรองรายชื่อเสียงใหม่ทันที
+        updateVoiceList();
       }
 
       arTarget.addEventListener("targetFound", () => {
@@ -269,19 +320,18 @@
           utterance.text = "วัตถุดิบทางตรง หมายถึง  วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
           utterance.lang = "th-TH"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("th-TH"); // [เพิ่มใหม่] ผูกสำเนียงไทยที่ดีที่สุด
         } else if (currentLang === 'en') {
           utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
           utterance.lang = "en-US"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("en-US"); // [เพิ่มใหม่] ของอังกฤษสามารถลองเปลี่ยนเป็น "en-GB" (สำเนียงบริติช) ได้นะครับถ้าชอบ
         } else if (currentLang === 'jp') {
           utterance.text = "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。";
           utterance.lang = "ja-JP"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("ja-JP"); // [เพิ่มใหม่] ผูกสำเนียงญี่ปุ่นที่ดีที่สุด
         }
         
+        // [ปรับปรุงใหม่] นำเอาสำเนียงเสียงที่ผู้ใช้เลือกใน Droplist มาผูกสิทธิ์ใช้งานก่อนสั่งพูด
+        utterance.voice = getSelectedVoice();
         window.speechSynthesis.speak(utterance);
       }
 
@@ -294,19 +344,18 @@
           utterance.text = "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง";
           utterance.lang = "th-TH"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("th-TH"); // [เพิ่มใหม่]
         } else if (currentLang === 'en') {
           utterance.text = "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.";
           utterance.lang = "en-US"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("en-US"); // [เพิ่มใหม่]
         } else if (currentLang === 'jp') {
           utterance.text = "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。";
           utterance.lang = "ja-JP"; 
           utterance.rate = 0.80;
-          utterance.voice = getBestVoice("ja-JP"); // [เพิ่มใหม่]
         }
         
+        // [ปรับปรุงใหม่] นำเอาสำเนียงเสียงที่ผู้ใช้เลือกใน Droplist มาผูกสิทธิ์ใช้งานก่อนสั่งพูด
+        utterance.voice = getSelectedVoice();
         window.speechSynthesis.speak(utterance);
       }
     </script>
