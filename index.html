@@ -76,7 +76,6 @@
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
-      // จัดการเปิด/ปิดชุดภาพรวมกันผ่านแผงคอนเทนต์เดียว
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
       });
@@ -87,18 +86,29 @@
         }
       });
 
-      // ฟังก์ชันแช่แข็งภาพค้างหน้าจอ
+      // ฟังก์ชันล็อกภาพและปลดล็อกแบบรีเซ็ตสถานะการสแกนให้กลับมาทำงานทันที
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
         if (isFrozen) {
-          if (mindarSystem) mindarSystem.pause(true);
+          if (mindarSystem) mindarSystem.pause(true); // แช่แข็งเฟรมภาพและกล้อง
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
+          // 1. สั่งซ่อนคอนเทนต์ AR ก่อนชั่วคราว เพื่อเตรียมรับค่าการสแกนใหม่
           arContent.setAttribute("visible", "false");
-          if (mindarSystem) mindarSystem.unpause();
+          
+          if (mindarSystem) {
+            // 2. สั่งปลดล็อกลูปการประมวลผลของกล้อง
+            mindarSystem.unpause();
+            
+            // 3. เคลียร์ค่าตัวแปรภายในเพื่อให้ MindAR เริ่มค้นหาโครงสร้างมาร์กเกอร์ใหม่อีกครั้งทันที
+            if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
+              mindarSystem.activeTargetIndex = -1; 
+            }
+          }
+          
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           freezeBtn.classList.remove("active");
         }
