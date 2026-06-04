@@ -19,7 +19,6 @@
         pointer-events: none;
       }
 
-      /* แผงปุ่มเมนูด้านบนสำหรับสลับโหมดสแกน */
       .menu-container {
         position: absolute;
         top: 15px;
@@ -49,7 +48,7 @@
 
       #freeze-btn {
         position: absolute;
-        bottom: 30px; /* ย้ายมาไว้ด้านล่างเพื่อไม่ให้บังเมนู */
+        bottom: 30px;
         right: 20px;
         pointer-events: auto;
         padding: 14px 24px;
@@ -71,8 +70,8 @@
   <body>
     <div class="ar-ui-layer">
       <div class="menu-container">
-        <button id="btn-dm" class="menu-btn active" onclick="switchMode('dm')">📦 1. วัตถุดิบทางตรง</button>
-        <button id="btn-dl" class="menu-btn" onclick="switchMode('dl')">👷 2. ค่าแรงทางตรง</button>
+        <button id="btn-dm" class="menu-btn active" onclick="switchMode('dm')">📦 ต้นทุนการผลิต (A)</button>
+        <button id="btn-dl" class="menu-btn" onclick="switchMode('dl')">🏢 ค่าใช้จ่ายบริหาร (B)</button>
       </div>
       
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพค้างหน้าจอ</button>
@@ -81,22 +80,30 @@
     <a-scene id="scene" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity id="scene-dm" mindar-image="imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;">
+      <a-entity id="scene-dm" mindar-image="imageTargetSrc: ./A_Manu_Cost.mind; uiScanning: yes;">
         <a-entity id="target-dm" mindar-image-target="targetIndex: 0">
           <a-entity id="content-dm">
-            <a-image src="./Ingot.png" position="0 0.05 0" scale="0.35 0.25 1"></a-image>
-            <a-text value="1. Direct Materials" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#FF6B35" align="center"></a-text>
-            <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakIngot()"></a-plane>
+            
+            <a-image src="./Ingot.png" position="-0.25 0.05 0" scale="0.25 0.18 1"></a-image>
+            <a-text value="1. Direct Materials" position="-0.25 -0.08 0" scale="0.32 0.32 0.32" color="#FF6B35" align="center"></a-text>
+            <a-plane class="clickable" position="-0.25 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakIngot()"></a-plane>
+
+            <a-image src="./Labor.png" position="0.25 0.05 0" scale="0.25 0.18 1"></a-image>
+            <a-text value="2. Direct Labor" position="0.25 -0.08 0" scale="0.32 0.32 0.32" color="#004E98" align="center"></a-text>
+            <a-plane class="clickable" position="0.25 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakLabor()"></a-plane>
+
           </a-entity>
         </a-entity>
       </a-entity>
 
-      <a-entity id="scene-dl" mindar-image="imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: no;" visible="false">
+      <a-entity id="scene-dl" mindar-image="imageTargetSrc: ./B_Admin_Cost.mind; uiScanning: no;" visible="false">
         <a-entity id="target-dl" mindar-image-target="targetIndex: 0">
           <a-entity id="content-dl">
-            <a-image src="./Labor.png" position="0 0.05 0" scale="0.35 0.25 1"></a-image>
-            <a-text value="2. Direct Labor" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#004E98" align="center"></a-text>
-            <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakLabor()"></a-plane>
+            
+            <a-image src="./Office.png" position="0 0.05 0" scale="0.38 0.28 1"></a-image>
+            <a-text value="Administrative Expenses" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#2F3E46" align="center"></a-text>
+            <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakOffice()"></a-plane>
+
           </a-entity>
         </a-entity>
       </a-entity>
@@ -109,19 +116,16 @@
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
 
-      // จัดการ Event การสแกนแยกกลุ่ม
       document.getElementById('target-dm').addEventListener("targetFound", () => document.getElementById('content-dm').setAttribute("visible", "true"));
       document.getElementById('target-dm').addEventListener("targetLost", () => { if (!isFrozen) document.getElementById('content-dm').setAttribute("visible", "false"); });
 
       document.getElementById('target-dl').addEventListener("targetFound", () => document.getElementById('content-dl').setAttribute("visible", "true"));
       document.getElementById('target-dl').addEventListener("targetLost", () => { if (!isFrozen) document.getElementById('content-dl').setAttribute("visible", "false"); });
 
-      // ฟังก์ชันหัวใจหลัก: สลับไฟล์ .mind โดยไม่ต้องปิดกล้อง
       function switchMode(mode) {
         if (mode === currentMode) return;
         window.speechSynthesis.cancel();
         
-        // รีเซ็ตสถานะแช่แข็งภาพก่อนสลับ
         if (isFrozen) toggleFreeze();
 
         const dmSystem = document.getElementById('scene-dm');
@@ -130,23 +134,21 @@
         const btnDl = document.getElementById('btn-dl');
 
         if (mode === 'dm') {
-          // เปิดระบบ DM / ปิดระบบ DL
           dlSystem.setAttribute("visible", "false");
-          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: no;");
+          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./B_Admin_Cost.mind; uiScanning: no;");
           
           dmSystem.setAttribute("visible", "true");
-          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;");
+          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./A_Manu_Cost.mind; uiScanning: yes;");
           
           btnDm.classList.add('active');
           btnDl.classList.remove('active');
           currentMode = 'dm';
         } else {
-          // เปิดระบบ DL / ปิดระบบ DM
           dmSystem.setAttribute("visible", "false");
-          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: no;");
+          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./A_Manu_Cost.mind; uiScanning: no;");
           
           dlSystem.setAttribute("visible", "true");
-          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: yes;");
+          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./B_Admin_Cost.mind; uiScanning: yes;");
           
           btnDl.classList.add('active');
           btnDm.classList.remove('active');
@@ -174,13 +176,20 @@
 
       function speakIngot() {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
+        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิตสินค้า เช่น อลูมิเนียม");
         utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
       }
 
       function speakLabor() {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานที่มีหน้าที่ในการผลิตสินค้าโดยตรง เช่น พนักงานฝ่ายผลิต");
+        const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานฝ่ายผลิตที่มีหน้าที่เปลี่ยนสภาพวัตถุดิบให้เป็นสินค้าโดยตรง");
+        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
+      }
+
+      // ฟังก์ชันเสียงพูดสำหรับ Office (โหมด B)
+      function speakOffice() {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("ค่าใช้จ่ายในการบริหาร Administrative Expenses ค่าใช้จ่ายที่เกิดขึ้นในการบริหารงานทั่วไป เช่น เงินเดือนพนักงานออฟฟิศ ค่าน้ำไฟสำนักงาน");
         utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
       }
     </script>
