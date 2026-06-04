@@ -19,40 +19,13 @@
         pointer-events: none;
       }
 
-      .menu-container {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        display: flex;
-        gap: 10px;
-        pointer-events: auto;
-      }
-
-      .menu-btn {
-        padding: 10px 16px;
-        border: none;
-        border-radius: 6px;
-        font-family: sans-serif;
-        font-weight: bold;
-        font-size: 14px;
-        background-color: #E0E0E0;
-        color: #333;
-        cursor: pointer;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
-      }
-
-      .menu-btn.active {
-        background-color: #004E98;
-        color: white;
-      }
-
       #freeze-btn {
         position: absolute;
         bottom: 30px;
         right: 20px;
         pointer-events: auto;
         padding: 14px 24px;
-        background-color: #2F3E46;
+        background-color: #004E98;
         color: white;
         border: 2px solid white;
         border-radius: 8px;
@@ -61,6 +34,7 @@
         font-size: 16px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         cursor: pointer;
+        -webkit-appearance: none;
       }
       #freeze-btn.active { background-color: #FF6B35; }
       .mindar-ui-scanning { background: none !important; }
@@ -69,105 +43,51 @@
 
   <body>
     <div class="ar-ui-layer">
-      <div class="menu-container">
-        <button id="btn-dm" class="menu-btn active" onclick="switchMode('dm')">📦 ต้นทุนการผลิต (A)</button>
-        <button id="btn-dl" class="menu-btn" onclick="switchMode('dl')">🏢 ค่าใช้จ่ายบริหาร (B)</button>
-      </div>
-      
-      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพค้างหน้าจอ</button>
+      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./A_Manu_Cost.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
+      
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        
-        <a-entity id="content-dm" visible="false">
-          <a-image src="./Ingot.png" position="-0.25 0.05 0" scale="0.25 0.18 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.25 -0.08 0" scale="0.32 0.32 0.32" color="#FF6B35" align="center"></a-text>
-          <a-plane class="clickable" position="-0.25 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakIngot()"></a-plane>
+        <a-entity id="ar-content" visible="false">
+          
+          <a-image src="./Ingot.png" position="-0.4 0.05 0" scale="0.25 0.18 1"></a-image>
+          <a-text value="1. Direct Materials" position="-0.4 -0.08 0" scale="0.32 0.32 0.32" color="#FF6B35" align="center"></a-text>
+          <a-plane class="clickable" position="-0.4 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakIngot()"></a-plane>
 
-          <a-image src="./Labor.png" position="0.25 0.05 0" scale="0.25 0.18 1"></a-image>
-          <a-text value="2. Direct Labor" position="0.25 -0.08 0" scale="0.32 0.32 0.32" color="#004E98" align="center"></a-text>
-          <a-plane class="clickable" position="0.25 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakLabor()"></a-plane>
+          <a-image src="./Labor.png" position="0 0.05 0" scale="0.25 0.18 1"></a-image>
+          <a-text value="2. Direct Labor" position="0 -0.08 0" scale="0.32 0.32 0.32" color="#004E98" align="center"></a-text>
+          <a-plane class="clickable" position="0 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakLabor()"></a-plane>
+
+          <a-image src="./Office.png" position="0.4 0.05 0" scale="0.25 0.18 1"></a-image>
+          <a-text value="3. Admin Expenses" position="0.4 -0.08 0" scale="0.32 0.32 0.32" color="#2F3E46" align="center"></a-text>
+          <a-plane class="clickable" position="0.4 0 0.02" width="0.3" height="0.3" material="opacity: 0.0; transparent: true" onclick="speakOffice()"></a-plane>
+
         </a-entity>
-
-        <a-entity id="content-dl" visible="false">
-          <a-image src="./Office.png" position="0 0.05 0" scale="0.38 0.28 1"></a-image>
-          <a-text value="Administrative Expenses" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#2F3E46" align="center"></a-text>
-          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakOffice()"></a-plane>
-        </a-entity>
-
       </a-entity>
     </a-scene>
 
     <script>
       let isFrozen = false;
-      let currentMode = 'dm';
-      let targetFound = false;
-
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
       const arTarget = document.getElementById('ar-target');
-      
-      const contentDm = document.getElementById('content-dm');
-      const contentDl = document.getElementById('content-dl');
+      const arContent = document.getElementById('ar-content');
 
-      // จัดการ Event การตรวจจับภาพแบบ Single Listener (ช่วยประหยัดแรงเครื่องและเสถียรขึ้น)
+      // จัดการเปิด/ปิดชุดภาพรวมกันผ่านแผงคอนเทนต์เดียว
       arTarget.addEventListener("targetFound", () => {
-        targetFound = true;
-        if (currentMode === 'dm') {
-          contentDm.setAttribute("visible", "true");
-        } else {
-          contentDl.setAttribute("visible", "true");
-        }
+        arContent.setAttribute("visible", "true");
       });
 
       arTarget.addEventListener("targetLost", () => {
-        targetFound = false;
         if (!isFrozen) {
-          contentDm.setAttribute("visible", "false");
-          contentDl.setAttribute("visible", "false");
+          arContent.setAttribute("visible", "false");
         }
       });
 
-      // ฟังก์ชันสลับไฟล์มาร์กเกอร์ .mind โดยสลับที่แอตทริบิวต์หลักของ Scene (กล้องไม่มีวันดับ)
-      function switchMode(mode) {
-        if (mode === currentMode) return;
-        window.speechSynthesis.cancel();
-        
-        if (isFrozen) toggleFreeze();
-
-        // ซ่อนชิ้นงานทั้งหมดก่อนสลับโหมด
-        contentDm.setAttribute("visible", "false");
-        contentDl.setAttribute("visible", "false");
-
-        const btnDm = document.getElementById('btn-dm');
-        const btnDl = document.getElementById('btn-dl');
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-
-        if (mode === 'dm') {
-          btnDm.classList.add('active');
-          btnDl.classList.remove('active');
-          currentMode = 'dm';
-          
-          // สั่งตัวระบบหลักให้เปลี่ยนไปสแกนไฟล์ A
-          sceneEl.setAttribute("mindar-image", "imageTargetSrc: ./A_Manu_Cost.mind; uiScanning: yes;");
-        } else {
-          btnDl.classList.add('active');
-          btnDm.classList.remove('active');
-          currentMode = 'dl';
-          
-          // สั่งตัวระบบหลักให้เปลี่ยนไปสแกนไฟล์ B
-          sceneEl.setAttribute("mindar-image", "imageTargetSrc: ./B_Admin_Cost.mind; uiScanning: yes;");
-        }
-        
-        // บังคับให้ระบบ AR เริ่มต้นค้นหาภาพใหม่ทันทีหลังจากสลับโหมด
-        if (mindarSystem) {
-          mindarSystem.unpause();
-        }
-      }
-
+      // ฟังก์ชันแช่แข็งภาพค้างหน้าจอ
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
@@ -177,10 +97,9 @@
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
-          contentDm.setAttribute("visible", "false");
-          contentDl.setAttribute("visible", "false");
+          arContent.setAttribute("visible", "false");
           if (mindarSystem) mindarSystem.unpause();
-          freezeBtn.innerText = "📌 ล็อกภาพค้างหน้าจอ";
+          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           freezeBtn.classList.remove("active");
         }
       }
