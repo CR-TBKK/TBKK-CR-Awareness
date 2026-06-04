@@ -19,6 +19,25 @@
         pointer-events: none;
       }
 
+      /* [เพิ่มใหม่] ปุ่มเปลี่ยนภาษาที่มุมขวาบนของหน้าจอ */
+      #lang-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        pointer-events: auto;
+        padding: 10px 18px;
+        background-color: #242423;
+        color: white;
+        border: 2px solid white;
+        border-radius: 30px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 14px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        cursor: pointer;
+        -webkit-appearance: none;
+      }
+
       /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง (ท้ายรูป 1M.png) */
       #speak-ui-btn {
         position: absolute;
@@ -45,7 +64,7 @@
         position: absolute;
         pointer-events: auto;
         padding: 6px 12px;
-        background-color: #0077B6; /* ใช้สีเขียวเพื่อให้แยกแยะง่ายขึ้น */
+        background-color: #0077B6;
         color: white;
         border: 2px solid white;
         border-radius: 6px;
@@ -85,6 +104,8 @@
 
   <body>
     <div class="ar-ui-layer">
+      <button id="lang-btn" onclick="toggleLanguage()">🌐 TH</button>
+      
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
@@ -116,21 +137,35 @@
     <script>
       let isFrozen = false;
       let targetFound = false;
+      let currentLang = 'th'; // [เพิ่มใหม่] 'th' ตัวแปรเก็บสถานะภาษาปัจจุบันเริ่มต้นที่ภาษาไทย
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       const freezeBtn = document.getElementById('freeze-btn');
+      const langBtn = document.getElementById('lang-btn'); // ดึงปุ่มภาษามาควบคุม
       const speakUiBtn = document.getElementById('speak-ui-btn');
-      const speakUiBtn2 = document.getElementById('speak-ui-btn2'); // ดึงค่าปุ่มที่ 2
+      const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const material1M = document.getElementById('material-1m');
-      const labor2M = document.getElementById('labor-2m'); // ดึงค่าวัตถุ 2M
+      const labor2M = document.getElementById('labor-2m'); 
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
+
+      // [เพิ่มใหม่] ฟังก์ชันสำหรับกดสลับภาษา TH <=> EN
+      function toggleLanguage() {
+        window.speechSynthesis.cancel(); // ตัดเสียงที่กำลังพูดอยู่ทิ้งทันทีเมื่อเปลี่ยนภาษา
+        if (currentLang === 'th') {
+          currentLang = 'en';
+          langBtn.innerText = "🌐 EN";
+        } else {
+          currentLang = 'th';
+          langBtn.innerText = "🌐 TH";
+        }
+      }
 
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
         speakUiBtn.style.display = "block";
-        speakUiBtn2.style.display = "block"; // แสดงปุ่มที่ 2
+        speakUiBtn2.style.display = "block"; 
         targetFound = true;
       });
 
@@ -138,14 +173,14 @@
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; // ซ่อนปุ่มที่ 2
+          speakUiBtn2.style.display = "none"; 
           targetFound = false;
         }
       });
 
       // ระบบอัปเดตพิกัด Real-time ของทั้ง 2 ปุ่ม
       const tempV = new THREE.Vector3();
-      const tempV2 = new THREE.Vector3(); // เวกเตอร์เพิ่มสำหรับคำนวณตำแหน่งวัตถุชิ้นที่ 2
+      const tempV2 = new THREE.Vector3(); 
       
       function updateButtonPosition() {
         if ((targetFound || isFrozen) && cameraEl) {
@@ -166,8 +201,8 @@
             tempV2.project(cameraEl.components.camera.camera);
             const x2 = (tempV2.x * .5 + .5) * window.innerWidth;
             const y2 = (tempV2.y * -.5 + .5) * window.innerHeight;
-            speakUiBtn2.style.left = `${x2 + 70}px`; // ขยับไปทางขวา 65px เท่ากัน
-            speakUiBtn2.style.top = `${y2 - 8}px`;  // ระดับความสูงกึ่งกลางรูปภาพพอดี
+            speakUiBtn2.style.left = `${x2 + 70}px`; 
+            speakUiBtn2.style.top = `${y2 - 8}px`; 
           }
         }
         requestAnimationFrame(updateButtonPosition);
@@ -185,7 +220,7 @@
         } else {
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; // ซ่อนปุ่มเสียงที่ 2 เมื่อสแกนหลุด
+          speakUiBtn2.style.display = "none"; 
           targetFound = false;
           
           if (mindarSystem) {
@@ -200,21 +235,41 @@
         }
       }
 
-      // เสียงตัวที่ 1: วัตถุดิบทางตรง
+      // เสียงตัวที่ 1: วัตถุดิบทางตรง (ปรับเพิ่มเงื่อนไขภาษา)
       function speakCustomIngot() {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง หมายถึง  วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.80; 
+        const utterance = new SpeechSynthesisUtterance();
+        
+        if (currentLang === 'th') {
+          utterance.text = "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
+          utterance.lang = "th-TH"; 
+          utterance.rate = 0.80; 
+        } else {
+          // ใส่ประโยคภาษาอังกฤษที่คุณต้องการตรงนี้ครับ
+          utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
+          utterance.lang = "en-US"; 
+          utterance.rate = 0.85; 
+        }
+        
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงตัวที่ 2: ค่าแรงทางตรง (ฟังก์ชันใหม่ตามที่คุณต้องการ)
+      // เสียงตัวที่ 2: ค่าแรงทางตรง (ปรับเพิ่มเงื่อนไขภาษา)
       function speakCustomLabor() {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง");
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.80; 
+        const utterance = new SpeechSynthesisUtterance();
+        
+        if (currentLang === 'th') {
+          utterance.text = "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง";
+          utterance.lang = "th-TH"; 
+          utterance.rate = 0.80; 
+        } else {
+          // ใส่ประโยคภาษาอังกฤษที่คุณต้องการตรงนี้ครับ
+          utterance.text = "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.";
+          utterance.lang = "en-US"; 
+          utterance.rate = 0.85; 
+        }
+        
         window.speechSynthesis.speak(utterance);
       }
 
