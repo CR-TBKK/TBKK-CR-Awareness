@@ -19,23 +19,34 @@
         pointer-events: none;
       }
 
-      /* [เพิ่มใหม่] ปุ่มเปลี่ยนภาษาที่มุมขวาบนของหน้าจอ */
-      #lang-btn {
+      /* แถบกล่องเลือกภาษาที่มุมขวาบน */
+      .lang-container {
         position: absolute;
         top: 20px;
         right: 20px;
         pointer-events: auto;
-        padding: 10px 18px;
-        background-color: #242423;
-        color: white;
-        border: 2px solid white;
+        display: flex;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 6px 12px;
         border-radius: 30px;
-        font-weight: bold;
-        font-family: sans-serif;
-        font-size: 14px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+      }
+
+      /* ดีไซน์ปุ่มธงชาติ */
+      .flag-btn {
+        width: 35px;
+        height: 25px;
         cursor: pointer;
-        -webkit-appearance: none;
+        border-radius: 4px;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        object-fit: cover;
+      }
+      /* ไฮไลท์ธงชาติที่กำลังเลือกอยู่ */
+      .flag-btn.active {
+        border-color: #FF6B35;
+        transform: scale(1.1);
       }
 
       /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง (ท้ายรูป 1M.png) */
@@ -104,7 +115,12 @@
 
   <body>
     <div class="ar-ui-layer">
-      <button id="lang-btn" onclick="toggleLanguage()">🌐 TH</button>
+      <!-- แถบเลือกภาษาแบบแยกธงชาติสามภาษา (ไทย, อังกฤษ, ญี่ปุ่น) -->
+      <div class="lang-container">
+        <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
+        <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
+        <img id="flag-jp" class="flag-btn" src="https://flagcdn.com/w40/jp.png" onclick="setLanguage('jp')" title="日本語" />
+      </div>
       
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
@@ -137,12 +153,11 @@
     <script>
       let isFrozen = false;
       let targetFound = false;
-      let currentLang = 'th'; // [เพิ่มใหม่] 'th' ตัวแปรเก็บสถานะภาษาปัจจุบันเริ่มต้นที่ภาษาไทย
+      let currentLang = 'th'; // ตัวแปรเก็บสถานะภาษาเริ่มต้น (th = ไทย, en = อังกฤษ, jp = ญี่ปุ่น)
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       const freezeBtn = document.getElementById('freeze-btn');
-      const langBtn = document.getElementById('lang-btn'); // ดึงปุ่มภาษามาควบคุม
       const speakUiBtn = document.getElementById('speak-ui-btn');
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const material1M = document.getElementById('material-1m');
@@ -150,16 +165,14 @@
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
-      // [เพิ่มใหม่] ฟังก์ชันสำหรับกดสลับภาษา TH <=> EN
-      function toggleLanguage() {
-        window.speechSynthesis.cancel(); // ตัดเสียงที่กำลังพูดอยู่ทิ้งทันทีเมื่อเปลี่ยนภาษา
-        if (currentLang === 'th') {
-          currentLang = 'en';
-          langBtn.innerText = "🌐 EN";
-        } else {
-          currentLang = 'th';
-          langBtn.innerText = "🌐 TH";
-        }
+      // ฟังก์ชันสำหรับเลือกภาษาโดยตรงจากธงชาติ
+      function setLanguage(lang) {
+        window.speechSynthesis.cancel(); // หยุดเสียงพูดเก่าทันที
+        currentLang = lang;
+
+        // เคลียร์คลาส active จากธงทุกผืน แล้วไปใส่ให้ผืนที่เลือก
+        document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`flag-${lang}`).classList.add('active');
       }
 
       arTarget.addEventListener("targetFound", () => {
@@ -235,26 +248,30 @@
         }
       }
 
-      // เสียงตัวที่ 1: วัตถุดิบทางตรง (ปรับเพิ่มเงื่อนไขภาษา)
+      // เสียงตัวที่ 1: วัตถุดิบทางตรง (ไทย / อังกฤษ / ญี่ปุ่น)
       function speakCustomIngot() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance();
         
         if (currentLang === 'th') {
-          utterance.text = "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
+          utterance.text = "วัตถุดิบทางตรง หมายถึง  วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
           utterance.lang = "th-TH"; 
           utterance.rate = 0.80; 
-        } else {
-          // ใส่ประโยคภาษาอังกฤษที่คุณต้องการตรงนี้ครับ
+        } else if (currentLang === 'en') {
           utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
           utterance.lang = "en-US"; 
+          utterance.rate = 0.85; 
+        } else if (currentLang === 'jp') {
+          // ภาษาญี่ปุ่น: วัตถุดิบทางตรง หมายถึง วัตถุดิบหลัก...
+          utterance.text = "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。";
+          utterance.lang = "ja-JP"; 
           utterance.rate = 0.85; 
         }
         
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงตัวที่ 2: ค่าแรงทางตรง (ปรับเพิ่มเงื่อนไขภาษา)
+      // เสียงตัวที่ 2: ค่าแรงทางตรง (ไทย / อังกฤษ / ญี่ปุ่น)
       function speakCustomLabor() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance();
@@ -263,33 +280,21 @@
           utterance.text = "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง";
           utterance.lang = "th-TH"; 
           utterance.rate = 0.80; 
-        } else {
-          // ใส่ประโยคภาษาอังกฤษที่คุณต้องการตรงนี้ครับ
+        } else if (currentLang === 'en') {
           utterance.text = "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.";
           utterance.lang = "en-US"; 
+          utterance.rate = 0.85; 
+        } else if (currentLang === 'jp') {
+          // ภาษาญี่ปุ่น: ค่าแรงทางตรง หมายถึง...
+          utterance.text = "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。";
+          utterance.lang = "ja-JP"; 
           utterance.rate = 0.85; 
         }
         
         window.speechSynthesis.speak(utterance);
       }
 
-      function speakIngot() {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิตสินค้า เช่น อลูมิเนียม");
-        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
-      }
-
-      function speakLabor() {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานฝ่ายผลิตที่มีหน้าที่เปลี่ยนสภาพวัตถุดิบให้เป็นสินค้าโดยตรง");
-        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
-      }
-
-      function speakOffice() {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("ค่าใช้จ่ายในการบริหาร Administrative Expenses ค่าใช้จ่ายที่เกิดขึ้นในการบริหารงานทั่วไป เช่น เงินเดือนพนักงานออฟฟิศ ค่าน้ำไฟสำนักงาน");
-        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
-      }
+      // ลบฟังก์ชันเสียงเก่าที่ไม่ได้ใช้งานออก เพื่อให้โค้ดกระชับขึ้น
     </script>
   </body>
 </html>
