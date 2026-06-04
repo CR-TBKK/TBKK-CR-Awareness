@@ -76,10 +76,10 @@
         outline: none;
       }
 
-      /* [เพิ่มใหม่] กล่องข้อความซับไตเติล (ลอยอยู่ด้านล่างหน้าจอ อ่านง่าย ชัดเจน) */
+      /* กล่องข้อความซับไตเติล */
       #subtitles-box {
         position: absolute;
-        bottom: 110px; /* ลอยอยู่เหนี่ปุ่มล็อกภาพ */
+        bottom: 110px;
         left: 50%;
         transform: translateX(-50%);
         width: 85%;
@@ -94,9 +94,32 @@
         text-align: center;
         line-height: 1.4;
         box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
-        display: none; /* เริ่มต้นจะซ่อนไว้ จะโผล่มาเฉพาะตอนมีเสียงพูด */
-        pointer-events: none; /* ป้องกันไม่ให้บังการจิ้มหน้าจอส่วนอื่น */
+        display: none;
+        pointer-events: none;
         z-index: 1000001;
+      }
+
+      /* [เพิ่มใหม่] หน้าต่างวิดีโอเด้งกลางหน้าจอ */
+      #video-overlay-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 75%;
+        max-width: 450px;
+        background-color: #000000;
+        border: 3px solid white;
+        border-radius: 12px;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
+        display: none; /* ซ่อนไว้ก่อน จะเปิดเมื่อกดฟังเสียง */
+        overflow: hidden;
+        z-index: 1000000;
+        pointer-events: auto; /* ปล่อยให้ผู้เรียนกดปุ่มคุม VDO ได้ถ้าจำเป็น */
+      }
+
+      #ar-video-player {
+        width: 100%;
+        display: block;
       }
 
       /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง (ท้ายรูป 1M.png) */
@@ -165,7 +188,6 @@
 
   <body>
     <div class="ar-ui-layer">
-      <!-- กล่องจัดการภาษา / สำเนียง -->
       <div class="lang-container">
         <div class="flags-row">
           <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
@@ -187,7 +209,10 @@
         </div>
       </div>
       
-      <!-- [เพิ่มใหม่] กล่องซับไตเติลบนหน้าจอ -->
+      <div id="video-overlay-container">
+        <video id="ar-video-player" muted playsinline></video>
+      </div>
+
       <div id="subtitles-box"></div>
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
@@ -231,7 +256,12 @@
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const voiceSelect = document.getElementById('voice-select'); 
       const speedSelect = document.getElementById('speed-select');
-      const subtitlesBox = document.getElementById('subtitles-box'); // [เพิ่มใหม่] ตัวแปรกล่องซับ
+      const subtitlesBox = document.getElementById('subtitles-box');
+      
+      // [เพิ่มใหม่] ดึงตัวแปรระบบวิดีโอมาควบคุม
+      const videoContainer = document.getElementById('video-overlay-container');
+      const videoPlayer = document.getElementById('ar-video-player');
+
       const material1M = document.getElementById('material-1m');
       const labor2M = document.getElementById('labor-2m'); 
       const arTarget = document.getElementById('ar-target');
@@ -278,9 +308,16 @@
         return allVoices.find(voice => voice.name === selectedName) || null;
       }
 
+      // ฟังก์ชันปิดการทำงานของมีเดีย (เสียง/วิดีโอ) ทั้งหมดเพื่อเริ่มสิ่งใหม่
+      function resetMediaUI() {
+        window.speechSynthesis.cancel();
+        subtitlesBox.style.display = "none";
+        videoPlayer.pause();
+        videoContainer.style.display = "none";
+      }
+
       function setLanguage(lang) {
-        window.speechSynthesis.cancel(); 
-        subtitlesBox.style.display = "none"; // ปิดซับไตเติลทันทีเมื่อสลับภาษา
+        resetMediaUI(); // ล้างมีเดียเก่าเมื่อกดสลับภาษา
         currentLang = lang;
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`flag-${lang}`).classList.add('active');
@@ -299,7 +336,7 @@
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
           speakUiBtn2.style.display = "none"; 
-          subtitlesBox.style.display = "none"; // ปิดซับเมื่อกล้องหลุด
+          resetMediaUI(); // ปิดมีเดียทั้งหมดเมื่อกล้องหลุดสแกน
           targetFound = false;
         }
       });
@@ -341,7 +378,7 @@
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
           speakUiBtn2.style.display = "none"; 
-          subtitlesBox.style.display = "none"; // ปิดซับเมื่อปลดล็อกภาพ
+          resetMediaUI(); // ล้างวิดีโอและเสียงเมื่อปลดล็อกภาพ
           targetFound = false;
           if (mindarSystem) {
             mindarSystem.unpause();
@@ -354,9 +391,9 @@
         }
       }
 
-      // เสียงตัวที่ 1: วัตถุดิบทางตรง + ระบบผูกซับไตเติล
+      // เสียงตัวที่ 1: วัตถุดิบทางตรง + ซับไตเติล + เล่นวิดีโอ 1
       function speakCustomIngot() {
-        window.speechSynthesis.cancel();
+        resetMediaUI(); // เคลียร์งานเก่าทิ้งก่อน
         const utterance = new SpeechSynthesisUtterance();
         
         if (currentLang === 'th') {
@@ -370,13 +407,20 @@
           utterance.lang = "ja-JP"; 
         }
         
-        // [เพิ่มใหม่] ผูกการทำงานเปิด-ปิดซับไตเติลตามสถานะการพูด
+        // [เพิ่มใหม่] ตั้งค่าผูกระบบซับไตเติล และวิดีโอ 1 เด้งขึ้นมาเล่นคู่กัน
         utterance.onstart = function() {
-          subtitlesBox.innerText = utterance.text; // ใส่ข้อความตรงกับเสียง
-          subtitlesBox.style.display = "block";   // เปิดกล่องซับ
+          subtitlesBox.innerText = utterance.text;
+          subtitlesBox.style.display = "block";
+          
+          // เปลี่ยน Source วิดีโอเป็นไฟล์ที่ 1 แล้วสั่งเปิดหน้าต่างพร้อมกดเล่น
+          videoPlayer.src = "./video1.mp4";
+          videoContainer.style.display = "block";
+          videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
         };
         utterance.onend = function() {
-          subtitlesBox.style.display = "none";    // ปิดกล่องซับเมื่อพูดจบ
+          subtitlesBox.style.display = "none";
+          videoPlayer.pause();
+          videoContainer.style.display = "none"; // ซ่อนวิดีโอเมื่อพูดจบประโยคพอดี
         };
         
         utterance.rate = parseFloat(speedSelect.value);
@@ -384,9 +428,9 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงตัวที่ 2: ค่าแรงทางตรง + ระบบผูกซับไตเติล
+      // เสียงตัวที่ 2: ค่าแรงทางตรง + ซับไตเติล + เล่นวิดีโอ 2
       function speakCustomLabor() {
-        window.speechSynthesis.cancel();
+        resetMediaUI(); // เคลียร์งานเก่าทิ้งก่อน
         const utterance = new SpeechSynthesisUtterance();
         
         if (currentLang === 'th') {
@@ -400,13 +444,20 @@
           utterance.lang = "ja-JP"; 
         }
         
-        // [เพิ่มใหม่] ผูกการทำงานเปิด-ปิดซับไตเติลตามสถานะการพูด
+        // [เพิ่มใหม่] ตั้งค่าผูกระบบซับไตเติล และวิดีโอ 2 เด้งขึ้นมาเล่นคู่กัน
         utterance.onstart = function() {
           subtitlesBox.innerText = utterance.text;
           subtitlesBox.style.display = "block";
+          
+          // เปลี่ยน Source วิดีโอเป็นไฟล์ที่ 2 แล้วสั่งเปิดหน้าต่างพร้อมกดเล่น
+          videoPlayer.src = "./video2.mp4";
+          videoContainer.style.display = "block";
+          videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
         };
         utterance.onend = function() {
           subtitlesBox.style.display = "none";
+          videoPlayer.pause();
+          videoContainer.style.display = "none"; // ซ่อนวิดีโอเมื่อพูดจบประโยคพอดี
         };
         
         utterance.rate = parseFloat(speedSelect.value);
