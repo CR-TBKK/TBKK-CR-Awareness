@@ -48,10 +48,6 @@
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
       
-      <a-assets>
-        <video id="video-over" src="./Over.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
-      </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
@@ -59,17 +55,10 @@
           
           <a-text value="FACTORY COSTS" position="0 0.5 0" rotation="0 0 0" color="#FFD700" align="center" width="4" font="mozillavr"></a-text>
 
-          <a-image src="./Ingot.png" position="-0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="-0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#FF6B35" align="center"></a-text>
-          <a-plane class="clickable" position="-0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakIngot()"></a-plane>
-
-          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="true"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#004E98" align="center"></a-text>
-          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakLabor()"></a-plane>
-
-          <a-video id="video-mesh" src="#video-over" position="0.4 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-video>
-          <a-text value="3. Overhead (VDO)" position="0.4 -0.12 0" rotation="0 0 0" scale="0.35 0.35 0.35" color="#06D6A0" align="center"></a-text>
-          <a-plane class="clickable" position="0.4 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="clickVideo()"></a-plane>
+          <a-image src="./Ingot.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
+          <a-text value="1. Direct Materials" position="0 -0.12 0" rotation="0 0 0" scale="0.45 0.45 0.45" color="#FF6B35" align="center"></a-text>
+          
+          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakIngot()"></a-plane>
 
         </a-entity>
       </a-entity>
@@ -81,34 +70,18 @@
       const freezeBtn = document.getElementById('freeze-btn');
       const arContent = document.getElementById('ar-content'); 
       const arTarget = document.getElementById('ar-target');
-      const videoEl = document.getElementById('video-over');
 
-      // ลิสเนอร์จัดการซ่อน/แสดงผลอิงตาม Target ตัวเดียว
+      // ตรวจจับเมื่อสแกนเจอเป้าหมาย
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
       });
 
+      // ตรวจจับเมื่อเป้าหมายหลุดจากกล้อง
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
-          if (videoEl) videoEl.pause();
         }
       });
-
-      // ฟังก์ชันเปิดเล่น/หยุดวิดีโอ Over
-      function clickVideo() {
-        if (!videoEl) return;
-        
-        const dummy = new SpeechSynthesisUtterance("");
-        window.speechSynthesis.speak(dummy);
-        
-        if (videoEl.paused) {
-          window.speechSynthesis.cancel(); 
-          videoEl.play();  
-        } else {
-          videoEl.pause(); 
-        }
-      }
 
       // ฟังก์ชันล็อกหน้าจอค้างไว้
       function toggleFreeze() {
@@ -125,27 +98,14 @@
           
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
           freezeBtn.classList.remove("active");
-          if (videoEl) videoEl.pause();
         }
       }
 
-      // เสียงอ่าน 1. Direct Materials
+      // เสียงอ่านอธิบายเฉพาะวัตถุดิบทางตรง
       function speakIngot() {
-        if (videoEl) videoEl.pause(); 
         window.speechSynthesis.cancel(); 
         
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
-        window.speechSynthesis.speak(utterance);
-      }
-
-      // เสียงอ่าน 2. Direct Labor
-      function speakLabor() {
-        if (videoEl) videoEl.pause(); 
-        window.speechSynthesis.cancel(); 
-        
-        const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานที่มีหน้าที่ในการผลิตสินค้าโดยตรง เช่น พนักงานฝ่ายผลิต");
         utterance.lang = "th-TH"; 
         utterance.rate = 0.95; 
         window.speechSynthesis.speak(utterance);
