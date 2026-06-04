@@ -19,13 +19,41 @@
         pointer-events: none;
       }
 
+      /* แผงปุ่มเมนูด้านบนสำหรับสลับโหมดสแกน */
+      .menu-container {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        gap: 10px;
+        pointer-events: auto;
+      }
+
+      .menu-btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+        font-family: sans-serif;
+        font-weight: bold;
+        font-size: 14px;
+        background-color: #E0E0E0;
+        color: #333;
+        cursor: pointer;
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+      }
+
+      .menu-btn.active {
+        background-color: #004E98;
+        color: white;
+      }
+
       #freeze-btn {
         position: absolute;
-        top: 20px;
+        bottom: 30px; /* ย้ายมาไว้ด้านล่างเพื่อไม่ให้บังเมนู */
         right: 20px;
         pointer-events: auto;
         padding: 14px 24px;
-        background-color: #004E98;
+        background-color: #2F3E46;
         color: white;
         border: 2px solid white;
         border-radius: 8px;
@@ -34,7 +62,6 @@
         font-size: 16px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         cursor: pointer;
-        -webkit-appearance: none;
       }
       #freeze-btn.active { background-color: #FF6B35; }
       .mindar-ui-scanning { background: none !important; }
@@ -43,26 +70,34 @@
 
   <body>
     <div class="ar-ui-layer">
-      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
+      <div class="menu-container">
+        <button id="btn-dm" class="menu-btn active" onclick="switchMode('dm')">📦 1. วัตถุดิบทางตรง</button>
+        <button id="btn-dl" class="menu-btn" onclick="switchMode('dl')">👷 2. ค่าแรงทางตรง</button>
+      </div>
+      
+      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
-      
+    <a-scene id="scene" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity id="ar-target-dm" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content-dm">
-          <a-image src="./Ingot.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1"></a-image>
-          <a-text value="1. Direct Materials" position="0 -0.12 0" rotation="0 0 0" scale="0.45 0.45 0.45" color="#FF6B35" align="center"></a-text>
-          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakIngot()"></a-plane>
+      <a-entity id="scene-dm" mindar-image="imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;">
+        <a-entity id="target-dm" mindar-image-target="targetIndex: 0">
+          <a-entity id="content-dm">
+            <a-image src="./Ingot.png" position="0 0.05 0" scale="0.35 0.25 1"></a-image>
+            <a-text value="1. Direct Materials" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#FF6B35" align="center"></a-text>
+            <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakIngot()"></a-plane>
+          </a-entity>
         </a-entity>
       </a-entity>
 
-      <a-entity id="ar-target-dl" mindar-image-target="targetIndex: 1">
-        <a-entity id="ar-content-dl">
-          <a-image src="./Labor.png" position="0 0.05 0" rotation="0 0 0" scale="0.35 0.25 1" visible="true"></a-image>
-          <a-text value="2. Direct Labor" position="0 -0.12 0" rotation="0 0 0" scale="0.45 0.45 0.45" color="#004E98" align="center"></a-text>
-          <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true; shader: flat" onclick="speakLabor()"></a-plane>
+      <a-entity id="scene-dl" mindar-image="imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: no;" visible="false">
+        <a-entity id="target-dl" mindar-image-target="targetIndex: 0">
+          <a-entity id="content-dl">
+            <a-image src="./Labor.png" position="0 0.05 0" scale="0.35 0.25 1"></a-image>
+            <a-text value="2. Direct Labor" position="0 -0.12 0" scale="0.45 0.45 0.45" color="#004E98" align="center"></a-text>
+            <a-plane class="clickable" position="0 0 0.02" width="0.45" height="0.45" material="opacity: 0.0; transparent: true" onclick="speakLabor()"></a-plane>
+          </a-entity>
         </a-entity>
       </a-entity>
 
@@ -70,67 +105,83 @@
 
     <script>
       let isFrozen = false;
+      let currentMode = 'dm';
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
 
-      // ดึง Element สำหรับแยกจัดการคุมเปิด/ปิดกลุ่มภาพ
-      const arTargetDM = document.getElementById('ar-target-dm');
-      const arContentDM = document.getElementById('ar-content-dm');
-      
-      const arTargetDL = document.getElementById('ar-target-dl');
-      const arContentDL = document.getElementById('ar-content-dl');
+      // จัดการ Event การสแกนแยกกลุ่ม
+      document.getElementById('target-dm').addEventListener("targetFound", () => document.getElementById('content-dm').setAttribute("visible", "true"));
+      document.getElementById('target-dm').addEventListener("targetLost", () => { if (!isFrozen) document.getElementById('content-dm').setAttribute("visible", "false"); });
 
-      // ตรวจจับสัญญาณการ์ดใบที่ 1 (Direct Materials)
-      arTargetDM.addEventListener("targetFound", () => {
-        arContentDM.setAttribute("visible", "true");
-      });
-      arTargetDM.addEventListener("targetLost", () => {
-        if (!isFrozen) arContentDM.setAttribute("visible", "false");
-      });
+      document.getElementById('target-dl').addEventListener("targetFound", () => document.getElementById('content-dl').setAttribute("visible", "true"));
+      document.getElementById('target-dl').addEventListener("targetLost", () => { if (!isFrozen) document.getElementById('content-dl').setAttribute("visible", "false"); });
 
-      // ตรวจจับสัญญาณการ์ดใบที่ 2 (Direct Labor)
-      arTargetDL.addEventListener("targetFound", () => {
-        arContentDL.setAttribute("visible", "true");
-      });
-      arTargetDL.addEventListener("targetLost", () => {
-        if (!isFrozen) arContentDL.setAttribute("visible", "false");
-      });
+      // ฟังก์ชันหัวใจหลัก: สลับไฟล์ .mind โดยไม่ต้องปิดกล้อง
+      function switchMode(mode) {
+        if (mode === currentMode) return;
+        window.speechSynthesis.cancel();
+        
+        // รีเซ็ตสถานะแช่แข็งภาพก่อนสลับ
+        if (isFrozen) toggleFreeze();
 
-      // ฟังก์ชันล็อกภาพค้างหน้าจอ (ค้างการแสดงผลไว้ทั้งคู่)
+        const dmSystem = document.getElementById('scene-dm');
+        const dlSystem = document.getElementById('scene-dl');
+        const btnDm = document.getElementById('btn-dm');
+        const btnDl = document.getElementById('btn-dl');
+
+        if (mode === 'dm') {
+          // เปิดระบบ DM / ปิดระบบ DL
+          dlSystem.setAttribute("visible", "false");
+          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: no;");
+          
+          dmSystem.setAttribute("visible", "true");
+          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: yes;");
+          
+          btnDm.classList.add('active');
+          btnDl.classList.remove('active');
+          currentMode = 'dm';
+        } else {
+          // เปิดระบบ DL / ปิดระบบ DM
+          dmSystem.setAttribute("visible", "false");
+          dmSystem.setAttribute("mindar-image", "imageTargetSrc: ./1_Direct_Materials.mind; uiScanning: no;");
+          
+          dlSystem.setAttribute("visible", "true");
+          dlSystem.setAttribute("mindar-image", "imageTargetSrc: ./2_Direct_Labor.mind; uiScanning: yes;");
+          
+          btnDl.classList.add('active');
+          btnDm.classList.remove('active');
+          currentMode = 'dl';
+        }
+      }
+
       function toggleFreeze() {
         isFrozen = !isFrozen;
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
+        const activeSystemId = currentMode === 'dm' ? "scene-dm" : "scene-dl";
+        const mindarSystem = document.getElementById(activeSystemId).systems["mindar-image-system"];
         
         if (isFrozen) {
           if (mindarSystem) mindarSystem.pause(true);
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
-          if (arContentDM) arContentDM.setAttribute("visible", "false"); 
-          if (arContentDL) arContentDL.setAttribute("visible", "false"); 
-          if (mindarSystem) mindarSystem.unpause(); 
-          
-          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
+          document.getElementById('content-dm').setAttribute("visible", "false");
+          document.getElementById('content-dl').setAttribute("visible", "false");
+          if (mindarSystem) mindarSystem.unpause();
+          freezeBtn.innerText = "📌 ล็อกภาพค้างหน้าจอ";
           freezeBtn.classList.remove("active");
         }
       }
 
-      // เสียงบรรยายกลุ่มวัตถุดิบทางตรง
       function speakIngot() {
-        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("วัตถุดิบทางตรง Direct Materials วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม");
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
-        window.speechSynthesis.speak(utterance);
+        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงบรรยายกลุ่มค่าแรงทางตรง
       function speakLabor() {
-        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance("ค่าแรงงานทางตรง Direct Labor ค่าแรงของพนักงานที่มีหน้าที่ในการผลิตสินค้าโดยตรง เช่น พนักงานฝ่ายผลิต");
-        utterance.lang = "th-TH"; 
-        utterance.rate = 0.95; 
-        window.speechSynthesis.speak(utterance);
+        utterance.lang = "th-TH"; utterance.rate = 0.95; window.speechSynthesis.speak(utterance);
       }
     </script>
   </body>
