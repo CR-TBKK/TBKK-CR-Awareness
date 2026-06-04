@@ -19,6 +19,26 @@
         pointer-events: none;
       }
 
+      /* ปุ่มกดเล่นเสียงบนหน้าจอ (ดีไซน์เดียวกับปุ่มล็อกภาพ) */
+      #speak-ui-btn {
+        position: absolute;
+        bottom: 95px; /* ลอยอยู่ด้านบนของปุ่มล็อกภาพ */
+        right: 20px;
+        pointer-events: auto;
+        padding: 14px 24px;
+        background-color: #0077B6; /* สีน้ำเงินสว่าง */
+        color: white;
+        border: 2px solid white;
+        border-radius: 8px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 16px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+        cursor: pointer;
+        display: none; /* เริ่มต้นจะซ่อนไว้ก่อน จะแสดงเมื่อส่องเจอภาพ */
+        -webkit-appearance: none;
+      }
+
       #freeze-btn {
         position: absolute;
         bottom: 30px;
@@ -43,10 +63,11 @@
 
   <body>
     <div class="ar-ui-layer">
+      <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊 ฟังเสียง: วัตถุดิบทางตรง</button>
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" raycaster="objects: .clickable; far: 100; interval: 100" cursor="fuse: false; rayOrigin: mouse">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
@@ -58,8 +79,6 @@
 
           <a-image src="./1M.png" position="-0.42 0.12 0" scale="0.18 0.05 1"></a-image> 
           <a-image src="./1.M_SPK.png" position="-0.22 0.12 0" scale="0.05 0.05 1"></a-image>
-          
-          <a-box class="clickable" position="-0.22 0.12 0.02" width="0.10" height="0.10" depth="0.04" material="color: red; opacity: 0.4; transparent: true" onclick="speakCustomIngot()"></a-box>
           
           <a-image src="./ingot.png" position="-0.38 0.04 0" scale="0.09 0.07 1"></a-image> 
         
@@ -76,16 +95,21 @@
       let isFrozen = false;
       const sceneEl = document.getElementById('scene');
       const freezeBtn = document.getElementById('freeze-btn');
+      const speakUiBtn = document.getElementById('speak-ui-btn'); // ดึงปุ่มเสียงมาควบคุม
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
+      // เมื่อกล้องส่องเจอรูปภาพเป้าหมาย
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
+        speakUiBtn.style.display = "block"; // เปิดกล่องปุ่มกดเสียงให้แสดงบนหน้าจอ
       });
 
+      // เมื่อกล้องหลุดจากรูปภาพเป้าหมาย
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
+          speakUiBtn.style.display = "none"; // ซ่อนกล่องปุ่มกดเสียงไป
         }
       });
 
@@ -99,6 +123,7 @@
           freezeBtn.classList.add("active");
         } else {
           arContent.setAttribute("visible", "false");
+          speakUiBtn.style.display = "none"; // ซ่อนปุ่มเสียงเมื่อปลดล็อกและภาพหายไป
           
           if (mindarSystem) {
             mindarSystem.unpause();
