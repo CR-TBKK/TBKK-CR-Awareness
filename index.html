@@ -349,27 +349,47 @@
         updateVoiceList();
       }
 
-      // 1. ตราบใดที่ภาพยังอยู่ในเฟรม ให้ขยับตามกล้องไปเรื่อยๆ (ขยับได้อย่างอิสระ)
+      // 1. เมื่อภาพส่องเจอและอยู่ในเฟรมปกติ
       arTarget.addEventListener("targetFound", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "true");
           speakUiBtn.style.display = "block";
           speakUiBtn2.style.display = "block"; 
           targetFound = true;
-          rescanBtn.style.display = "none"; // ยังอยู่ในเฟรม ไม่ต้องโชว์ปุ่มรีเซ็ต
+          rescanBtn.style.display = "none";
         }
       });
 
-      // 2. เมื่อไหร่ที่ภาพหลุดออกจากเฟรม (Target Lost) ค่อยสั่งให้ล็อกตำแหน่งค้างหน้าจอทันที
+      // 2. เมื่อไหร่ที่เอามือถือออกหลุดเฟรม (ย้ายวัตถุไปเกาะหน้าจอกล้อง เพื่อไม่ให้ภาพหาย)
       arTarget.addEventListener("targetLost", () => {
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         
-        // ถ้าก่อนหน้านี้เจอภาพอยู่ แล้วจู่ๆ หลุดเฟรมไป ให้ทำการล็อกภาพทันที
         if (targetFound && mindarSystem && !isFrozen) {
           isFrozen = true; 
-          mindarSystem.pause(true); // สั่งหยุดระบบสแกน เพื่อตรึงภาพและปุ่มทั้งหมดค้างไว้บนหน้าจอ
-          rescanBtn.style.display = "block"; // แสดงปุ่มสีแดงเพื่อให้ผู้ใช้กดเคลียร์หน้าจอเมื่อดูเสร็จ
-          console.log("ภาพหลุดเฟรม: ระบบล็อกภาพไว้บนหน้าจอให้โดยอัตโนมัติ");
+          
+          // คัดลอกตำแหน่งแบบ World Position/Rotation ล่าสุดของกลุ่ม AR
+          const worldPos = new THREE.Vector3();
+          const worldQuat = new THREE.Quaternion();
+          const worldScale = new THREE.Vector3();
+          
+          arContent.object3D.updateMatrixWorld();
+          arContent.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+          
+          // สั่งย้ายกลุ่มรูปภาพ (arContent) ออกจากระบบติดตามของ MindAR ไปติดอยู่หน้ารูปแบบกล้องหลักแทน
+          cameraEl.object3D.add(arContent.object3D);
+          
+          // คำนวณพิกัดใหม่เพื่อให้ภาพล็อกนิ่งอยู่ตรงหน้าตำแหน่งสายตาผู้ใช้เป๊ะ ๆ
+          cameraEl.object3D.worldToLocal(worldPos);
+          arContent.object3D.position.copy(worldPos);
+          
+          // ปรับมุมหมุนให้สอดคล้องกับการเอียงกล้องล่าสุด
+          const localQuat = cameraEl.object3D.quaternion.clone().invert().multiply(worldQuat);
+          arContent.object3D.quaternion.copy(localQuat);
+          
+          // หยุดตัวประมวลผลกล้อง
+          mindarSystem.pause(true); 
+          rescanBtn.style.display = "block"; 
+          console.log("ล็อกรูปภาพและปุ่มให้อยู่กับที่หน้าระบบกล้องเรียบร้อย!");
         }
       });
 
@@ -399,10 +419,17 @@
       }
       requestAnimationFrame(updateButtonPosition);
 
-      // ฟังก์ชันสำหรับกดปุ่มล้างหน้าจอเพื่อไปสแกนแผ่นภาพใบอื่นต่อ
+      // ฟังก์ชันปุ่มรีเซ็ต: ดึงภาพ AR กลับสู่จุดสแกนเดิม และเริ่มต้นกล้องใหม่
       function resetToScan() {
         isFrozen = false;
         targetFound = false;
+        
+        // ย้ายโครงสร้างเนื้อหา AR กลับเข้าสู่ Entity เดิมของ MindAR Target
+        arTarget.object3D.add(arContent.object3D);
+        
+        // รีเซ็ตค่าพิกัดมุมหมุนของวัตถุ 3D กลับสู่ค่าเริ่มต้น
+        arContent.object3D.position.set(0, 0, 0);
+        arContent.object3D.quaternion.set(0, 0, 0, 1);
         
         arContent.setAttribute("visible", "false");
         speakUiBtn.style.display = "none";
@@ -412,7 +439,7 @@
 
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         if (mindarSystem) {
-          mindarSystem.unpause(); // ปลดล็อกระบบ เพื่อให้กล้องเริ่มสแกนใหม่อีกครั้ง
+          mindarSystem.unpause(); 
           if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
             mindarSystem.activeTargetIndex = -1; 
           }
