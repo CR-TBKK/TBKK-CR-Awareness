@@ -177,26 +177,6 @@
         -webkit-appearance: none;
         white-space: nowrap;
       }
-
-      /* ปุ่มสำหรับสั่งรีเซ็ต เพื่อสแกนใหม่อีกครั้ง */
-      #rescan-btn {
-        position: absolute;
-        bottom: 30px;
-        right: 20px;
-        pointer-events: auto;
-        padding: 14px 24px;
-        background-color: #E63946;
-        color: white;
-        border: 2px solid white;
-        border-radius: 8px;
-        font-weight: bold;
-        font-family: sans-serif;
-        font-size: 16px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
-        cursor: pointer;
-        display: none; 
-        -webkit-appearance: none;
-      }
       
       .mindar-ui-scanning { background: none !important; }
     </style>
@@ -237,7 +217,6 @@
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
-      <button id="rescan-btn" onclick="resetToScan()">🔄 ล้างหน้าจอ/สแกนใหม่</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -278,7 +257,6 @@
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
-      const rescanBtn = document.getElementById('rescan-btn');
       const speakUiBtn = document.getElementById('speak-ui-btn');
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const voiceSelect = document.getElementById('voice-select'); 
@@ -349,25 +327,28 @@
         updateVoiceList();
       }
 
-      // 1. เมื่อภาพส่องเจอและอยู่ในเฟรมปกติ
+      // 1. ส่องปุ๊บ ภาพขึ้นและขยับตามมุมกล้องปกติ
       arTarget.addEventListener("targetFound", () => {
-        if (!isFrozen) {
-          arContent.setAttribute("visible", "true");
-          speakUiBtn.style.display = "block";
-          speakUiBtn2.style.display = "block"; 
-          targetFound = true;
-          rescanBtn.style.display = "none";
+        // หากเคยล็อกภาพอยู่หน้าระบบกล้อง ให้โยนวัตถุกระโดดกลับเข้าสู่ระบบติดตาม MindAR อัตโนมัติ
+        if (isFrozen) {
+          arTarget.object3D.add(arContent.object3D);
+          arContent.object3D.position.set(0, 0, 0);
+          arContent.object3D.quaternion.set(0, 0, 0, 1);
+          isFrozen = false;
         }
+        
+        arContent.setAttribute("visible", "true");
+        speakUiBtn.style.display = "block";
+        speakUiBtn2.style.display = "block"; 
+        targetFound = true;
       });
 
-      // 2. เมื่อไหร่ที่เอามือถือออกหลุดเฟรม (ย้ายวัตถุไปเกาะหน้าจอกล้อง เพื่อไม่ให้ภาพหาย)
+      // 2. ดึงมือถือออกหลุดเฟรมปุ๊บ ภาพและปุ่มลำโพง ล็อกตำแหน่งลอยติดหน้าจอไปทันที
       arTarget.addEventListener("targetLost", () => {
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        
-        if (targetFound && mindarSystem && !isFrozen) {
+        if (targetFound && !isFrozen) {
           isFrozen = true; 
           
-          // คัดลอกตำแหน่งแบบ World Position/Rotation ล่าสุดของกลุ่ม AR
+          // จับพิกัดตำแหน่งและมุมหมุนล่าสุดของภาพโลก AR ในวินาทีที่หลุดเฟรม
           const worldPos = new THREE.Vector3();
           const worldQuat = new THREE.Quaternion();
           const worldScale = new THREE.Vector3();
@@ -375,21 +356,20 @@
           arContent.object3D.updateMatrixWorld();
           arContent.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
           
-          // สั่งย้ายกลุ่มรูปภาพ (arContent) ออกจากระบบติดตามของ MindAR ไปติดอยู่หน้ารูปแบบกล้องหลักแทน
+          // บังคับย้ายกลุ่มภาพทั้งหมด (arContent) เข้าไปฝังในวัตถุกล้องหลัก (<a-camera>) ทันที
           cameraEl.object3D.add(arContent.object3D);
           
-          // คำนวณพิกัดใหม่เพื่อให้ภาพล็อกนิ่งอยู่ตรงหน้าตำแหน่งสายตาผู้ใช้เป๊ะ ๆ
+          // คำนวณเพื่อชดเชยค่าพิกัดให้แสดงผลนิ่งค้างสายตาอยู่ตำแหน่งหน้ารอบมุมมองเดิมพอดี
           cameraEl.object3D.worldToLocal(worldPos);
           arContent.object3D.position.copy(worldPos);
           
-          // ปรับมุมหมุนให้สอดคล้องกับการเอียงกล้องล่าสุด
           const localQuat = cameraEl.object3D.quaternion.clone().invert().multiply(worldQuat);
           arContent.object3D.quaternion.copy(localQuat);
           
-          // หยุดตัวประมวลผลกล้อง
-          mindarSystem.pause(true); 
-          rescanBtn.style.display = "block"; 
-          console.log("ล็อกรูปภาพและปุ่มให้อยู่กับที่หน้าระบบกล้องเรียบร้อย!");
+          // บังคับเปิดสถานะการมองเห็น ป้องกันไม่ให้ใจความสำคัญของไลบรารีสั่งซ่อนรูปภาพ
+          arContent.setAttribute("visible", "true");
+          
+          console.log("หลุดเฟรม: ภาพและปุ่มควบคุมทั้งหมดถูกตรึงลอยล็อกติดหน้าจอมือถือเรียบร้อย");
         }
       });
 
@@ -418,33 +398,6 @@
         requestAnimationFrame(updateButtonPosition);
       }
       requestAnimationFrame(updateButtonPosition);
-
-      // ฟังก์ชันปุ่มรีเซ็ต: ดึงภาพ AR กลับสู่จุดสแกนเดิม และเริ่มต้นกล้องใหม่
-      function resetToScan() {
-        isFrozen = false;
-        targetFound = false;
-        
-        // ย้ายโครงสร้างเนื้อหา AR กลับเข้าสู่ Entity เดิมของ MindAR Target
-        arTarget.object3D.add(arContent.object3D);
-        
-        // รีเซ็ตค่าพิกัดมุมหมุนของวัตถุ 3D กลับสู่ค่าเริ่มต้น
-        arContent.object3D.position.set(0, 0, 0);
-        arContent.object3D.quaternion.set(0, 0, 0, 1);
-        
-        arContent.setAttribute("visible", "false");
-        speakUiBtn.style.display = "none";
-        speakUiBtn2.style.display = "none"; 
-        rescanBtn.style.display = "none";
-        resetMediaUI(); 
-
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        if (mindarSystem) {
-          mindarSystem.unpause(); 
-          if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
-            mindarSystem.activeTargetIndex = -1; 
-          }
-        }
-      }
 
       function speakCustomIngot() {
         resetMediaUI(); 
