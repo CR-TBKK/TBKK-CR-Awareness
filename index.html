@@ -19,6 +19,18 @@
         pointer-events: none;
       }
 
+      /* [เพิ่มใหม่] สไตล์สำหรับรูปภาพโลโก้/ป้ายที่มุมซ้ายบนสุด */
+      .top-left-logo {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        pointer-events: auto; /* ตั้งเป็น auto หากต้องการให้คลิกรูปภาพได้ หรือเปลี่ยนเป็น none ถ้าให้ทะลุผ่าน */
+        max-width: 150px;     /* ปรับขนาดความกว้างตามที่ต้องการ */
+        height: auto;
+        filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); /* เพิ่มมิติเงาให้ลอยเด่น */
+        z-index: 1000002;
+      }
+
       /* แถบกล่องควบคุมภาษาและสำเนียงที่มุมขวาบน */
       .lang-container {
         position: absolute;
@@ -99,7 +111,7 @@
         z-index: 1000001;
       }
 
-      /* [เพิ่มใหม่] หน้าต่างวิดีโอเด้งกลางหน้าจอ */
+      /* หน้าต่างวิดีโอเด้งกลางหน้าจอ */
       #video-overlay-container {
         position: absolute;
         top: 50%;
@@ -111,10 +123,10 @@
         border: 3px solid white;
         border-radius: 12px;
         box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
-        display: none; /* ซ่อนไว้ก่อน จะเปิดเมื่อกดฟังเสียง */
+        display: none; 
         overflow: hidden;
         z-index: 1000000;
-        pointer-events: auto; /* ปล่อยให้ผู้เรียนกดปุ่มคุม VDO ได้ถ้าจำเป็น */
+        pointer-events: auto; 
       }
 
       #ar-video-player {
@@ -122,7 +134,7 @@
         display: block;
       }
 
-      /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง (ท้ายรูป 1M.png) */
+      /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง */
       #speak-ui-btn {
         position: absolute;
         pointer-events: auto;
@@ -143,7 +155,7 @@
         white-space: nowrap;
       }
 
-      /* ปุ่มที่ 2: ฟังเสียง ค่าแรงทางตรง (ท้ายรูป 2M.png) */
+      /* ปุ่มที่ 2: ฟังเสียง ค่าแรงทางตรง */
       #speak-ui-btn2 {
         position: absolute;
         pointer-events: auto;
@@ -188,6 +200,9 @@
 
   <body>
     <div class="ar-ui-layer">
+      
+      <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
+
       <div class="lang-container">
         <div class="flags-row">
           <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
@@ -225,7 +240,7 @@
       <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content" visible="false">
+        <a-entity id="ar-content" visible="false"> 
           
           <a-image src="./Manu_Cost_sign.png" position="-0.28 0.16 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.22 0.16 0" scale="0.45 0.039 1"></a-image>
@@ -258,7 +273,6 @@
       const speedSelect = document.getElementById('speed-select');
       const subtitlesBox = document.getElementById('subtitles-box');
       
-      // [เพิ่มใหม่] ดึงตัวแปรระบบวิดีโอมาควบคุม
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
 
@@ -308,7 +322,6 @@
         return allVoices.find(voice => voice.name === selectedName) || null;
       }
 
-      // ฟังก์ชันปิดการทำงานของมีเดีย (เสียง/วิดีโอ) ทั้งหมดเพื่อเริ่มสิ่งใหม่
       function resetMediaUI() {
         window.speechSynthesis.cancel();
         subtitlesBox.style.display = "none";
@@ -317,7 +330,7 @@
       }
 
       function setLanguage(lang) {
-        resetMediaUI(); // ล้างมีเดียเก่าเมื่อกดสลับภาษา
+        resetMediaUI(); 
         currentLang = lang;
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`flag-${lang}`).classList.add('active');
@@ -336,7 +349,7 @@
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
           speakUiBtn2.style.display = "none"; 
-          resetMediaUI(); // ปิดมีเดียทั้งหมดเมื่อกล้องหลุดสแกน
+          resetMediaUI(); 
           targetFound = false;
         }
       });
@@ -378,7 +391,7 @@
           arContent.setAttribute("visible", "false");
           speakUiBtn.style.display = "none";
           speakUiBtn2.style.display = "none"; 
-          resetMediaUI(); // ล้างวิดีโอและเสียงเมื่อปลดล็อกภาพ
+          resetMediaUI(); 
           targetFound = false;
           if (mindarSystem) {
             mindarSystem.unpause();
@@ -391,9 +404,8 @@
         }
       }
 
-      // เสียงตัวที่ 1: วัตถุดิบทางตรง + ซับไตเติล + เล่นวิดีโอ 1
       function speakCustomIngot() {
-        resetMediaUI(); // เคลียร์งานเก่าทิ้งก่อน
+        resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
         
         if (currentLang === 'th') {
@@ -407,12 +419,10 @@
           utterance.lang = "ja-JP"; 
         }
         
-        // [เพิ่มใหม่] ตั้งค่าผูกระบบซับไตเติล และวิดีโอ 1 เด้งขึ้นมาเล่นคู่กัน
         utterance.onstart = function() {
           subtitlesBox.innerText = utterance.text;
           subtitlesBox.style.display = "block";
           
-          // เปลี่ยน Source วิดีโอเป็นไฟล์ที่ 1 แล้วสั่งเปิดหน้าต่างพร้อมกดเล่น
           videoPlayer.src = "./video1.mp4";
           videoContainer.style.display = "block";
           videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
@@ -420,7 +430,7 @@
         utterance.onend = function() {
           subtitlesBox.style.display = "none";
           videoPlayer.pause();
-          videoContainer.style.display = "none"; // ซ่อนวิดีโอเมื่อพูดจบประโยคพอดี
+          videoContainer.style.display = "none"; 
         };
         
         utterance.rate = parseFloat(speedSelect.value);
@@ -428,9 +438,8 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // เสียงตัวที่ 2: ค่าแรงทางตรง + ซับไตเติล + เล่นวิดีโอ 2
       function speakCustomLabor() {
-        resetMediaUI(); // เคลียร์งานเก่าทิ้งก่อน
+        resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
         
         if (currentLang === 'th') {
@@ -444,12 +453,10 @@
           utterance.lang = "ja-JP"; 
         }
         
-        // [เพิ่มใหม่] ตั้งค่าผูกระบบซับไตเติล และวิดีโอ 2 เด้งขึ้นมาเล่นคู่กัน
         utterance.onstart = function() {
           subtitlesBox.innerText = utterance.text;
           subtitlesBox.style.display = "block";
           
-          // เปลี่ยน Source วิดีโอเป็นไฟล์ที่ 2 แล้วสั่งเปิดหน้าต่างพร้อมกดเล่น
           videoPlayer.src = "./video2.mp4";
           videoContainer.style.display = "block";
           videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
@@ -457,7 +464,7 @@
         utterance.onend = function() {
           subtitlesBox.style.display = "none";
           videoPlayer.pause();
-          videoContainer.style.display = "none"; // ซ่อนวิดีโอเมื่อพูดจบประโยคพอดี
+          videoContainer.style.display = "none"; 
         };
         
         utterance.rate = parseFloat(speedSelect.value);
