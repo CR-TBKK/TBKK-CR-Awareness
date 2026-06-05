@@ -88,7 +88,7 @@
         outline: none;
       }
 
-      /* [ปรับปรุงปรุงใหม่] หน้าต่างวิดีโอเด้งกลางหน้าจอ */
+      /* หน้าต่างวิดีโอเด้งกลางหน้าจอ */
       #video-overlay-container {
         position: absolute;
         top: 50%;
@@ -101,7 +101,7 @@
         pointer-events: auto; 
       }
 
-      /* [เพิ่มใหม่] กรอบสำหรับตัววิดีโอโดยเฉพาะ */
+      /* กรอบสำหรับตัววิดีโอโดยเฉพาะ */
       .video-wrapper {
         width: 100%;
         background-color: #000000;
@@ -116,11 +116,11 @@
         display: block;
       }
 
-      /* [ปรับปรุงใหม่] กล่องข้อความซับไตเติ้ลให้ต่อท้ายวิดีโอพอดี */
+      /* กล่องข้อความซับไตเติ้ลให้ต่อท้ายวิดีโอพอดี */
       #subtitles-box {
-        position: relative; /* เปลี่ยนเป็น relative เพื่อให้จัดเรียงต่อท้ายกรอบ VDO */
-        margin-top: 12px;   /* ระยะห่างระหว่างด้านล่าง VDO กับกล่องซับไตเติล */
-        width: 100%;        /* กว้างเท่ากับขนาดกรอบวิดีโอ */
+        position: relative; 
+        margin-top: 12px;   
+        width: 100%;        
         box-sizing: border-box;
         background-color: rgba(0, 0, 0, 0.82);
         color: #FFFFFF;
@@ -178,7 +178,8 @@
         white-space: nowrap;
       }
 
-      #freeze-btn {
+      /* ปุ่มสำหรับสั่งรีเซ็ต เพื่อสแกนใหม่อีกครั้ง */
+      #rescan-btn {
         position: absolute;
         bottom: 30px;
         right: 20px;
@@ -193,9 +194,10 @@
         font-size: 16px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         cursor: pointer;
+        display: none; /* จะแสดงขึ้นมาเฉพาะตอนที่ระบบทำการล็อกภาพอัตโนมัติแล้ว */
         -webkit-appearance: none;
       }
-      #freeze-btn.active { background-color: #FF6B35; }
+      
       .mindar-ui-scanning { background: none !important; }
     </style>
   </head>
@@ -226,18 +228,16 @@
         </div>
       </div>
       
-      <!-- [ปรับปรุงใหม่] รวมศูนย์ระบบแสดงผลสื่อนิ่ง/เคลื่อนไหวและคำบรรยายไว้ด้วยกัน -->
       <div id="video-overlay-container">
         <div class="video-wrapper">
           <video id="ar-video-player" muted playsinline></video>
         </div>
-        <!-- ย้ายกล่องซับไตเติ้ลมาปักหลักอยู่ใต้โครงสร้างวิดีโอที่นี่ -->
         <div id="subtitles-box"></div>
       </div>
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
-      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
+      <button id="rescan-btn" onclick="resetToScan()">🔄 สแกนใหม่อีกครั้ง</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -278,7 +278,7 @@
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
-      const freezeBtn = document.getElementById('freeze-btn');
+      const rescanBtn = document.getElementById('rescan-btn');
       const speakUiBtn = document.getElementById('speak-ui-btn');
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const voiceSelect = document.getElementById('voice-select'); 
@@ -349,11 +349,20 @@
         updateVoiceList();
       }
 
+      // ระบบล็อกภาพอัตโนมัติทันทีเมื่อส่องเจอครั้งแรก (Auto Freeze on Target Found)
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
         speakUiBtn.style.display = "block";
         speakUiBtn2.style.display = "block"; 
         targetFound = true;
+
+        // สั่งให้ระบบหยุดแสกนและล็อกตำแหน่งวัตถุให้อยู่กับที่บนจอทันที
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
+        if (mindarSystem && !isFrozen) {
+          isFrozen = true;
+          mindarSystem.pause(true); // หยุดทำงานของกล้องชั่วคราวเพื่อให้ภาพ AR ค้างหน้าจอ
+          rescanBtn.style.display = "block"; // แสดงปุ่มสแกนใหม่เผื่อต้องการล้างหน้าจอ
+        }
       });
 
       arTarget.addEventListener("targetLost", () => {
@@ -392,27 +401,23 @@
       }
       requestAnimationFrame(updateButtonPosition);
 
-      function toggleFreeze() {
-        isFrozen = !isFrozen;
+      // ฟังก์ชันสำหรับกดปุ่มเพื่อล้างหน้าจอและกลับไปเปิดระบบสแกนหาแผ่นภาพใหม่อีกครั้ง
+      function resetToScan() {
+        isFrozen = false;
+        targetFound = false;
+        
+        arContent.setAttribute("visible", "false");
+        speakUiBtn.style.display = "none";
+        speakUiBtn2.style.display = "none"; 
+        rescanBtn.style.display = "none";
+        resetMediaUI(); 
+
         const mindarSystem = sceneEl.systems["mindar-image-system"];
-        if (isFrozen) {
-          if (mindarSystem) mindarSystem.pause(true); 
-          freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
-          freezeBtn.classList.add("active");
-        } else {
-          arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; 
-          resetMediaUI(); 
-          targetFound = false;
-          if (mindarSystem) {
-            mindarSystem.unpause();
-            if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
-              mindarSystem.activeTargetIndex = -1; 
-            }
+        if (mindarSystem) {
+          mindarSystem.unpause(); // สั่งให้กล้องกลับมาสแกนตามปกติ
+          if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
+            mindarSystem.activeTargetIndex = -1; 
           }
-          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
-          freezeBtn.classList.remove("active");
         }
       }
 
