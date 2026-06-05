@@ -177,7 +177,26 @@
         -webkit-appearance: none;
         white-space: nowrap;
       }
-      
+
+      /* ปุ่มล็อกภาพให้ค้างหน้าจอแบบดั้งเดิม */
+      #freeze-btn {
+        position: absolute;
+        bottom: 30px;
+        right: 20px;
+        pointer-events: auto;
+        padding: 14px 24px;
+        background-color: #004E98;
+        color: white;
+        border: 2px solid white;
+        border-radius: 8px;
+        font-weight: bold;
+        font-family: sans-serif;
+        font-size: 16px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+        cursor: pointer;
+        -webkit-appearance: none;
+      }
+      #freeze-btn.active { background-color: #FF6B35; }
       .mindar-ui-scanning { background: none !important; }
     </style>
   </head>
@@ -217,31 +236,12 @@
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
+      <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera id="camera" position="0 0 0" look-controls="enabled: false">
-        
-        <a-entity id="screen-locked-content" position="0 0 -1" visible="false">
-          <a-image src="./Manu_Cost_sign.png" position="-0.28 0.16 0" scale="0.45 0.039 1"></a-image>
-          <a-image src="./Admin_Cost_sign.png" position="0.22 0.16 0" scale="0.45 0.039 1"></a-image>
-
-          <a-image id="material-1m-locked" src="./1M.png" position="-0.42 0.12 0" scale="0.18 0.05 1"></a-image>    
-          <a-image src="./ingot.png" position="-0.38 0.04 0" scale="0.09 0.07 1"></a-image> 
-        
-          <a-image id="labor-2m-locked" src="./2M.png" position="-0.42 -0.02 0" scale="0.18 0.06 1"></a-image>
-          <a-image src="./Direct_Labor.png" position="-0.40 -0.12 0" scale="0.17 0.11 1"></a-image>
-
-          <a-image src="./3M.png" position="-0.22 0.12 0" scale="0.18 0.04 1"></a-image>
-          <a-image src="./3_1M.png" position="-0.22 0.04 0" scale="0.20 0.05 1"></a-image>
-          <a-image src="./3_2M.png" position="-0.22 -0.04 0" scale="0.18 0.05 1"></a-image>
-          <a-image src="./3_3M.png" position="-0.22 -0.12 0" scale="0.18 0.05 1"></a-image>          
-          
-          <a-image src="./Office.png" position="0.28 0.12 0" scale="0.09 0.09 1"></a-image>
-        </a-entity>
-
-      </a-camera>
+      <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content" visible="false"> 
@@ -272,7 +272,9 @@
       let currentLang = 'th'; 
       let allVoices = []; 
       
+      const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
+      const freezeBtn = document.getElementById('freeze-btn');
       const speakUiBtn = document.getElementById('speak-ui-btn');
       const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
       const voiceSelect = document.getElementById('voice-select'); 
@@ -282,15 +284,10 @@
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
 
-      const arTarget = document.getElementById('ar-target');
-      const arContent = document.getElementById('ar-content');
-      
-      // ตัวแปรเพิ่มใหม่สำหรับควบคุมพิกัดภาพเสมือนคู่ขนานบนหน้าจอ
-      const screenLockedContent = document.getElementById('screen-locked-content');
-      const material1MLocked = document.getElementById('material-1m-locked');
-      const labor2MLocked = document.getElementById('labor-2m-locked');
       const material1M = document.getElementById('material-1m');
       const labor2M = document.getElementById('labor-2m'); 
+      const arTarget = document.getElementById('ar-target');
+      const arContent = document.getElementById('ar-content');
 
       function updateVoiceList() {
         if (!('speechSynthesis' in window)) return;
@@ -348,81 +345,73 @@
         updateVoiceList();
       }
 
-      // 1. ส่องปุ๊บ สั่งปิดภาพเสมือนบนจอทันที แล้วเปิดระบบ AR ขยับตามกล้องตามปกติ
       arTarget.addEventListener("targetFound", () => {
-        isFrozen = false;
-        targetFound = true;
-        
-        screenLockedContent.setAttribute("visible", "false"); // ซ่อนเวอร์ชันล็อกติดจอ
-        arContent.setAttribute("visible", "true");           // แสดงเวอร์ชันเคลื่อนไหวตามกล้อง
-        
+        arContent.setAttribute("visible", "true");
         speakUiBtn.style.display = "block";
         speakUiBtn2.style.display = "block"; 
+        targetFound = true;
       });
 
-      // 2. ดึงมือถือออกหลุดเฟรมปุ๊บ ระบบ AR จริงจะถูกปิดอัตโนมัติ เราสั่งสลับดึง "ภาพคู่ขนาน" ขึ้นมาค้างจอทันที
       arTarget.addEventListener("targetLost", () => {
-        if (targetFound) {
-          isFrozen = true;
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "false");
+          speakUiBtn.style.display = "none";
+          speakUiBtn2.style.display = "none"; 
+          resetMediaUI(); 
           targetFound = false;
-          
-          arContent.setAttribute("visible", "false");         // ซ่อนเวอร์ชันแผ่นสแกนจริง
-          screenLockedContent.setAttribute("visible", "true"); // ดึงภาพเสมือนขึ้นมาลอยค้างหน้าจอแทน
-          
-          // ปุ่มควบคุมเสียงยังคงเปิดแสดงผลได้อย่างต่อเนื่องไร้รอยต่อ
-          speakUiBtn.style.display = "block";
-          speakUiBtn2.style.display = "block"; 
         }
       });
 
       const tempV = new THREE.Vector3();
       const tempV2 = new THREE.Vector3(); 
       
-      // ฟังก์ชันจับตำแหน่งปุ่มลำโพง HTML ไฮบริด สลับความสัมพันธ์ตามสถานะได้อย่างแม่นยำ 100%
       function updateButtonPosition() {
-        if (cameraEl) {
-          // ถ้าอยู่ระหว่างส่องภาพแผ่นงานปกติ
-          if (targetFound && !isFrozen) {
-            if (material1M) {
-              material1M.object3D.getWorldPosition(tempV);
-              tempV.project(cameraEl.components.camera.camera);
-              const x1 = (tempV.x * .5 + .5) * window.innerWidth;
-              const y1 = (tempV.y * -.5 + .5) * window.innerHeight;
-              speakUiBtn.style.left = `${x1 + 75}px`; 
-              speakUiBtn.style.top = `${y1 - 8}px`; 
-            }
-            if (labor2M) {
-              labor2M.object3D.getWorldPosition(tempV2);
-              tempV2.project(cameraEl.components.camera.camera);
-              const x2 = (tempV2.x * .5 + .5) * window.innerWidth;
-              const y2 = (tempV2.y * -.5 + .5) * window.innerHeight;
-              speakUiBtn2.style.left = `${x2 + 70}px`; 
-              speakUiBtn2.style.top = `${y2 - 8}px`; 
-            }
-          } 
-          // ถ้าดึงมือถือออกห่างแล้ว (ระบบตรึงภาพเสมือนบนจอทำงาน)
-          else if (isFrozen) {
-            if (material1MLocked) {
-              material1MLocked.object3D.getWorldPosition(tempV);
-              tempV.project(cameraEl.components.camera.camera);
-              const x1 = (tempV.x * .5 + .5) * window.innerWidth;
-              const y1 = (tempV.y * -.5 + .5) * window.innerHeight;
-              speakUiBtn.style.left = `${x1 + 75}px`; 
-              speakUiBtn.style.top = `${y1 - 8}px`; 
-            }
-            if (labor2MLocked) {
-              labor2MLocked.object3D.getWorldPosition(tempV2);
-              tempV2.project(cameraEl.components.camera.camera);
-              const x2 = (tempV2.x * .5 + .5) * window.innerWidth;
-              const y2 = (tempV2.y * -.5 + .5) * window.innerHeight;
-              speakUiBtn2.style.left = `${x2 + 70}px`; 
-              speakUiBtn2.style.top = `${y2 - 8}px`; 
-            }
+        if ((targetFound || isFrozen) && cameraEl) {
+          if (material1M) {
+            material1M.object3D.getWorldPosition(tempV);
+            tempV.project(cameraEl.components.camera.camera);
+            const x1 = (tempV.x * .5 + .5) * window.innerWidth;
+            const y1 = (tempV.y * -.5 + .5) * window.innerHeight;
+            speakUiBtn.style.left = `${x1 + 75}px`; 
+            speakUiBtn.style.top = `${y1 - 8}px`; 
+          }
+          if (labor2M) {
+            labor2M.object3D.getWorldPosition(tempV2);
+            tempV2.project(cameraEl.components.camera.camera);
+            const x2 = (tempV2.x * .5 + .5) * window.innerWidth;
+            const y2 = (tempV2.y * -.5 + .5) * window.innerHeight;
+            speakUiBtn2.style.left = `${x2 + 70}px`; 
+            speakUiBtn2.style.top = `${y2 - 8}px`; 
           }
         }
         requestAnimationFrame(updateButtonPosition);
       }
       requestAnimationFrame(updateButtonPosition);
+
+      // ฟังก์ชันเปิด-ปิดการล็อกหน้าจอแบบกดปุ่มทำด้วยตัวเอง
+      function toggleFreeze() {
+        isFrozen = !isFrozen;
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
+        if (isFrozen) {
+          if (mindarSystem) mindarSystem.pause(true); 
+          freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
+          freezeBtn.classList.add("active");
+        } else {
+          arContent.setAttribute("visible", "false");
+          speakUiBtn.style.display = "none";
+          speakUiBtn2.style.display = "none"; 
+          resetMediaUI(); 
+          targetFound = false;
+          if (mindarSystem) {
+            mindarSystem.unpause();
+            if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
+              mindarSystem.activeTargetIndex = -1; 
+            }
+          }
+          freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
+          freezeBtn.classList.remove("active");
+        }
+      }
 
       function speakCustomIngot() {
         resetMediaUI(); 
@@ -435,7 +424,7 @@
           utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
           utterance.lang = "en-US"; 
         } else if (currentLang === 'jp') {
-          utterance.text = "直接材料費とは、アルミニウムなど、製品ของ製造に直接使用される主要な原材料のことです。";
+          utterance.text = "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。";
           utterance.lang = "ja-JP"; 
         }
         
