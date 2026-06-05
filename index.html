@@ -19,15 +19,15 @@
         pointer-events: none;
       }
 
-      /* [เพิ่มใหม่] สไตล์สำหรับรูปภาพโลโก้/ป้ายที่มุมซ้ายบนสุด */
+      /* สไตล์สำหรับรูปภาพโลโก้/ป้ายที่มุมซ้ายบนสุด */
       .top-left-logo {
         position: absolute;
         top: 20px;
         left: 20px;
-        pointer-events: auto; /* ตั้งเป็น auto หากต้องการให้คลิกรูปภาพได้ หรือเปลี่ยนเป็น none ถ้าให้ทะลุผ่าน */
-        max-width: 120px;     /* ปรับขนาดความกว้างตามที่ต้องการ */
+        pointer-events: auto; 
+        max-width: 120px;     
         height: auto;
-        filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); /* เพิ่มมิติเงาให้ลอยเด่น */
+        filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); 
         z-index: 1000002;
       }
 
@@ -88,17 +88,43 @@
         outline: none;
       }
 
-      /* กล่องข้อความซับไตเติล */
-      #subtitles-box {
+      /* [ปรับปรุงปรุงใหม่] หน้าต่างวิดีโอเด้งกลางหน้าจอ */
+      #video-overlay-container {
         position: absolute;
-        bottom: 110px;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
-        width: 85%;
-        max-width: 600px;
-        background-color: rgba(0, 0, 0, 0.75);
+        transform: translate(-50%, -50%);
+        width: 75%;
+        max-width: 450px;
+        display: none; 
+        z-index: 1000000;
+        pointer-events: auto; 
+      }
+
+      /* [เพิ่มใหม่] กรอบสำหรับตัววิดีโอโดยเฉพาะ */
+      .video-wrapper {
+        width: 100%;
+        background-color: #000000;
+        border: 3px solid white;
+        border-radius: 12px;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
+        overflow: hidden;
+      }
+
+      #ar-video-player {
+        width: 100%;
+        display: block;
+      }
+
+      /* [ปรับปรุงใหม่] กล่องข้อความซับไตเติ้ลให้ต่อท้ายวิดีโอพอดี */
+      #subtitles-box {
+        position: relative; /* เปลี่ยนเป็น relative เพื่อให้จัดเรียงต่อท้ายกรอบ VDO */
+        margin-top: 12px;   /* ระยะห่างระหว่างด้านล่าง VDO กับกล่องซับไตเติล */
+        width: 100%;        /* กว้างเท่ากับขนาดกรอบวิดีโอ */
+        box-sizing: border-box;
+        background-color: rgba(0, 0, 0, 0.82);
         color: #FFFFFF;
-        padding: 10px 18px;
+        padding: 10px 16px;
         border-radius: 10px;
         font-family: sans-serif;
         font-size: 15px;
@@ -108,30 +134,6 @@
         box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
         display: none;
         pointer-events: none;
-        z-index: 1000001;
-      }
-
-      /* หน้าต่างวิดีโอเด้งกลางหน้าจอ */
-      #video-overlay-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 75%;
-        max-width: 450px;
-        background-color: #000000;
-        border: 3px solid white;
-        border-radius: 12px;
-        box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
-        display: none; 
-        overflow: hidden;
-        z-index: 1000000;
-        pointer-events: auto; 
-      }
-
-      #ar-video-player {
-        width: 100%;
-        display: block;
       }
 
       /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง */
@@ -214,7 +216,7 @@
           <select id="voice-select"></select>
         </div>
         <div class="control-group">
-          <label>⚡ความเร็ว:</label>
+          <label>⚡ ความเร็ว:</label>
           <select id="speed-select">
             <option value="0.6">ช้ามาก (0.6x)</option>
             <option value="0.8" selected>ช้า (0.8x)</option>
@@ -224,11 +226,14 @@
         </div>
       </div>
       
+      <!-- [ปรับปรุงใหม่] รวมศูนย์ระบบแสดงผลสื่อนิ่ง/เคลื่อนไหวและคำบรรยายไว้ด้วยกัน -->
       <div id="video-overlay-container">
-        <video id="ar-video-player" muted playsinline></video>
+        <div class="video-wrapper">
+          <video id="ar-video-player" muted playsinline></video>
+        </div>
+        <!-- ย้ายกล่องซับไตเติ้ลมาปักหลักอยู่ใต้โครงสร้างวิดีโอที่นี่ -->
+        <div id="subtitles-box"></div>
       </div>
-
-      <div id="subtitles-box"></div>
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
@@ -252,7 +257,6 @@
           <a-image src="./Direct_Labor.png" position="-0.40 -0.12 0" scale="0.17 0.11 1"></a-image>
 
           <a-image src="./3M.png" position="-0.20 0.12 0" scale="0.18 0.05 1"></a-image>
-
           
           <a-image src="./Office.png" position="0.28 0.01 0" scale="0.09 0.09 1"></a-image>
 
