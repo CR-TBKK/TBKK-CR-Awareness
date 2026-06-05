@@ -185,7 +185,7 @@
         right: 20px;
         pointer-events: auto;
         padding: 14px 24px;
-        background-color: #004E98;
+        background-color: #E63946;
         color: white;
         border: 2px solid white;
         border-radius: 8px;
@@ -194,7 +194,7 @@
         font-size: 16px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         cursor: pointer;
-        display: none; /* จะแสดงขึ้นมาเฉพาะตอนที่ระบบทำการล็อกภาพอัตโนมัติแล้ว */
+        display: none; 
         -webkit-appearance: none;
       }
       
@@ -237,7 +237,7 @@
 
       <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
       <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
-      <button id="rescan-btn" onclick="resetToScan()">🔄 สแกนใหม่อีกครั้ง</button>
+      <button id="rescan-btn" onclick="resetToScan()">🔄 ล้างหน้าจอ/สแกนใหม่</button>
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -349,29 +349,27 @@
         updateVoiceList();
       }
 
-      // ระบบล็อกภาพอัตโนมัติทันทีเมื่อส่องเจอครั้งแรก (Auto Freeze on Target Found)
+      // 1. ตราบใดที่ภาพยังอยู่ในเฟรม ให้ขยับตามกล้องไปเรื่อยๆ (ขยับได้อย่างอิสระ)
       arTarget.addEventListener("targetFound", () => {
-        arContent.setAttribute("visible", "true");
-        speakUiBtn.style.display = "block";
-        speakUiBtn2.style.display = "block"; 
-        targetFound = true;
-
-        // สั่งให้ระบบหยุดแสกนและล็อกตำแหน่งวัตถุให้อยู่กับที่บนจอทันที
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        if (mindarSystem && !isFrozen) {
-          isFrozen = true;
-          mindarSystem.pause(true); // หยุดทำงานของกล้องชั่วคราวเพื่อให้ภาพ AR ค้างหน้าจอ
-          rescanBtn.style.display = "block"; // แสดงปุ่มสแกนใหม่เผื่อต้องการล้างหน้าจอ
+        if (!isFrozen) {
+          arContent.setAttribute("visible", "true");
+          speakUiBtn.style.display = "block";
+          speakUiBtn2.style.display = "block"; 
+          targetFound = true;
+          rescanBtn.style.display = "none"; // ยังอยู่ในเฟรม ไม่ต้องโชว์ปุ่มรีเซ็ต
         }
       });
 
+      // 2. เมื่อไหร่ที่ภาพหลุดออกจากเฟรม (Target Lost) ค่อยสั่งให้ล็อกตำแหน่งค้างหน้าจอทันที
       arTarget.addEventListener("targetLost", () => {
-        if (!isFrozen) {
-          arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; 
-          resetMediaUI(); 
-          targetFound = false;
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
+        
+        // ถ้าก่อนหน้านี้เจอภาพอยู่ แล้วจู่ๆ หลุดเฟรมไป ให้ทำการล็อกภาพทันที
+        if (targetFound && mindarSystem && !isFrozen) {
+          isFrozen = true; 
+          mindarSystem.pause(true); // สั่งหยุดระบบสแกน เพื่อตรึงภาพและปุ่มทั้งหมดค้างไว้บนหน้าจอ
+          rescanBtn.style.display = "block"; // แสดงปุ่มสีแดงเพื่อให้ผู้ใช้กดเคลียร์หน้าจอเมื่อดูเสร็จ
+          console.log("ภาพหลุดเฟรม: ระบบล็อกภาพไว้บนหน้าจอให้โดยอัตโนมัติ");
         }
       });
 
@@ -401,7 +399,7 @@
       }
       requestAnimationFrame(updateButtonPosition);
 
-      // ฟังก์ชันสำหรับกดปุ่มเพื่อล้างหน้าจอและกลับไปเปิดระบบสแกนหาแผ่นภาพใหม่อีกครั้ง
+      // ฟังก์ชันสำหรับกดปุ่มล้างหน้าจอเพื่อไปสแกนแผ่นภาพใบอื่นต่อ
       function resetToScan() {
         isFrozen = false;
         targetFound = false;
@@ -414,7 +412,7 @@
 
         const mindarSystem = sceneEl.systems["mindar-image-system"];
         if (mindarSystem) {
-          mindarSystem.unpause(); // สั่งให้กล้องกลับมาสแกนตามปกติ
+          mindarSystem.unpause(); // ปลดล็อกระบบ เพื่อให้กล้องเริ่มสแกนใหม่อีกครั้ง
           if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
             mindarSystem.activeTargetIndex = -1; 
           }
