@@ -19,7 +19,6 @@
         pointer-events: none;
       }
 
-      /* สไตล์สำหรับรูปภาพโลโก้/ป้ายที่มุมซ้ายบนสุด */
       .top-left-logo {
         position: absolute;
         top: 20px;
@@ -31,7 +30,6 @@
         z-index: 1000002;
       }
 
-      /* แถบกล่องควบคุมภาษาและสำเนียงที่มุมขวาบน */
       .lang-container {
         position: absolute;
         top: 20px;
@@ -88,7 +86,6 @@
         outline: none;
       }
 
-      /* หน้าต่างวิดีโอเด้งกลางหน้าจอ */
       #video-overlay-container {
         position: absolute;
         top: 50%;
@@ -101,7 +98,6 @@
         pointer-events: auto; 
       }
 
-      /* กรอบสำหรับตัววิดีโอโดยเฉพาะ */
       .video-wrapper {
         width: 100%;
         background-color: #000000;
@@ -116,7 +112,6 @@
         display: block;
       }
 
-      /* กล่องข้อความซับไตเติ้ลให้ต่อท้ายวิดีโอพอดี */
       #subtitles-box {
         position: relative; 
         margin-top: 12px;   
@@ -136,7 +131,6 @@
         pointer-events: none;
       }
 
-      /* สไตล์พื้นฐานสำหรับปุ่มฟังเสียง (UI) */
       .speak-btn-ui {
         position: absolute;
         pointer-events: auto;
@@ -150,7 +144,7 @@
         font-size: 13px;
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        display: none; /* ซ่อนไว้ก่อนจนกว่าจะเจอ Target */
+        display: none;
         transform: translate(-50%, -50%);
         z-index: 100000;
         -webkit-appearance: none;
@@ -158,7 +152,6 @@
       }
       .speak-btn-ui:active { background-color: #0096C7; }
 
-      /* ปุ่มล็อกภาพให้ค้างหน้าจอแบบดั้งเดิม */
       #freeze-btn {
         position: absolute;
         bottom: 30px;
@@ -183,7 +176,6 @@
 
   <body>
     <div class="ar-ui-layer">
-      
       <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
 
       <div class="lang-container">
@@ -191,6 +183,7 @@
           <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
           <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
           <img id="flag-jp" class="flag-btn" src="https://flagcdn.com/w40/jp.png" onclick="setLanguage('jp')" title="日本語" />
+          <img id="flag-cn" class="flag-btn" src="https://flagcdn.com/w40/cn.png" onclick="setLanguage('cn')" title="中文" />
         </div>
         <div class="control-group">
           <label>🗣️เสียง</label>
@@ -225,12 +218,10 @@
     </div>
 
     <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      
       <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content" visible="false"> 
-          
           <a-image src="./Manu_Cost_sign.png" position="-0.28 0.16 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.22 0.16 0" scale="0.45 0.039 1"></a-image>
 
@@ -246,7 +237,6 @@
           <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.12 0" scale="0.20 0.06 1"></a-image>          
           
           <a-image src="./Office.png" position="0.28 0.12 0" scale="0.09 0.09 1"></a-image>
-
         </a-entity>
       </a-entity>
     </a-scene>
@@ -257,23 +247,17 @@
       let currentLang = 'th'; 
       let allVoices = []; 
       
-      // Scene & Camera
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
-
-      // Common UI
       const freezeBtn = document.getElementById('freeze-btn');
       const voiceSelect = document.getElementById('voice-select'); 
       const speedSelect = document.getElementById('speed-select');
-      
-      // Media UI (Video & Subtitles)
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
       const subtitlesBox = document.getElementById('subtitles-box');
 
-      // A-Frame Entities (for positioning buttons)
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
       const ent3M = document.getElementById('over-3m');
@@ -281,7 +265,6 @@
       const ent3_2M = document.getElementById('over-3_2m');
       const ent3_3M = document.getElementById('over-3_3m');
 
-      // HTML UI Buttons
       const btnUI1M = document.getElementById('speak-ui-btn-1m');
       const btnUI2M = document.getElementById('speak-ui-btn-2m'); 
       const btnUI3M = document.getElementById('speak-ui-btn-3m');
@@ -289,13 +272,8 @@
       const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
       const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
 
-      // List of all speak buttons for easy show/hide
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
 
-
-      // ==========================================
-      // 1. TTS & Language Logic
-      // ==========================================
       function updateVoiceList() {
         if (!('speechSynthesis' in window)) return;
         allVoices = window.speechSynthesis.getVoices();
@@ -304,6 +282,7 @@
         let filterLang = 'th-TH';
         if (currentLang === 'en') filterLang = 'en-'; 
         if (currentLang === 'jp') filterLang = 'ja-JP';
+        if (currentLang === 'cn') filterLang = 'zh-'; // กรองภาษาจีน (CN/HK/TW)
 
         let filteredVoices = allVoices.filter(voice => 
           voice.lang.toLowerCase().replace('_', '-').startsWith(filterLang.toLowerCase())
@@ -313,7 +292,7 @@
           const option = document.createElement('option');
           option.value = voice.name;
           let genderLabel = "หญิง"; 
-          if (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Ravi') || voice.name.includes('Google US English')) {
+          if (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Kangkang')) {
             genderLabel = "ชาย";
           }
           option.innerText = `เสียง${genderLabel} (${voice.name.split(' ')[0]})`;
@@ -341,7 +320,7 @@
         window.speechSynthesis.cancel();
         subtitlesBox.style.display = "none";
         videoPlayer.pause();
-        videoPlayer.src = ""; // Clear source to stop buffering
+        videoPlayer.src = "";
         videoContainer.style.display = "none";
       }
 
@@ -353,13 +332,8 @@
         updateVoiceList();
       }
 
-
-      // ==========================================
-      // 2. AR Target Events
-      // ==========================================
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
-        // Show all buttons
         allSpeakBtnUIs.forEach(btn => btn.style.display = "block");
         targetFound = true;
       });
@@ -367,28 +341,19 @@
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
-          // Hide all buttons
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           targetFound = false;
         }
       });
 
-
-      // ==========================================
-      // 3. Button Positioning Logic (3D to 2D)
-      // ==========================================
       const tempV = new THREE.Vector3();
-      
-      // Helper function to position one UI button over an A-Frame entity
       function positionButton(entity, button, offsetX, offsetY) {
         if (entity && entity.object3D && cameraEl.components.camera) {
           entity.object3D.getWorldPosition(tempV);
           tempV.project(cameraEl.components.camera.camera);
-          
           const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
           const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
-          
           button.style.left = `${x + offsetX}px`; 
           button.style.top = `${y + offsetY}px`; 
         }
@@ -396,24 +361,17 @@
 
       function updateAllButtonPositions() {
         if ((targetFound || isFrozen) && cameraEl) {
-          // Adjust offsets (X, Y) based on visual preference. 
-          // positive X goes right, positive Y goes down.
           positionButton(ent1M, btnUI1M, 75, -2);
           positionButton(ent2M, btnUI2M, 70, -2);
-          positionButton(ent3M, btnUI3M, 85, -2);   // Offset for 3M
-          positionButton(ent3_1M, btnUI3_1M, 95, -2); // Offset for 3_1M
-          positionButton(ent3_2M, btnUI3_2M, 80, -2); // Offset for 3_2M
-          positionButton(ent3_3M, btnUI3_3M, 75, -2); // Offset for 3_3M
+          positionButton(ent3M, btnUI3M, 85, -2);
+          positionButton(ent3_1M, btnUI3_1M, 95, -2);
+          positionButton(ent3_2M, btnUI3_2M, 80, -2);
+          positionButton(ent3_3M, btnUI3_3M, 75, -2);
         }
         requestAnimationFrame(updateAllButtonPositions);
       }
-      // Start positioning loop
       requestAnimationFrame(updateAllButtonPositions);
 
-
-      // ==========================================
-      // 4. Freeze Screen Logic
-      // ==========================================
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
@@ -423,14 +381,13 @@
           freezeBtn.classList.add("active");
         } else {
           arContent.setAttribute("visible", "false");
-          // Hide all buttons
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           targetFound = false;
           if (mindarSystem) {
             mindarSystem.unpause();
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
-              mindarSystem.activeTargetIndex = -1; // Force re-detection
+              mindarSystem.activeTargetIndex = -1;
             }
           }
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
@@ -438,32 +395,27 @@
         }
       }
 
-
-      // ==========================================
-      // 5. Generalized Speak & Video Function
-      // ==========================================
       function performSpeakAction(textMap, videoSrc) {
         resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
         
-        // Select text based on current language
         if (currentLang === 'th') {
           utterance.text = textMap.th;
           utterance.lang = "th-TH"; 
         } else if (currentLang === 'en') {
-          utterance.text = textMap.en || textMap.th; // Fallback to TH if EN not provided
+          utterance.text = textMap.en || textMap.th;
           utterance.lang = "en-US"; 
         } else if (currentLang === 'jp') {
-          utterance.text = textMap.jp || textMap.th; // Fallback to TH if JP not provided
+          utterance.text = textMap.jp || textMap.th;
           utterance.lang = "ja-JP"; 
+        } else if (currentLang === 'cn') {
+          utterance.text = textMap.cn || textMap.th;
+          utterance.lang = "zh-CN"; 
         }
         
         utterance.onstart = function() {
-          // Show subtitles
           subtitlesBox.innerText = utterance.text;
           subtitlesBox.style.display = "block";
-          
-          // Show and play video
           if(videoSrc) {
             videoPlayer.src = videoSrc;
             videoContainer.style.display = "block";
@@ -471,14 +423,8 @@
           }
         };
 
-        utterance.onend = function() {
-          hideMedia();
-        };
-        
-        utterance.onerror = function(e) {
-          console.error("TTS Error:", e);
-          hideMedia();
-        }
+        utterance.onend = function() { hideMedia(); };
+        utterance.onerror = function(e) { hideMedia(); }
 
         function hideMedia() {
           subtitlesBox.style.display = "none";
@@ -491,16 +437,12 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // ==========================================
-      // 6. Specific Action Functions (Click handlers)
-      // ==========================================
-      
-      // --- เดิม ---
       function speak1M() {
         performSpeakAction({
           th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม",
           en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
-          jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。"
+          jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。",
+          cn: "直接材料是指生产中使用的主要原材料，例如铝。"
         }, "./video1.mp4");
       }
 
@@ -508,36 +450,46 @@
         performSpeakAction({
           th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
           en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
-          jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。"
+          jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。",
+          cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
         }, "./video2.mp4");
       }
 
-      // --- เพิ่มใหม่ ---
       function speak3M() {
         performSpeakAction({
-          th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ทีเกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง"
-          // เพิ่ม en: "...", jp: "..." ได้ที่นี่ในอนาคต
+          th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ทีเกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง",
+          en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
+          jp: "製造間接費とは、直接材料費と直接労務費以外の製造過程で発生するすべての費用のことです。",
+          cn: "制造费用是指在产品生产过程中发生的，除直接材料和直接人工以外的所有费用。"
         }, "./video3.mp4");
       }
 
       function speak3_1M() {
         performSpeakAction({
-          th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ"
+          th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ",
+          en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses.",
+          jp: "その他の製造費用（電気、水、工場の賃料、保守、建物の減価償却、機械の減価償却、その他の工場経費など）。",
+          cn: "其他制造费用，例如电费、水费、工厂租金、维修费、厂房折旧、机器折旧以及其他工厂开支。"
         }, "./video4.mp4");
       }
 
       function speak3_2M() {
         performSpeakAction({
-          th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต"
+          th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
+          en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
+          jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
+          cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
         }, "./video5.mp4");
       }
 
       function speak3_3M() {
         performSpeakAction({
-          th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ"
+          th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ",
+          en: "Indirect materials such as consumables used to support production like lubricants, inserts, or gloves.",
+          jp: "間接材料費（潤滑油、インサート、手袋などの製造を支援するために使用される消耗品など）。",
+          cn: "间接材料，例如用于辅助生产的消耗品，如润滑油、刀片或手套。"
         }, "./video6.mp4");
       }
-
     </script>
   </body>
 </html>
