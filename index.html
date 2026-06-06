@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>AR สื่อการสอน: ต้นทุนโรงงาน</title>
+    <title>AR สื่อการสอน: ต้นทุนโรงงาน (แก้ไข)</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
@@ -25,7 +25,7 @@
         top: 20px;
         left: 20px;
         pointer-events: auto; 
-        max-width: 120px;     
+        max-width: 120px;      
         height: auto;
         filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); 
         z-index: 1000002;
@@ -136,8 +136,8 @@
         pointer-events: none;
       }
 
-      /* ปุ่มที่ 1: ฟังเสียง วัตถุดิบทางตรง */
-      #speak-ui-btn {
+      /* สไตล์พื้นฐานสำหรับปุ่มฟังเสียง (UI) */
+      .speak-btn-ui {
         position: absolute;
         pointer-events: auto;
         padding: 6px 12px;
@@ -150,33 +150,13 @@
         font-size: 13px;
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        display: none;
+        display: none; /* ซ่อนไว้ก่อนจนกว่าจะเจอ Target */
         transform: translate(-50%, -50%);
         z-index: 100000;
         -webkit-appearance: none;
         white-space: nowrap;
       }
-
-      /* ปุ่มที่ 2: ฟังเสียง ค่าแรงทางตรง */
-      #speak-ui-btn2 {
-        position: absolute;
-        pointer-events: auto;
-        padding: 6px 12px;
-        background-color: #0077B6;
-        color: white;
-        border: 2px solid white;
-        border-radius: 6px;
-        font-weight: bold;
-        font-family: sans-serif;
-        font-size: 13px;
-        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
-        cursor: pointer;
-        display: none;
-        transform: translate(-50%, -50%);
-        z-index: 100000;
-        -webkit-appearance: none;
-        white-space: nowrap;
-      }
+      .speak-btn-ui:active { background-color: #0096C7; }
 
       /* ปุ่มล็อกภาพให้ค้างหน้าจอแบบดั้งเดิม */
       #freeze-btn {
@@ -234,8 +214,13 @@
         <div id="subtitles-box"></div>
       </div>
 
-      <button id="speak-ui-btn" onclick="speakCustomIngot()">🔊</button>
-      <button id="speak-ui-btn2" onclick="speakCustomLabor()">🔊</button>
+      <button id="speak-ui-btn-1m" class="speak-btn-ui" onclick="speak1M()">🔊</button>
+      <button id="speak-ui-btn-2m" class="speak-btn-ui" onclick="speak2M()">🔊</button>
+      <button id="speak-ui-btn-3m" class="speak-btn-ui" onclick="speak3M()">🔊</button>
+      <button id="speak-ui-btn-3_1m" class="speak-btn-ui" onclick="speak3_1M()">🔊</button>
+      <button id="speak-ui-btn-3_2m" class="speak-btn-ui" onclick="speak3_2M()">🔊</button>
+      <button id="speak-ui-btn-3_3m" class="speak-btn-ui" onclick="speak3_3M()">🔊</button>
+
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
@@ -255,10 +240,10 @@
           <a-image id="labor-2m" src="./2M.png" position="-0.42 -0.02 0" scale="0.18 0.06 1"></a-image>
           <a-image src="./Direct_Labor.png" position="-0.40 -0.12 0" scale="0.17 0.11 1"></a-image>
 
-          <a-image src="./3M.png" position="-0.21 0.12 0" scale="0.20 0.05 1"></a-image>
-          <a-image src="./3_1M.png" position="-0.21 0.04 0" scale="0.24 0.05 1"></a-image>
-          <a-image src="./3_2M.png" position="-0.22 -0.04 0" scale="0.19 0.06 1"></a-image>
-          <a-image src="./3_3M.png" position="-0.22 -0.12 0" scale="0.19 0.06 1"></a-image>          
+          <a-image id="over-3m" src="./3M.png" position="-0.21 0.12 0" scale="0.20 0.05 1"></a-image>
+          <a-image id="over-3_1m" src="./3_1M.png" position="-0.21 0.04 0" scale="0.24 0.05 1"></a-image>
+          <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.04 0" scale="0.19 0.06 1"></a-image>
+          <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.12 0" scale="0.19 0.06 1"></a-image>          
           
           <a-image src="./Office.png" position="0.28 0.12 0" scale="0.09 0.09 1"></a-image>
 
@@ -272,23 +257,45 @@
       let currentLang = 'th'; 
       let allVoices = []; 
       
+      // Scene & Camera
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
-      const freezeBtn = document.getElementById('freeze-btn');
-      const speakUiBtn = document.getElementById('speak-ui-btn');
-      const speakUiBtn2 = document.getElementById('speak-ui-btn2'); 
-      const voiceSelect = document.getElementById('voice-select'); 
-      const speedSelect = document.getElementById('speed-select');
-      const subtitlesBox = document.getElementById('subtitles-box');
-      
-      const videoContainer = document.getElementById('video-overlay-container');
-      const videoPlayer = document.getElementById('ar-video-player');
-
-      const material1M = document.getElementById('material-1m');
-      const labor2M = document.getElementById('labor-2m'); 
       const arTarget = document.getElementById('ar-target');
       const arContent = document.getElementById('ar-content');
 
+      // Common UI
+      const freezeBtn = document.getElementById('freeze-btn');
+      const voiceSelect = document.getElementById('voice-select'); 
+      const speedSelect = document.getElementById('speed-select');
+      
+      // Media UI (Video & Subtitles)
+      const videoContainer = document.getElementById('video-overlay-container');
+      const videoPlayer = document.getElementById('ar-video-player');
+      const subtitlesBox = document.getElementById('subtitles-box');
+
+      // A-Frame Entities (for positioning buttons)
+      const ent1M = document.getElementById('material-1m');
+      const ent2M = document.getElementById('labor-2m'); 
+      const ent3M = document.getElementById('over-3m');
+      const ent3_1M = document.getElementById('over-3_1m');
+      const ent3_2M = document.getElementById('over-3_2m');
+      const ent3_3M = document.getElementById('over-3_3m');
+
+      // HTML UI Buttons
+      const btnUI1M = document.getElementById('speak-ui-btn-1m');
+      const btnUI2M = document.getElementById('speak-ui-btn-2m'); 
+      const btnUI3M = document.getElementById('speak-ui-btn-3m');
+      const btnUI3_1M = document.getElementById('speak-ui-btn-3_1m');
+      const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
+      const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
+
+      // List of all speak buttons for easy show/hide
+      const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
+
+
+      // ==========================================
+      // 1. TTS & Language Logic
+      // ==========================================
       function updateVoiceList() {
         if (!('speechSynthesis' in window)) return;
         allVoices = window.speechSynthesis.getVoices();
@@ -334,6 +341,7 @@
         window.speechSynthesis.cancel();
         subtitlesBox.style.display = "none";
         videoPlayer.pause();
+        videoPlayer.src = ""; // Clear source to stop buffering
         videoContainer.style.display = "none";
       }
 
@@ -345,50 +353,67 @@
         updateVoiceList();
       }
 
+
+      // ==========================================
+      // 2. AR Target Events
+      // ==========================================
       arTarget.addEventListener("targetFound", () => {
         arContent.setAttribute("visible", "true");
-        speakUiBtn.style.display = "block";
-        speakUiBtn2.style.display = "block"; 
+        // Show all buttons
+        allSpeakBtnUIs.forEach(btn => btn.style.display = "block");
         targetFound = true;
       });
 
       arTarget.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; 
+          // Hide all buttons
+          allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           targetFound = false;
         }
       });
 
-      const tempV = new THREE.Vector3();
-      const tempV2 = new THREE.Vector3(); 
-      
-      function updateButtonPosition() {
-        if ((targetFound || isFrozen) && cameraEl) {
-          if (material1M) {
-            material1M.object3D.getWorldPosition(tempV);
-            tempV.project(cameraEl.components.camera.camera);
-            const x1 = (tempV.x * .5 + .5) * window.innerWidth;
-            const y1 = (tempV.y * -.5 + .5) * window.innerHeight;
-            speakUiBtn.style.left = `${x1 + 75}px`; 
-            speakUiBtn.style.top = `${y1 - 8}px`; 
-          }
-          if (labor2M) {
-            labor2M.object3D.getWorldPosition(tempV2);
-            tempV2.project(cameraEl.components.camera.camera);
-            const x2 = (tempV2.x * .5 + .5) * window.innerWidth;
-            const y2 = (tempV2.y * -.5 + .5) * window.innerHeight;
-            speakUiBtn2.style.left = `${x2 + 70}px`; 
-            speakUiBtn2.style.top = `${y2 - 8}px`; 
-          }
-        }
-        requestAnimationFrame(updateButtonPosition);
-      }
-      requestAnimationFrame(updateButtonPosition);
 
-      // ฟังก์ชันเปิด-ปิดการล็อกหน้าจอแบบกดปุ่มทำด้วยตัวเอง
+      // ==========================================
+      // 3. Button Positioning Logic (3D to 2D)
+      // ==========================================
+      const tempV = new THREE.Vector3();
+      
+      // Helper function to position one UI button over an A-Frame entity
+      function positionButton(entity, button, offsetX, offsetY) {
+        if (entity && entity.object3D && cameraEl.components.camera) {
+          entity.object3D.getWorldPosition(tempV);
+          tempV.project(cameraEl.components.camera.camera);
+          
+          const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+          const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+          
+          button.style.left = `${x + offsetX}px`; 
+          button.style.top = `${y + offsetY}px`; 
+        }
+      }
+
+      function updateAllButtonPositions() {
+        if ((targetFound || isFrozen) && cameraEl) {
+          // Adjust offsets (X, Y) based on visual preference. 
+          // positive X goes right, positive Y goes down.
+          positionButton(ent1M, btnUI1M, 75, -8);
+          positionButton(ent2M, btnUI2M, 70, -8);
+          positionButton(ent3M, btnUI3M, 85, -8);   // Offset for 3M
+          positionButton(ent3_1M, btnUI3_1M, 95, -8); // Offset for 3_1M
+          positionButton(ent3_2M, btnUI3_2M, 75, -8); // Offset for 3_2M
+          positionButton(ent3_3M, btnUI3_3M, 75, -8); // Offset for 3_3M
+        }
+        requestAnimationFrame(updateAllButtonPositions);
+      }
+      // Start positioning loop
+      requestAnimationFrame(updateAllButtonPositions);
+
+
+      // ==========================================
+      // 4. Freeze Screen Logic
+      // ==========================================
       function toggleFreeze() {
         isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
@@ -398,14 +423,14 @@
           freezeBtn.classList.add("active");
         } else {
           arContent.setAttribute("visible", "false");
-          speakUiBtn.style.display = "none";
-          speakUiBtn2.style.display = "none"; 
+          // Hide all buttons
+          allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           targetFound = false;
           if (mindarSystem) {
             mindarSystem.unpause();
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
-              mindarSystem.activeTargetIndex = -1; 
+              mindarSystem.activeTargetIndex = -1; // Force re-detection
             }
           }
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
@@ -413,73 +438,106 @@
         }
       }
 
-      function speakCustomIngot() {
+
+      // ==========================================
+      // 5. Generalized Speak & Video Function
+      // ==========================================
+      function performSpeakAction(textMap, videoSrc) {
         resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
         
+        // Select text based on current language
         if (currentLang === 'th') {
-          utterance.text = "วัตถุดิบทางตรง หมายถึง  วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม";
+          utterance.text = textMap.th;
           utterance.lang = "th-TH"; 
         } else if (currentLang === 'en') {
-          utterance.text = "Direct materials refer to the primary raw materials used in production, such as aluminum.";
+          utterance.text = textMap.en || textMap.th; // Fallback to TH if EN not provided
           utterance.lang = "en-US"; 
         } else if (currentLang === 'jp') {
-          utterance.text = "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。";
+          utterance.text = textMap.jp || textMap.th; // Fallback to TH if JP not provided
           utterance.lang = "ja-JP"; 
         }
         
         utterance.onstart = function() {
+          // Show subtitles
           subtitlesBox.innerText = utterance.text;
           subtitlesBox.style.display = "block";
           
-          videoPlayer.src = "./video1.mp4";
-          videoContainer.style.display = "block";
-          videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
+          // Show and play video
+          if(videoSrc) {
+            videoPlayer.src = videoSrc;
+            videoContainer.style.display = "block";
+            videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
+          }
         };
+
         utterance.onend = function() {
+          hideMedia();
+        };
+        
+        utterance.onerror = function(e) {
+          console.error("TTS Error:", e);
+          hideMedia();
+        }
+
+        function hideMedia() {
           subtitlesBox.style.display = "none";
           videoPlayer.pause();
           videoContainer.style.display = "none"; 
-        };
+        }
         
         utterance.rate = parseFloat(speedSelect.value);
         utterance.voice = getSelectedVoice();
         window.speechSynthesis.speak(utterance);
       }
 
-      function speakCustomLabor() {
-        resetMediaUI(); 
-        const utterance = new SpeechSynthesisUtterance();
-        
-        if (currentLang === 'th') {
-          utterance.text = "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง";
-          utterance.lang = "th-TH"; 
-        } else if (currentLang === 'en') {
-          utterance.text = "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.";
-          utterance.lang = "en-US"; 
-        } else if (currentLang === 'jp') {
-          utterance.text = "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。";
-          utterance.lang = "ja-JP"; 
-        }
-        
-        utterance.onstart = function() {
-          subtitlesBox.innerText = utterance.text;
-          subtitlesBox.style.display = "block";
-          
-          videoPlayer.src = "./video2.mp4";
-          videoContainer.style.display = "block";
-          videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
-        };
-        utterance.onend = function() {
-          subtitlesBox.style.display = "none";
-          videoPlayer.pause();
-          videoContainer.style.display = "none"; 
-        };
-        
-        utterance.rate = parseFloat(speedSelect.value);
-        utterance.voice = getSelectedVoice();
-        window.speechSynthesis.speak(utterance);
+      // ==========================================
+      // 6. Specific Action Functions (Click handlers)
+      // ==========================================
+      
+      // --- เดิม ---
+      function speak1M() {
+        performSpeakAction({
+          th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม",
+          en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
+          jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。"
+        }, "./video1.mp4");
       }
+
+      function speak2M() {
+        performSpeakAction({
+          th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
+          en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
+          jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。"
+        }, "./video2.mp4");
+      }
+
+      // --- เพิ่มใหม่ ---
+      function speak3M() {
+        performSpeakAction({
+          th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ทีเกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง"
+          // เพิ่ม en: "...", jp: "..." ได้ที่นี่ในอนาคต
+        }, "./video3.mp4");
+      }
+
+      function speak3_1M() {
+        performSpeakAction({
+          th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ"
+        }, "./video4.mp4");
+      }
+
+      function speak3_2M() {
+        performSpeakAction({
+          th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต"
+        }, "./video5.mp4");
+      }
+
+      function speak3_3M() {
+        performSpeakAction({
+          th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ"
+        }, "./video6.mp4");
+      }
+
     </script>
   </body>
 </html>
