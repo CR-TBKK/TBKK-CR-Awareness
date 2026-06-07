@@ -222,14 +222,14 @@
 
       <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
         <a-entity id="ar-content" visible="false"> 
-          <a-image src="./Manu_Cost_sign.png" position="-0.28 0.09 0" scale="0.45 0.039 1"></a-image>
+          <a-image src="./Manu_Cost_sign.png" position="-0.27 0.09 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.22 0.09 0" scale="0.45 0.039 1"></a-image>
 
-          <a-image id="material-1m" src="./1M.png" position="-0.42 0.05 0" scale="0.18 0.05 1"></a-image>    
+          <a-image id="material-1m" src="./1M.png" position="-0.41 0.05 0" scale="0.18 0.05 1"></a-image>    
           <a-image src="./ingot.png" position="-0.38 -0.03 0" scale="0.09 0.07 1"></a-image> 
         
-          <a-image id="labor-2m" src="./2M.png" position="-0.42 -0.09 0" scale="0.18 0.06 1"></a-image>
-          <a-image src="./Direct_Labor.png" position="-0.40 -0.19 0" scale="0.17 0.11 1"></a-image>
+          <a-image id="labor-2m" src="./2M.png" position="-0.41 -0.08 0" scale="0.18 0.06 1"></a-image>
+          <a-image src="./Direct_Labor.png" position="-0.40 -0.18 0" scale="0.17 0.11 1"></a-image>
 
           <a-image id="over-3m" src="./3M.png" position="-0.21 0.05 0" scale="0.21 0.05 1"></a-image>
           <a-image id="over-3_1m" src="./3_1M.png" position="-0.19 -0.03 0" scale="0.25 0.06 1"></a-image>
@@ -381,12 +381,12 @@
 
       function updateAllButtonPositions() {
         if ((targetFound || isFrozen) && cameraEl) {
-          positionButton(ent1M, btnUI1M, 75, -2);
-          positionButton(ent2M, btnUI2M, 70, -2);
-          positionButton(ent3M, btnUI3M, 85, -2);
-          positionButton(ent3_1M, btnUI3_1M, 95, -2);
-          positionButton(ent3_2M, btnUI3_2M, 80, -2);
-          positionButton(ent3_3M, btnUI3_3M, 75, -2);
+          positionButton(ent1M, btnUI1M, 70, -2);
+          positionButton(ent2M, btnUI2M, 65, -2);
+          positionButton(ent3M, btnUI3M, 80, -2);
+          positionButton(ent3_1M, btnUI3_1M, 90, -2);
+          positionButton(ent3_2M, btnUI3_2M, 75, -2);
+          positionButton(ent3_3M, btnUI3_3M, 70, -2);
         }
         requestAnimationFrame(updateAllButtonPositions);
       }
