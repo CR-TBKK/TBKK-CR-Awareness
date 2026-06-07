@@ -212,11 +212,11 @@
           <img id="flag-cn" class="flag-btn" src="https://flagcdn.com/w40/cn.png" onclick="setLanguage('cn')" title="中文" />
         </div>
         <div class="control-group">
-          <label>🗣️Sound : </label>
+          <label>🗣️เสียง : </label>
           <select id="voice-select"></select>
         </div>
         <div class="control-group">
-          <label>⚡Speed : </label>
+          <label>⚡ความเร็ว : </label>
           <select id="speed-select">
             <option value="0.6">ช้ามาก (0.6x)</option>
             <option value="0.8" selected>ช้า (0.8x)</option>
@@ -225,8 +225,8 @@
           </select>
         </div>
         <div class="control-group">
-          <label>🕶️Background : </label>
-          <input type="range" id="dimmer-slider" min="0" max="85" value="75" oninput="updateCameraBrightness(this.value)">
+          <label>🕶️ลดแสงฉาก : </label>
+          <input type="range" id="dimmer-slider" min="0" max="90" value="70" oninput="updateCameraBrightness(this.value)">
         </div>
       </div>
       
@@ -377,12 +377,9 @@
 
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
 
-      // ฟังก์ชันใหม่: ควบคุมความสว่างของวิดีโอกล้องพื้นหลังโดยตรง ไม่บังตัววัตถุ AR
       function updateCameraBrightness(val) {
-        // หาแผ่นวิดีโอกล้องที่ระบบ MindAR เป็นคนสร้างขึ้นมาอัตโนมัติในหน้าเว็บ
         const mindarVideo = document.querySelector('body > video');
         if (mindarVideo) {
-          // คำนวณค่าความสว่าง: เลื่อนขวาสุด (85) แสงกล้องจะเหลือ 15% (มืดลงแต่กล้องยังทำงานสแกนได้)
           const brightnessPercent = 100 - val;
           mindarVideo.style.filter = `brightness(${brightnessPercent}%)`;
         }
@@ -570,10 +567,15 @@
         performSpeakAction({
           th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม",
           en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
-          jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。",
+          jp: "直接材料費とは、アルミニウムなど、製品ของ製造に直接使用される主要な原材料のことです。",
           cn: "直接材料是指生产中使用的主要原材料，例如铝。"
         }, "./video1.mp4");
       }
+
+      // 🌟 สั่งให้หรี่แสงกล้องลง 70% ทันทีที่ระบบเริ่มสแกนเจอและพร้อมทำงาน
+      sceneEl.addEventListener("arReady", () => {
+        updateCameraBrightness(70);
+      });
 
       function speak2M() {
         performSpeakAction({
@@ -607,7 +609,7 @@
           th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
           en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
           jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
-          cn: "间接人工，例如生产辅助人员ของ工资或报酬，如主管、维修人员、生产经理。"
+          cn: "间接人工，例如生产辅助人员的工资หรือ报酬，如主管、维修人员、生产经理。"
         }, "./video5.mp4");
       }
 
