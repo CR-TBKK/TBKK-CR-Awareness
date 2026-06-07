@@ -217,11 +217,11 @@
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
-    <a-scene id="scene" mindar-image="imageTargetSrc: ./What_is_cost.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        <a-entity id="ar-content" visible="false"> 
+      <a-entity id="ar-target-1" mindar-image-target="targetIndex: 0">
+        <a-entity id="ar-content-1" visible="false"> 
           <a-image src="./Manu_Cost_sign.png" position="-0.27 0.095 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.23 0.09 0" scale="0.45 0.039 1"></a-image>
 
@@ -255,22 +255,33 @@
           <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 1"></a-image>
           <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 1"></a-image>
           <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 1"></a-image>
-
-          
         </a-entity>
       </a-entity>
+
+      <a-entity id="ar-target-2" mindar-image-target="targetIndex: 1">
+        <a-entity id="ar-content-2" visible="false">
+          </a-entity>
+      </a-entity>
+
     </a-scene>
 
     <script>
       let isFrozen = false;
-      let targetFound = false;
+      let activeTargetIndex = -1; // -1: ไม่มี, 0: Target1, 1: Target2
       let currentLang = 'th'; 
       let allVoices = []; 
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
-      const arTarget = document.getElementById('ar-target');
-      const arContent = document.getElementById('ar-content');
+      
+      // Target 1 Elements
+      const arTarget1 = document.getElementById('ar-target-1');
+      const arContent1 = document.getElementById('ar-content-1');
+      
+      // Target 2 Elements
+      const arTarget2 = document.getElementById('ar-target-2');
+      const arContent2 = document.getElementById('ar-content-2');
+
       const freezeBtn = document.getElementById('freeze-btn');
       const voiceSelect = document.getElementById('voice-select'); 
       const speedSelect = document.getElementById('speed-select');
@@ -302,7 +313,7 @@
         let filterLang = 'th-TH';
         if (currentLang === 'en') filterLang = 'en-'; 
         if (currentLang === 'jp') filterLang = 'ja-JP';
-        if (currentLang === 'cn') filterLang = 'zh-'; // กรองภาษาจีน (CN/HK/TW)
+        if (currentLang === 'cn') filterLang = 'zh-';
 
         let filteredVoices = allVoices.filter(voice => 
           voice.lang.toLowerCase().replace('_', '-').startsWith(filterLang.toLowerCase())
@@ -352,18 +363,34 @@
         updateVoiceList();
       }
 
-      arTarget.addEventListener("targetFound", () => {
-        arContent.setAttribute("visible", "true");
+      // --- จัดการ Event ของ Target 1 ---
+      arTarget1.addEventListener("targetFound", () => {
+        activeTargetIndex = 0;
+        arContent1.setAttribute("visible", "true");
         allSpeakBtnUIs.forEach(btn => btn.style.display = "block");
-        targetFound = true;
       });
 
-      arTarget.addEventListener("targetLost", () => {
+      arTarget1.addEventListener("targetLost", () => {
         if (!isFrozen) {
-          arContent.setAttribute("visible", "false");
+          arContent1.setAttribute("visible", "false");
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
-          targetFound = false;
+          if(activeTargetIndex === 0) activeTargetIndex = -1;
+        }
+      });
+
+      // --- จัดการ Event ของ Target 2 ---
+      arTarget2.addEventListener("targetFound", () => {
+        activeTargetIndex = 1;
+        arContent2.setAttribute("visible", "true");
+        // หากในอนาคตต้องการเปิดปุ่ม UI เพิ่มเติมสำหรับ Target 2 สามารถใส่ตรงนี้ได้ครับ
+      });
+
+      arTarget2.addEventListener("targetLost", () => {
+        if (!isFrozen) {
+          arContent2.setAttribute("visible", "false");
+          resetMediaUI();
+          if(activeTargetIndex === 1) activeTargetIndex = -1;
         }
       });
 
@@ -380,7 +407,8 @@
       }
 
       function updateAllButtonPositions() {
-        if ((targetFound || isFrozen) && cameraEl) {
+        // อัปเดตเฉพาะเมื่อสแกนเจอ Target 1 หรือกำลังค้างหน้าจอของ Target 1 อยู่ เท่านั้น
+        if ((activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) && cameraEl) {
           positionButton(ent1M, btnUI1M, 70, -2);
           positionButton(ent2M, btnUI2M, 65, -2);
           positionButton(ent3M, btnUI3M, 80, -2);
@@ -400,10 +428,13 @@
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
           freezeBtn.classList.add("active");
         } else {
-          arContent.setAttribute("visible", "false");
+          // ซ่อนคอนเทนต์ทั้งหมดเมื่อปลดล็อก
+          arContent1.setAttribute("visible", "false");
+          arContent2.setAttribute("visible", "false");
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
-          targetFound = false;
+          activeTargetIndex = -1;
+          
           if (mindarSystem) {
             mindarSystem.unpause();
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
