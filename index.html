@@ -19,19 +19,6 @@
         pointer-events: none;
       }
 
-      /* เลเยอร์พื้นหลังสีดำโปร่งแสง - ย้ายขึ้นมาอยู่เหนือภาพ AR แต่ยังอยู่หลังข้อความ Subtitle */
-      #ar-bg-dimmer {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0); 
-        z-index: 99999; /* ดันขึ้นมาบังเหนือ a-scene (AR ทั้งหมด) */
-        pointer-events: none; 
-        transition: background-color 0.1s ease;
-      }
-
       .top-left-logo {
         position: absolute;
         top: 20px;
@@ -214,8 +201,6 @@
   </head>
 
   <body>
-    <div id="ar-bg-dimmer"></div>
-
     <div class="ar-ui-layer">
       <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
 
@@ -241,7 +226,7 @@
         </div>
         <div class="control-group">
           <label>🕶️ลดแสงฉาก : </label>
-          <input type="range" id="dimmer-slider" min="0" max="85" value="0" oninput="updateBackgroundDimmer(this.value)">
+          <input type="range" id="dimmer-slider" min="0" max="85" value="0" oninput="updateCameraBrightness(this.value)">
         </div>
       </div>
       
@@ -375,7 +360,6 @@
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
       const subtitlesBox = document.getElementById('subtitles-box');
-      const bgDimmer = document.getElementById('ar-bg-dimmer'); 
 
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
@@ -393,9 +377,15 @@
 
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
 
-      function updateBackgroundDimmer(val) {
-        const opacity = val / 100;
-        bgDimmer.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+      // ฟังก์ชันใหม่: ควบคุมความสว่างของวิดีโอกล้องพื้นหลังโดยตรง ไม่บังตัววัตถุ AR
+      function updateCameraBrightness(val) {
+        // หาแผ่นวิดีโอกล้องที่ระบบ MindAR เป็นคนสร้างขึ้นมาอัตโนมัติในหน้าเว็บ
+        const mindarVideo = document.querySelector('body > video');
+        if (mindarVideo) {
+          // คำนวณค่าความสว่าง: เลื่อนขวาสุด (85) แสงกล้องจะเหลือ 15% (มืดลงแต่กล้องยังทำงานสแกนได้)
+          const brightnessPercent = 100 - val;
+          mindarVideo.style.filter = `brightness(${brightnessPercent}%)`;
+        }
       }
 
       function updateVoiceList() {
@@ -589,7 +579,7 @@
         performSpeakAction({
           th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
           en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
-          jp: "直接労務費とは、製造ラインで直接働く作業员に支払われる賃金や手当てのことです。",
+          jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。",
           cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
         }, "./video2.mp4");
       }
@@ -617,7 +607,7 @@
           th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
           en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
           jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
-          cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
+          cn: "间接人工，例如生产辅助人员ของ工资或报酬，如主管、维修人员、生产经理。"
         }, "./video5.mp4");
       }
 
