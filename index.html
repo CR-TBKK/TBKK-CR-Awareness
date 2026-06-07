@@ -19,16 +19,16 @@
         pointer-events: none;
       }
 
-      /* เลเยอร์พื้นหลังสีดำโปร่งแสงสำหรับลดแสงสิ่งแวดล้อมเพื่อเพิ่มความชัดให้ข้อความ */
+      /* เลเยอร์พื้นหลังสีดำโปร่งแสง - ย้ายขึ้นมาอยู่เหนือภาพ AR แต่ยังอยู่หลังข้อความ Subtitle */
       #ar-bg-dimmer {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0); /* เริ่มต้นที่โปร่งใส 0 */
-        z-index: 999998; /* อยู่หลัง UI Layer แต่บังหน้ากล้อง AR */
-        pointer-events: none; /* ไม่บล็อกการคลิกสัมผัสหน้าจอ */
+        background-color: rgba(0, 0, 0, 0); 
+        z-index: 99999; /* ดันขึ้นมาบังเหนือ a-scene (AR ทั้งหมด) */
+        pointer-events: none; 
         transition: background-color 0.1s ease;
       }
 
@@ -99,7 +99,7 @@
         outline: none;
       }
 
-      /* สไตล์สำหรับแถบสไลด์ปรับความชัดข้อความ */
+      /* สไตล์แถบสไลด์ปรับความชัดข้อความ */
       .control-group input[type="range"] {
         width: 115px;
         -webkit-appearance: none;
@@ -281,7 +281,6 @@
           <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.10 0" scale="0.20 0.06 1"></a-image>
           <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>          
 
-
           <a-image src="./LPG.png" position="-0.07 0.08 0.01" scale="0.13 0.10 1"></a-image>
           <a-image src="./OtherExpen.png" position="-0.06 -0.01 0.02" scale="0.11 0.09 1"></a-image>
           <a-image src="./IndirectLabor.png" position="-0.06 -0.14 0" scale="0.09 0.12 1"></a-image>
@@ -300,43 +299,33 @@
           <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 1"></a-image>
           <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 1"></a-image>
           <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 1"></a-image>
-
         </a-entity>
       </a-entity>
 
       <a-entity id="ar-target-2" mindar-image-target="targetIndex: 1">
         <a-entity id="ar-content-2" visible="false">
-
           <a-image src="./MUDA.png" position="-0.26 0.32 0" scale="0.5 0.05 1"></a-image>
           
           <a-image src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./1MUDA_PIC.png" position="-0.09 0.225 0" scale="0.15 0.10 1"></a-image> 
-
               
           <a-image src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./2MUDA_PIC.png" position="-0.09 0.145 0.01" scale="0.15 0.102 1"></a-image> 
           
-
           <a-image src="./3MUDA.png" position="-0.42 0.07 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./3MUDA_PIC.png" position="-0.09 0.065 0.02" scale="0.15 0.10 1"></a-image> 
 
-          
           <a-image src="./4MUDA.png" position="-0.42 -0.01 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./4MUDA_PIC.png" position="-0.09 -0.015 0.03" scale="0.15 0.10 1"></a-image> 
 
-          
           <a-image src="./5MUDA.png" position="-0.42 -0.09 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./5MUDA_PIC.png" position="-0.09 -0.095 0.04" scale="0.15 0.10 1"></a-image> 
 
-          
           <a-image src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./6MUDA_PIC.png" position="-0.09 -0.19 0.05" scale="0.15 0.10 1"></a-image> 
           
-          
           <a-image src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image> 
-
-          
 
           <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
           
@@ -360,9 +349,6 @@
           
           <a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>      
-
-          
-          
         </a-entity>
       </a-entity>
 
@@ -370,18 +356,16 @@
 
     <script>
       let isFrozen = false;
-      let activeTargetIndex = -1; // -1: ไม่มี, 0: Target1, 1: Target2
+      let activeTargetIndex = -1; 
       let currentLang = 'th'; 
       let allVoices = []; 
       
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       
-      // Target 1 Elements
       const arTarget1 = document.getElementById('ar-target-1');
       const arContent1 = document.getElementById('ar-content-1');
       
-      // Target 2 Elements
       const arTarget2 = document.getElementById('ar-target-2');
       const arContent2 = document.getElementById('ar-content-2');
 
@@ -391,7 +375,7 @@
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
       const subtitlesBox = document.getElementById('subtitles-box');
-      const bgDimmer = document.getElementById('ar-bg-dimmer'); // ผูกอิลิเมนต์พื้นหลังเพื่อเตรียมปรับค่า
+      const bgDimmer = document.getElementById('ar-bg-dimmer'); 
 
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
@@ -409,7 +393,6 @@
 
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
 
-      // ฟังก์ชันควบคุมการเปลี่ยนความโปร่งแสงของฟิลเตอร์สีดำเปล่าตามแถบสไลด์
       function updateBackgroundDimmer(val) {
         const opacity = val / 100;
         bgDimmer.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
@@ -473,7 +456,6 @@
         updateVoiceList();
       }
 
-      // --- จัดการ Event ของ Target 1 ---
       arTarget1.addEventListener("targetFound", () => {
         activeTargetIndex = 0;
         arContent1.setAttribute("visible", "true");
@@ -489,7 +471,6 @@
         }
       });
 
-      // --- จัดการ Event ของ Target 2 ---
       arTarget2.addEventListener("targetFound", () => {
         activeTargetIndex = 1;
         arContent2.setAttribute("visible", "true");
@@ -608,7 +589,7 @@
         performSpeakAction({
           th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
           en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
-          jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。",
+          jp: "直接労務費とは、製造ラインで直接働く作業员に支払われる賃金や手当てのことです。",
           cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
         }, "./video2.mp4");
       }
@@ -622,7 +603,6 @@
         }, "./video3.mp4");
       }
 
-      // 3_1M, 3_2M, 3_3M ทำงานร่วมกับระบบควบคุมภาษาและความเร็วใหม่ได้เรียบร้อยเช่นกัน
       function speak3_1M() {
         performSpeakAction({
           th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ",
@@ -636,7 +616,7 @@
         performSpeakAction({
           th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
           en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
-          jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門ของ賃金や報酬など）。",
+          jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
           cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
         }, "./video5.mp4");
       }
