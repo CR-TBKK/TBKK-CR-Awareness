@@ -1,1207 +1,654 @@
 <!DOCTYPE html>
-
 <html>
-
   <head>
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
     <title> TBKK ตระหนักรู้ เรื่องต้นทุน </title>
-
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
     
-
     <style>
-
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-
       
-
       .ar-ui-layer {
-
         position: fixed;
-
         top: 0;
-
         left: 0;
-
         width: 100%;
-
         height: 100%;
-
         z-index: 999999;
-
         pointer-events: none;
-
       }
 
-
+      /* เลเยอร์พื้นหลังสีดำโปร่งแสงสำหรับลดแสงสิ่งแวดล้อมเพื่อเพิ่มความชัดให้ข้อความ */
+      #ar-bg-dimmer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0); /* เริ่มต้นที่โปร่งใส 0 */
+        z-index: 999998; /* อยู่หลัง UI Layer แต่บังหน้ากล้อง AR */
+        pointer-events: none; /* ไม่บล็อกการคลิกสัมผัสหน้าจอ */
+        transition: background-color 0.1s ease;
+      }
 
       .top-left-logo {
-
         position: absolute;
-
         top: 20px;
-
         left: 20px;
-
         pointer-events: auto; 
-
         max-width: 120px;      
-
         height: auto;
-
         filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); 
-
         z-index: 1000002;
-
       }
-
-
 
       .lang-container {
-
         position: absolute;
-
         top: 20px;
-
         right: 20px;
-
         pointer-events: auto;
-
         display: flex;
-
         flex-direction: column;
-
         align-items: flex-end;
-
         gap: 10px;
-
         background-color: rgba(0, 0, 0, 0.75);
-
         padding: 12px 18px;
-
         border-radius: 16px;
-
         box-shadow: 0px 4px 15px rgba(0,0,0,0.4);
-
       }
-
-
 
       .flags-row {
-
         display: flex;
-
         gap: 10px;
-
         margin-bottom: 4px;
-
       }
-
-
 
       .flag-btn {
-
         width: 35px;
-
         height: 25px;
-
         cursor: pointer;
-
         border-radius: 4px;
-
         border: 2px solid transparent;
-
         transition: all 0.2s ease;
-
         object-fit: cover;
-
       }
-
       .flag-btn.active {
-
         border-color: #FF6B35;
-
         transform: scale(1.1);
-
       }
-
-
 
       .control-group {
-
         display: flex;
-
         align-items: center;
-
         justify-content: space-between;
-
         width: 170px;
-
         color: white;
-
         font-size: 12px;
-
         font-family: sans-serif;
-
       }
-
-
 
       .control-group select {
-
         width: 115px;
-
         padding: 4px;
-
         font-size: 11px;
-
         border-radius: 4px;
-
         border: 1px solid #ccc;
-
         background-color: white;
-
         color: #333;
-
         outline: none;
-
       }
 
+      /* สไตล์สำหรับแถบสไลด์ปรับความชัดข้อความ */
+      .control-group input[type="range"] {
+        width: 115px;
+        -webkit-appearance: none;
+        background: #ddd;
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+      }
 
+      .control-group input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #FF6B35;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      .control-group input[type="range"]::-webkit-slider-thumb:active {
+        transform: scale(1.2);
+      }
 
       #video-overlay-container {
-
         position: absolute;
-
         top: 50%;
-
         left: 50%;
-
         transform: translate(-50%, -50%);
-
         width: 75%;
-
         max-width: 450px;
-
         display: none; 
-
         z-index: 1000000;
-
         pointer-events: auto; 
-
       }
-
-
 
       .video-wrapper {
-
         width: 100%;
-
         background-color: #000000;
-
         border: 3px solid white;
-
         border-radius: 12px;
-
         box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
-
         overflow: hidden;
-
       }
-
-
 
       #ar-video-player {
-
         width: 100%;
-
         display: block;
-
       }
-
-
 
       #subtitles-box {
-
         position: relative; 
-
         margin-top: 12px;   
-
         width: 100%;        
-
         box-sizing: border-box;
-
         background-color: rgba(0, 0, 0, 0.82);
-
         color: #FFFFFF;
-
         padding: 10px 16px;
-
         border-radius: 10px;
-
         font-family: sans-serif;
-
         font-size: 15px;
-
         font-weight: bold;
-
         text-align: center;
-
         line-height: 1.4;
-
         box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
-
         display: none;
-
         pointer-events: none;
-
       }
-
-
 
       .speak-btn-ui {
-
         position: absolute;
-
         pointer-events: auto;
-
         padding: 6px 12px;
-
         background-color: #0077B6;
-
         color: white;
-
         border: 2px solid white;
-
         border-radius: 6px;
-
         font-weight: bold;
-
         font-family: sans-serif;
-
         font-size: 13px;
-
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
-
         cursor: pointer;
-
         display: none;
-
         transform: translate(-50%, -50%);
-
         z-index: 100000;
-
         -webkit-appearance: none;
-
         white-space: nowrap;
-
       }
-
       .speak-btn-ui:active { background-color: #0096C7; }
 
-
-
       #freeze-btn {
-
         position: absolute;
-
         bottom: 30px;
-
         right: 20px;
-
         pointer-events: auto;
-
         padding: 14px 24px;
-
         background-color: #004E98;
-
         color: white;
-
         border: 2px solid white;
-
         border-radius: 8px;
-
         font-weight: bold;
-
         font-family: sans-serif;
-
         font-size: 16px;
-
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
-
         cursor: pointer;
-
         -webkit-appearance: none;
-
+        z-index: 1000001;
       }
-
       #freeze-btn.active { background-color: #FF6B35; }
-
       .mindar-ui-scanning { background: none !important; }
-
     </style>
-
   </head>
 
-
-
   <body>
+    <div id="ar-bg-dimmer"></div>
 
     <div class="ar-ui-layer">
-
       <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
 
-
-
       <div class="lang-container">
-
         <div class="flags-row">
-
           <img id="flag-th" class="flag-btn active" src="https://flagcdn.com/w40/th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
-
           <img id="flag-en" class="flag-btn" src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" title="English" />
-
           <img id="flag-jp" class="flag-btn" src="https://flagcdn.com/w40/jp.png" onclick="setLanguage('jp')" title="日本語" />
-
           <img id="flag-cn" class="flag-btn" src="https://flagcdn.com/w40/cn.png" onclick="setLanguage('cn')" title="中文" />
-
         </div>
-
         <div class="control-group">
-
           <label>🗣️เสียง : </label>
-
           <select id="voice-select"></select>
-
         </div>
-
         <div class="control-group">
-
           <label>⚡ความเร็ว : </label>
-
           <select id="speed-select">
-
             <option value="0.6">ช้ามาก (0.6x)</option>
-
             <option value="0.8" selected>ช้า (0.8x)</option>
-
             <option value="1.0">ปกติ (1.0x)</option>
-
             <option value="1.2">เร็ว (1.2x)</option>
-
           </select>
-
         </div>
-
+        <div class="control-group">
+          <label>🕶️ลดแสงฉาก : </label>
+          <input type="range" id="dimmer-slider" min="0" max="85" value="0" oninput="updateBackgroundDimmer(this.value)">
+        </div>
       </div>
-
       
-
       <div id="video-overlay-container">
-
         <div class="video-wrapper">
-
           <video id="ar-video-player" muted playsinline></video>
-
         </div>
-
         <div id="subtitles-box"></div>
-
       </div>
-
-
 
       <button id="speak-ui-btn-1m" class="speak-btn-ui" onclick="speak1M()">🔊</button>
-
       <button id="speak-ui-btn-2m" class="speak-btn-ui" onclick="speak2M()">🔊</button>
-
       <button id="speak-ui-btn-3m" class="speak-btn-ui" onclick="speak3M()">🔊</button>
-
       <button id="speak-ui-btn-3_1m" class="speak-btn-ui" onclick="speak3_1M()">🔊</button>
-
       <button id="speak-ui-btn-3_2m" class="speak-btn-ui" onclick="speak3_2M()">🔊</button>
-
       <button id="speak-ui-btn-3_3m" class="speak-btn-ui" onclick="speak3_3M()">🔊</button>
 
-
-
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
-
     </div>
 
-
-
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-
       <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-
-
       <a-entity id="ar-target-1" mindar-image-target="targetIndex: 0">
-
         <a-entity id="ar-content-1" visible="false"> 
-
           <a-image src="./Manu_Cost_sign.png" position="-0.27 0.095 0" scale="0.45 0.039 1"></a-image>
-
           <a-image src="./Admin_Cost_sign.png" position="0.23 0.09 0" scale="0.45 0.039 1"></a-image>
 
-
-
           <a-image id="material-1m" src="./1M.png" position="-0.41 0.05 0" scale="0.18 0.05 1"></a-image>    
-
           <a-image src="./ingot.png" position="-0.38 -0.02 0" scale="0.09 0.07 1"></a-image> 
-
         
-
           <a-image id="labor-2m" src="./2M.png" position="-0.41 -0.08 0" scale="0.18 0.06 1"></a-image>
-
           <a-image src="./Direct_Labor.png" position="-0.40 -0.17 0" scale="0.17 0.11 1"></a-image>
 
-
-
           <a-image id="over-3m" src="./3M.png" position="-0.21 0.05 0" scale="0.21 0.05 1"></a-image>
-
           <a-image id="over-3_1m" src="./3_1M.png" position="-0.19 -0.03 0" scale="0.25 0.06 1"></a-image>
-
           <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.10 0" scale="0.20 0.06 1"></a-image>
-
           <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>          
 
 
-
-
-
           <a-image src="./LPG.png" position="-0.07 0.08 0.01" scale="0.13 0.10 1"></a-image>
-
           <a-image src="./OtherExpen.png" position="-0.06 -0.01 0.02" scale="0.11 0.09 1"></a-image>
-
           <a-image src="./IndirectLabor.png" position="-0.06 -0.14 0" scale="0.09 0.12 1"></a-image>
-
           <a-image src="./IndirectMat.png" position="-0.07 -0.21 0.01" scale="0.12 0.06 1"></a-image>
 
-
-
           <a-image src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 1"></a-image>
-
           <a-image src="./1_1A.png" position="0.16 0.01 0" scale="0.27 0.03 1"></a-image>
-
           <a-image src="./1_2A.png" position="0.16 -0.02 0" scale="0.27 0.03 1"></a-image>
-
           <a-image src="./1_3A.png" position="0.16 -0.05 0" scale="0.27 0.03 1"></a-image>
-
           
-
           <a-image src="./Office.png" position="0.41 -0.01 0.01" scale="0.19 0.12 0.01"></a-image>
-
           <a-image src="./Meeting.png" position="0.40 -0.17 0.01" scale="0.19 0.13 0"></a-image>
 
-
-
           <a-image src="./2A.png" position="0.10 -0.09 0" scale="0.20 0.04 1"></a-image>
-
           <a-image src="./2_1A.png" position="0.16 -0.13 0" scale="0.27 0.03 1"></a-image>
-
           <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 1"></a-image>
-
           <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 1"></a-image>
-
           <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 1"></a-image>
 
-
-
         </a-entity>
-
       </a-entity>
-
-
 
       <a-entity id="ar-target-2" mindar-image-target="targetIndex: 1">
-
         <a-entity id="ar-content-2" visible="false">
 
-
-
           <a-image src="./MUDA.png" position="-0.26 0.32 0" scale="0.5 0.05 1"></a-image>
-
           
-
           <a-image src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
-
           <a-image src="./1MUDA_PIC.png" position="-0.09 0.225 0" scale="0.15 0.10 1"></a-image> 
 
-
-
               
-
           <a-image src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
-
           <a-image src="./2MUDA_PIC.png" position="-0.09 0.145 0.01" scale="0.15 0.102 1"></a-image> 
-
           
-
-
 
           <a-image src="./3MUDA.png" position="-0.42 0.07 0" scale="0.20 0.05 1"></a-image> 
-
           <a-image src="./3MUDA_PIC.png" position="-0.09 0.065 0.02" scale="0.15 0.10 1"></a-image> 
 
-
-
           
-
           <a-image src="./4MUDA.png" position="-0.42 -0.01 0" scale="0.20 0.05 1"></a-image>
-
           <a-image src="./4MUDA_PIC.png" position="-0.09 -0.015 0.03" scale="0.15 0.10 1"></a-image> 
 
-
-
           
-
           <a-image src="./5MUDA.png" position="-0.42 -0.09 0" scale="0.20 0.05 1"></a-image> 
-
           <a-image src="./5MUDA_PIC.png" position="-0.09 -0.095 0.04" scale="0.15 0.10 1"></a-image> 
 
-
-
           
-
           <a-image src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
-
           <a-image src="./6MUDA_PIC.png" position="-0.09 -0.19 0.05" scale="0.15 0.10 1"></a-image> 
-
           
-
           
-
           <a-image src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
-
           <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image> 
 
-
-
           
-
-
 
           <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
-
           
-
           <a-image src="./1VALUE.png" position="0.09  0.23 0.02" scale="0.20 0.05 1"></a-image> 
-
-          <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>           
-
+          <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>            
           
-
           <a-image src="./2VALUE.png" position="0.09 0.15 0.03" scale="0.20 0.05 1"></a-image>
-
-          <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>            
-
-
+          <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>             
 
           <a-image src="./3VALUE.png" position="0.09 0.07 0.04" scale="0.20 0.05 1"></a-image> 
-
-          <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>              
-
+          <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>               
           
-
           <a-image src="./4VALUE.png" position="0.09 -0.01 0.05" scale="0.20 0.05 1"></a-image>
-
-          <a-image src="./4VALUE_PIC.png" position="0.45 -0.01 0.04" scale="0.14 0.09 1"></a-image>             
-
-
+          <a-image src="./4VALUE_PIC.png" position="0.45 -0.01 0.04" scale="0.14 0.09 1"></a-image>              
 
           <a-image src="./5VALUE.png" position="0.09 -0.09 0.06" scale="0.20 0.05 1"></a-image> 
-
-          <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                
-
+          <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                 
           
-
           <a-image src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-image>
-
-          <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>               
-
+          <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>                 
           
-
           <a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
-
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>      
 
-
-
           
-
           
-
-          </a-entity>
-
+        </a-entity>
       </a-entity>
-
-
 
     </a-scene>
 
-
-
     <script>
-
       let isFrozen = false;
-
       let activeTargetIndex = -1; // -1: ไม่มี, 0: Target1, 1: Target2
-
       let currentLang = 'th'; 
-
       let allVoices = []; 
-
       
-
       const sceneEl = document.getElementById('scene');
-
       const cameraEl = document.getElementById('camera');
-
       
-
       // Target 1 Elements
-
       const arTarget1 = document.getElementById('ar-target-1');
-
       const arContent1 = document.getElementById('ar-content-1');
-
       
-
       // Target 2 Elements
-
       const arTarget2 = document.getElementById('ar-target-2');
-
       const arContent2 = document.getElementById('ar-content-2');
 
-
-
       const freezeBtn = document.getElementById('freeze-btn');
-
       const voiceSelect = document.getElementById('voice-select'); 
-
       const speedSelect = document.getElementById('speed-select');
-
       const videoContainer = document.getElementById('video-overlay-container');
-
       const videoPlayer = document.getElementById('ar-video-player');
-
       const subtitlesBox = document.getElementById('subtitles-box');
-
-
+      const bgDimmer = document.getElementById('ar-bg-dimmer'); // ผูกอิลิเมนต์พื้นหลังเพื่อเตรียมปรับค่า
 
       const ent1M = document.getElementById('material-1m');
-
       const ent2M = document.getElementById('labor-2m'); 
-
       const ent3M = document.getElementById('over-3m');
-
       const ent3_1M = document.getElementById('over-3_1m');
-
       const ent3_2M = document.getElementById('over-3_2m');
-
       const ent3_3M = document.getElementById('over-3_3m');
 
-
-
       const btnUI1M = document.getElementById('speak-ui-btn-1m');
-
       const btnUI2M = document.getElementById('speak-ui-btn-2m'); 
-
       const btnUI3M = document.getElementById('speak-ui-btn-3m');
-
       const btnUI3_1M = document.getElementById('speak-ui-btn-3_1m');
-
       const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
-
       const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
-
-
 
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
 
-
+      // ฟังก์ชันควบคุมการเปลี่ยนความโปร่งแสงของฟิลเตอร์สีดำเปล่าตามแถบสไลด์
+      function updateBackgroundDimmer(val) {
+        const opacity = val / 100;
+        bgDimmer.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+      }
 
       function updateVoiceList() {
-
         if (!('speechSynthesis' in window)) return;
-
         allVoices = window.speechSynthesis.getVoices();
-
         voiceSelect.innerHTML = ''; 
 
-
-
         let filterLang = 'th-TH';
-
         if (currentLang === 'en') filterLang = 'en-'; 
-
         if (currentLang === 'jp') filterLang = 'ja-JP';
-
         if (currentLang === 'cn') filterLang = 'zh-';
 
-
-
         let filteredVoices = allVoices.filter(voice => 
-
           voice.lang.toLowerCase().replace('_', '-').startsWith(filterLang.toLowerCase())
-
         );
 
-
-
         filteredVoices.forEach((voice) => {
-
           const option = document.createElement('option');
-
           option.value = voice.name;
-
           let genderLabel = "หญิง"; 
-
           if (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Kangkang')) {
-
             genderLabel = "ชาย";
-
           }
-
           option.innerText = `เสียง${genderLabel} (${voice.name.split(' ')[0]})`;
-
           voiceSelect.appendChild(option);
-
         });
 
-
-
         if(filteredVoices.length === 0) {
-
           const option = document.createElement('option');
-
           option.innerText = "ใช้เสียงมาตรฐานเครื่อง";
-
           voiceSelect.appendChild(option);
-
         }
-
       }
-
-
 
       if ('speechSynthesis' in window) {
-
         window.speechSynthesis.onvoiceschanged = updateVoiceList;
-
         updateVoiceList();
-
       }
-
-
 
       function getSelectedVoice() {
-
         const selectedName = voiceSelect.value;
-
         return allVoices.find(voice => voice.name === selectedName) || null;
-
       }
-
-
 
       function resetMediaUI() {
-
         window.speechSynthesis.cancel();
-
         subtitlesBox.style.display = "none";
-
         videoPlayer.pause();
-
         videoPlayer.src = "";
-
         videoContainer.style.display = "none";
-
       }
-
-
 
       function setLanguage(lang) {
-
         resetMediaUI(); 
-
         currentLang = lang;
-
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
-
         document.getElementById(`flag-${lang}`).classList.add('active');
-
         updateVoiceList();
-
       }
-
-
 
       // --- จัดการ Event ของ Target 1 ---
-
       arTarget1.addEventListener("targetFound", () => {
-
         activeTargetIndex = 0;
-
         arContent1.setAttribute("visible", "true");
-
         allSpeakBtnUIs.forEach(btn => btn.style.display = "block");
-
       });
-
-
 
       arTarget1.addEventListener("targetLost", () => {
-
         if (!isFrozen) {
-
           arContent1.setAttribute("visible", "false");
-
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
-
           resetMediaUI(); 
-
           if(activeTargetIndex === 0) activeTargetIndex = -1;
-
         }
-
       });
-
-
 
       // --- จัดการ Event ของ Target 2 ---
-
       arTarget2.addEventListener("targetFound", () => {
-
         activeTargetIndex = 1;
-
         arContent2.setAttribute("visible", "true");
-
-        // หากในอนาคตต้องการเปิดปุ่ม UI เพิ่มเติมสำหรับ Target 2 สามารถใส่ตรงนี้ได้ครับ
-
       });
-
-
 
       arTarget2.addEventListener("targetLost", () => {
-
         if (!isFrozen) {
-
           arContent2.setAttribute("visible", "false");
-
           resetMediaUI();
-
           if(activeTargetIndex === 1) activeTargetIndex = -1;
-
         }
-
       });
 
-
-
       const tempV = new THREE.Vector3();
-
       function positionButton(entity, button, offsetX, offsetY) {
-
         if (entity && entity.object3D && cameraEl.components.camera) {
-
           entity.object3D.getWorldPosition(tempV);
-
           tempV.project(cameraEl.components.camera.camera);
-
           const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
-
           const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
-
           button.style.left = `${x + offsetX}px`; 
-
           button.style.top = `${y + offsetY}px`; 
-
         }
-
       }
-
-
 
       function updateAllButtonPositions() {
-
-        // อัปเดตเฉพาะเมื่อสแกนเจอ Target 1 หรือกำลังค้างหน้าจอของ Target 1 อยู่ เท่านั้น
-
         if ((activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) && cameraEl) {
-
           positionButton(ent1M, btnUI1M, 70, -2);
-
           positionButton(ent2M, btnUI2M, 65, -2);
-
           positionButton(ent3M, btnUI3M, 80, -2);
-
           positionButton(ent3_1M, btnUI3_1M, 90, -2);
-
           positionButton(ent3_2M, btnUI3_2M, 75, -2);
-
           positionButton(ent3_3M, btnUI3_3M, 70, -2);
-
         }
-
         requestAnimationFrame(updateAllButtonPositions);
-
       }
-
       requestAnimationFrame(updateAllButtonPositions);
 
-
-
       function toggleFreeze() {
-
         isFrozen = !isFrozen;
-
         const mindarSystem = sceneEl.systems["mindar-image-system"];
-
         if (isFrozen) {
-
           if (mindarSystem) mindarSystem.pause(true); 
-
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
-
           freezeBtn.classList.add("active");
-
         } else {
-
-          // ซ่อนคอนเทนต์ทั้งหมดเมื่อปลดล็อก
-
           arContent1.setAttribute("visible", "false");
-
           arContent2.setAttribute("visible", "false");
-
           allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
-
           resetMediaUI(); 
-
           activeTargetIndex = -1;
-
           
-
           if (mindarSystem) {
-
             mindarSystem.unpause();
-
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
-
               mindarSystem.activeTargetIndex = -1;
-
             }
-
           }
-
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
-
           freezeBtn.classList.remove("active");
-
         }
-
       }
-
-
 
       function performSpeakAction(textMap, videoSrc) {
-
         resetMediaUI(); 
-
         const utterance = new SpeechSynthesisUtterance();
-
         
-
         if (currentLang === 'th') {
-
           utterance.text = textMap.th;
-
           utterance.lang = "th-TH"; 
-
         } else if (currentLang === 'en') {
-
           utterance.text = textMap.en || textMap.th;
-
           utterance.lang = "en-US"; 
-
         } else if (currentLang === 'jp') {
-
           utterance.text = textMap.jp || textMap.th;
-
           utterance.lang = "ja-JP"; 
-
         } else if (currentLang === 'cn') {
-
           utterance.text = textMap.cn || textMap.th;
-
           utterance.lang = "zh-CN"; 
-
         }
-
         
-
         utterance.onstart = function() {
-
           subtitlesBox.innerText = utterance.text;
-
           subtitlesBox.style.display = "block";
-
           if(videoSrc) {
-
             videoPlayer.src = videoSrc;
-
             videoContainer.style.display = "block";
-
             videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
-
           }
-
         };
 
-
-
         utterance.onend = function() { hideMedia(); };
-
         utterance.onerror = function(e) { hideMedia(); }
 
-
-
         function hideMedia() {
-
           subtitlesBox.style.display = "none";
-
           videoPlayer.pause();
-
           videoContainer.style.display = "none"; 
-
         }
-
         
-
         utterance.rate = parseFloat(speedSelect.value);
-
         utterance.voice = getSelectedVoice();
-
         window.speechSynthesis.speak(utterance);
-
       }
-
-
 
       function speak1M() {
-
         performSpeakAction({
-
           th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม",
-
           en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
-
           jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。",
-
           cn: "直接材料是指生产中使用的主要原材料，例如铝。"
-
         }, "./video1.mp4");
-
       }
-
-
 
       function speak2M() {
-
         performSpeakAction({
-
           th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
-
           en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
-
           jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。",
-
           cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
-
         }, "./video2.mp4");
-
       }
-
-
 
       function speak3M() {
-
         performSpeakAction({
-
           th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ทีเกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง",
-
           en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
-
           jp: "製造間接費とは、直接材料費と直接労務費以外の製造過程で発生するすべての費用のことです。",
-
           cn: "制造费用是指在产品生产过程中发生的，除直接材料和直接人工以外的所有费用。"
-
         }, "./video3.mp4");
-
       }
 
-
-
+      // 3_1M, 3_2M, 3_3M ทำงานร่วมกับระบบควบคุมภาษาและความเร็วใหม่ได้เรียบร้อยเช่นกัน
       function speak3_1M() {
-
         performSpeakAction({
-
           th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ",
-
           en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses.",
-
           jp: "その他の製造費用（電気、水、工場の賃料、保守、建物の減価償却、機械の減価償却、その他の工場経費など）。",
-
           cn: "其他制造费用，例如电费、水费、工厂租金、维修费、厂房折旧、机器折旧以及其他工厂开支。"
-
         }, "./video4.mp4");
-
       }
-
-
 
       function speak3_2M() {
-
         performSpeakAction({
-
           th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
-
           en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
-
-          jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
-
+          jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門ของ賃金や報酬など）。",
           cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
-
         }, "./video5.mp4");
-
       }
-
-
 
       function speak3_3M() {
-
         performSpeakAction({
-
           th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ",
-
           en: "Indirect materials such as consumables used to support production like lubricants, inserts, or gloves.",
-
           jp: "間接材料費（潤滑油、インサート、手袋などの製造を支援するために使用される消耗品など）。",
-
           cn: "间接材料，例如用于辅助生产的消耗品，如润滑油、刀片或手套。"
-
         }, "./video6.mp4");
-
       }
-
     </script>
-
   </body>
-
 </html>
