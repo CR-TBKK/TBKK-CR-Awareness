@@ -337,7 +337,6 @@
         <div id="subtitles-box"></div>
       </div>
 
-      <!-- ปุ่มเสียง UI หลักเดิม -->
       <button id="speak-ui-btn-1m" class="speak-btn-ui" onclick="speak1M()">🔊</button>
       <button id="speak-ui-btn-2m" class="speak-btn-ui" onclick="speak2M()">🔊</button>
       <button id="speak-ui-btn-3m" class="speak-btn-ui" onclick="speak3M()">🔊</button>
@@ -345,7 +344,6 @@
       <button id="speak-ui-btn-3_2m" class="speak-btn-ui" onclick="speak3_2M()">🔊</button>
       <button id="speak-ui-btn-3_3m" class="speak-btn-ui" onclick="speak3_3M()">🔊</button>
 
-      <!-- เพิ่มปุ่มเสียง UI สำหรับฝั่ง Admin Cost (1A และ 2A) -->
       <button id="speak-ui-btn-1a" class="speak-btn-ui" onclick="speak1A()">🔊</button>
       <button id="speak-ui-btn-2a" class="speak-btn-ui" onclick="speak2A()">🔊</button>
 
@@ -360,7 +358,6 @@
           <a-image src="./Manu_Cost_sign.png" position="-0.27 0.095 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.23 0.09 0" scale="0.45 0.039 1"></a-image>
 
-          <!-- ผูก ID ให้รูปภาพ 1A และ 2A เพื่อนำไปใช้คำนวณตำแหน่งปุ่มเสียง -->
           <a-image id="admin-1a" src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 1"></a-image>
           <a-image src="./1_1A.png" position="0.16 0.01 0" scale="0.27 0.03 1"></a-image>
           <a-image src="./1_2A.png" position="0.16 -0.02 0" scale="0.27 0.03 1"></a-image>
@@ -435,7 +432,7 @@
           <a-image src="./5VALUE.png" position="0.09 -0.09 0.06" scale="0.20 0.05 1"></a-image> 
           <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                  
           
-          <a-image src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-image>
+          <a-scene src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-scene>
           <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>
 
           <a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
@@ -477,7 +474,6 @@
       const ent3_2M = document.getElementById('over-3_2m');
       const ent3_3M = document.getElementById('over-3_3m');
 
-      // ดึง Element ภาพฝั่ง Admin 
       const ent1A = document.getElementById('admin-1a');
       const ent2A = document.getElementById('admin-2a');
 
@@ -488,11 +484,9 @@
       const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
       const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
 
-      // ดึง Element ปุ่มเสียงฝั่ง Admin
       const btnUI1A = document.getElementById('speak-ui-btn-1a');
       const btnUI2A = document.getElementById('speak-ui-btn-2a');
 
-      // เพิ่มปุ่ม 1A และ 2A เข้าใน Array ควบคุมการเปิด/ปิดแสดงผล
       const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M, btnUI1A, btnUI2A];
 
       function updateCameraBrightness(val) {
@@ -611,7 +605,6 @@
           positionButton(ent3_2M, btnUI3_2M, 75, -2);
           positionButton(ent3_3M, btnUI3_3M, 70, -2);
 
-          // คำนวณตำแหน่งปุ่มเสียง 1A และ 2A ให้ลอยอยู่ด้านหลังข้อความการ์ดต้นทุนทางขวา
           positionButton(ent1A, btnUI1A, 75, -2);
           positionButton(ent2A, btnUI2A, 75, -2);
         }
@@ -719,9 +712,9 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // ==========================================
-      // ฟังก์ชันปุ่มกดเดิม (1M - 3_3M)
-      // ==========================================
+      // =========================================================
+      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา (อัปเดตชื่อไฟล์ VDO เรียบร้อย)
+      // =========================================================
 
       function speak1M() {
         performSpeakAction(
@@ -741,7 +734,7 @@
             cn: `<span class="sub-title-badge">📦 直接材料</span>
                  <span class="sub-description-text">是指生产中使用的主要原材料。<br>📍 <b>例如:</b> 铝、核心塑料颗粒</span>`
           },
-          "./video1.mp4"
+          "./1M_VDO.mp4"
         );
       }
 
@@ -754,7 +747,7 @@
           {
             th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
             en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
-            jp: "直接労務費とは、製造ラインで直接働く作業員に支払われる賃金や手当てのことです。",
+            jp: "直接労務費とは、製造ラインで直接働く作業员に支払われる賃金や手当てのことです。",
             cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
           },
           {
@@ -767,7 +760,7 @@
             cn: `<span class="sub-title-badge">👥 直接人工</span>
                  <span class="sub-description-text">是指直接参与生产线的工人的工资或报酬。</span>`
           },
-          "./video2.mp4"
+          "./2M_VDO.mp4"
         );
       }
 
@@ -789,7 +782,7 @@
             cn: `<span class="sub-title-badge">🏭 制造费用</span>
                  <span class="sub-description-text">是指在产品生产过程中发生的，除直接材料和直接人工以外的所有费用。</span>`
           },
-          "./video3.mp4"
+          "./3M_VDO.mp4"
         );
       }
 
@@ -811,7 +804,7 @@
             cn: `<span class="sub-title-badge">⚡ 其他制造费用</span>
                  <span class="sub-description-text">电费、水费、工厂租金、维修费、厂房折旧、机器折旧以及其他工厂开支。</span>`
           },
-          "./video4.mp4"
+          "./3_1M_VDO.mp4"
         );
       }
 
@@ -831,9 +824,9 @@
             jp: `<span class="sub-title-badge">🛠️ 間接労務費</span>
                  <span class="sub-description-text">スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の報酬。</span>`,
             cn: `<span class="sub-title-badge">🛠️ 间接人工</span>
-                 <span class="sub-description-text">生产辅助人员的工资或报酬，如主管、维修人员、生产经理。</span>`
+                 <span class="sub-description-text">生产辅助人员的工资 or 报酬，如主管、维修人员、生产经理。</span>`
           },
-          "./video5.mp4"
+          "./3_2M_VDO.mp4"
         );
       }
 
@@ -855,12 +848,12 @@
             cn: `<span class="sub-title-badge">🧤 间接材料</span>
                  <span class="sub-description-text">用于辅助生产的消耗品，如润滑油、刀片或手套。</span>`
           },
-          "./video6.mp4"
+          "./3_3M_VDO.mp4"
         );
       }
 
       // ==========================================
-      // เพิ่มฟังก์ชันใหม่สำหรับ 1A และ 2A
+      // ฟังก์ชันสำหรับ 1A และ 2A
       // ==========================================
 
       function speak1A() {
@@ -881,7 +874,7 @@
             cn: `<span class="sub-title-badge">📈 销售成本</span>
                  <span class="sub-description-text">为实现销售或分销产品而发生的费用。<br>💰 <b>例如:</b> 提成、销售薪水、营销广告、运输与仓储。</span>`
           },
-          "" // หากมีวิดีโออนาคต เช่น "./video_1a.mp4" สามารถนำมาใส่ตรงนี้ได้ครับ
+          "./1A_VDO.mp4" 
         );
       }
 
@@ -903,7 +896,7 @@
             cn: `<span class="sub-title-badge">🏢 管理费用</span>
                  <span class="sub-description-text">与组织管理和支持相关的通用开支。<br>📝 <b>例如:</b> 后勤薪水（财务、人事）、办公室租金、水电网费、办公设备折旧。</span>`
           },
-          "" // หากมีวิดีโออนาคต เช่น "./video_2a.mp4" สามารถนำมาใส่ตรงนี้ได้ครับ
+          "./2A_VDO.mp4" 
         );
       }
     </script>
