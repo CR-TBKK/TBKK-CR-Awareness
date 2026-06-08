@@ -286,7 +286,7 @@
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         cursor: pointer;
         -webkit-appearance: none;
-        z-index: 1000001;
+        z-index: 100001;
       }
       #freeze-btn.active { background-color: #FF6B35; }
       .mindar-ui-scanning { background: none !important; }
@@ -347,6 +347,14 @@
       <button id="speak-ui-btn-1a" class="speak-btn-ui" onclick="speak1A()">🔊</button>
       <button id="speak-ui-btn-2a" class="speak-btn-ui" onclick="speak2A()">🔊</button>
 
+      <button id="speak-ui-btn-1muda" class="speak-btn-ui" onclick="speak1MUDA()">🔊</button>
+      <button id="speak-ui-btn-2muda" class="speak-btn-ui" onclick="speak2MUDA()">🔊</button>
+      <button id="speak-ui-btn-3muda" class="speak-btn-ui" onclick="speak3MUDA()">🔊</button>
+      <button id="speak-ui-btn-4muda" class="speak-btn-ui" onclick="speak4MUDA()">🔊</button>
+      <button id="speak-ui-btn-5muda" class="speak-btn-ui" onclick="speak5MUDA()">🔊</button>
+      <button id="speak-ui-btn-6muda" class="speak-btn-ui" onclick="speak6MUDA()">🔊</button>
+      <button id="speak-ui-btn-7muda" class="speak-btn-ui" onclick="speak7MUDA()">🔊</button>
+
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
 
@@ -381,7 +389,7 @@
           <a-image id="over-3m" src="./3M.png" position="-0.21 0.05 0" scale="0.21 0.05 1"></a-image>
           <a-image id="over-3_1m" src="./3_1M.png" position="-0.19 -0.03 0" scale="0.25 0.06 1"></a-image>
           <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.10 0" scale="0.20 0.06 1"></a-image>
-          <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>                  
+          <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>                                  
 
           <a-image src="./LPG.png" position="-0.07 0.08 0.01" scale="0.13 0.10 1"></a-image>
           <a-image src="./OtherExpen.png" position="-0.06 -0.01 0.02" scale="0.11 0.09 1"></a-image>
@@ -394,25 +402,25 @@
         <a-entity id="ar-content-2" visible="false">
           <a-image src="./MUDA.png" position="-0.26 0.32 0" scale="0.5 0.05 1"></a-image>
           
-          <a-image src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
+          <a-image id="muda-1" src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./1MUDA_PIC.png" position="-0.09 0.225 0" scale="0.15 0.10 1"></a-image> 
               
-          <a-image src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
+          <a-image id="muda-2" src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./2MUDA_PIC.png" position="-0.09 0.145 0.01" scale="0.15 0.102 1"></a-image> 
           
-          <a-image src="./3MUDA.png" position="-0.42 0.07 0" scale="0.20 0.05 1"></a-image> 
+          <a-image id="muda-3" src="./3MUDA.png" position="-0.42 0.07 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./3MUDA_PIC.png" position="-0.09 0.065 0.02" scale="0.15 0.10 1"></a-image> 
 
-          <a-image src="./4MUDA.png" position="-0.42 -0.01 0" scale="0.20 0.05 1"></a-image>
+          <a-image id="muda-4" src="./4MUDA.png" position="-0.42 -0.01 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./4MUDA_PIC.png" position="-0.09 -0.015 0.03" scale="0.15 0.10 1"></a-image> 
 
-          <a-image src="./5MUDA.png" position="-0.42 -0.09 0" scale="0.20 0.05 1"></a-image> 
+          <a-image id="muda-5" src="./5MUDA.png" position="-0.42 -0.09 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./5MUDA_PIC.png" position="-0.09 -0.095 0.04" scale="0.15 0.10 1"></a-image> 
 
-          <a-image src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
+          <a-image id="muda-6" src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./6MUDA_PIC.png" position="-0.09 -0.19 0.05" scale="0.15 0.10 1"></a-image> 
 
-          <a-image src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
+          <a-image id="muda-7" src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image>
 
           <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
@@ -467,27 +475,46 @@
       const videoTimeline = document.getElementById('video-timeline');
       const videoTimeText = document.getElementById('video-time-text');
 
+      // Elements Target 1
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
       const ent3M = document.getElementById('over-3m');
       const ent3_1M = document.getElementById('over-3_1m');
       const ent3_2M = document.getElementById('over-3_2m');
       const ent3_3M = document.getElementById('over-3_3m');
-
       const ent1A = document.getElementById('admin-1a');
       const ent2A = document.getElementById('admin-2a');
 
+      // Elements Target 2 (7 MUDA)
+      const entMuda1 = document.getElementById('muda-1');
+      const entMuda2 = document.getElementById('muda-2');
+      const entMuda3 = document.getElementById('muda-3');
+      const entMuda4 = document.getElementById('muda-4');
+      const entMuda5 = document.getElementById('muda-5');
+      const entMuda6 = document.getElementById('muda-6');
+      const entMuda7 = document.getElementById('muda-7');
+
+      // UI Buttons Target 1
       const btnUI1M = document.getElementById('speak-ui-btn-1m');
       const btnUI2M = document.getElementById('speak-ui-btn-2m'); 
       const btnUI3M = document.getElementById('speak-ui-btn-3m');
       const btnUI3_1M = document.getElementById('speak-ui-btn-3_1m');
       const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
       const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
-
       const btnUI1A = document.getElementById('speak-ui-btn-1a');
       const btnUI2A = document.getElementById('speak-ui-btn-2a');
 
-      const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M, btnUI1A, btnUI2A];
+      // UI Buttons Target 2 (7 MUDA)
+      const btnUI1Muda = document.getElementById('speak-ui-btn-1muda');
+      const btnUI2Muda = document.getElementById('speak-ui-btn-2muda');
+      const btnUI3Muda = document.getElementById('speak-ui-btn-3muda');
+      const btnUI4Muda = document.getElementById('speak-ui-btn-4muda');
+      const btnUI5Muda = document.getElementById('speak-ui-btn-5muda');
+      const btnUI6Muda = document.getElementById('speak-ui-btn-6muda');
+      const btnUI7Muda = document.getElementById('speak-ui-btn-7muda');
+
+      const allSpeakBtnUIsT1 = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M, btnUI1A, btnUI2A];
+      const allSpeakBtnUIsT2 = [btnUI1Muda, btnUI2Muda, btnUI3Muda, btnUI4Muda, btnUI5Muda, btnUI6Muda, btnUI7Muda];
 
       function updateCameraBrightness(val) {
         const mindarVideo = document.querySelector('body > video');
@@ -559,13 +586,13 @@
       arTarget1.addEventListener("targetFound", () => {
         activeTargetIndex = 0;
         arContent1.setAttribute("visible", "true");
-        allSpeakBtnUIs.forEach(btn => btn.style.display = "block");
+        allSpeakBtnUIsT1.forEach(btn => btn.style.display = "block");
       });
 
       arTarget1.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent1.setAttribute("visible", "false");
-          allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
+          allSpeakBtnUIsT1.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           if(activeTargetIndex === 0) activeTargetIndex = -1;
         }
@@ -574,11 +601,13 @@
       arTarget2.addEventListener("targetFound", () => {
         activeTargetIndex = 1;
         arContent2.setAttribute("visible", "true");
+        allSpeakBtnUIsT2.forEach(btn => btn.style.display = "block");
       });
 
       arTarget2.addEventListener("targetLost", () => {
         if (!isFrozen) {
           arContent2.setAttribute("visible", "false");
+          allSpeakBtnUIsT2.forEach(btn => btn.style.display = "none");
           resetMediaUI();
           if(activeTargetIndex === 1) activeTargetIndex = -1;
         }
@@ -597,16 +626,25 @@
       }
 
       function updateAllButtonPositions() {
-        if ((activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) && cameraEl) {
-          positionButton(ent1M, btnUI1M, 70, -2);
-          positionButton(ent2M, btnUI2M, 65, -2);
-          positionButton(ent3M, btnUI3M, 80, -2);
-          positionButton(ent3_1M, btnUI3_1M, 90, -2);
-          positionButton(ent3_2M, btnUI3_2M, 75, -2);
-          positionButton(ent3_3M, btnUI3_3M, 70, -2);
-
-          positionButton(ent1A, btnUI1A, 75, -2);
-          positionButton(ent2A, btnUI2A, 75, -2);
+        if (cameraEl) {
+          if (activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) {
+            positionButton(ent1M, btnUI1M, 70, -2);
+            positionButton(ent2M, btnUI2M, 65, -2);
+            positionButton(ent3M, btnUI3M, 80, -2);
+            positionButton(ent3_1M, btnUI3_1M, 90, -2);
+            positionButton(ent3_2M, btnUI3_2M, 75, -2);
+            positionButton(ent3_3M, btnUI3_3M, 70, -2);
+            positionButton(ent1A, btnUI1A, 75, -2);
+            positionButton(ent2A, btnUI2A, 75, -2);
+          } else if (activeTargetIndex === 1 || (isFrozen && activeTargetIndex === 1)) {
+            positionButton(entMuda1, btnUI1Muda, 75, -2);
+            positionButton(entMuda2, btnUI2Muda, 75, -2);
+            positionButton(entMuda3, btnUI3Muda, 75, -2);
+            positionButton(entMuda4, btnUI4Muda, 75, -2);
+            positionButton(entMuda5, btnUI5Muda, 75, -2);
+            positionButton(entMuda6, btnUI6Muda, 75, -2);
+            positionButton(entMuda7, btnUI7Muda, 75, -2);
+          }
         }
         requestAnimationFrame(updateAllButtonPositions);
       }
@@ -622,7 +660,8 @@
         } else {
           arContent1.setAttribute("visible", "false");
           arContent2.setAttribute("visible", "false");
-          allSpeakBtnUIs.forEach(btn => btn.style.display = "none");
+          allSpeakBtnUIsT1.forEach(btn => btn.style.display = "none");
+          allSpeakBtnUIsT2.forEach(btn => btn.style.display = "none");
           resetMediaUI(); 
           activeTargetIndex = -1;
           
@@ -712,8 +751,12 @@
         window.speechSynthesis.speak(utterance);
       }
 
+      sceneEl.addEventListener("arReady", () => {
+        updateCameraBrightness(70);
+      });
+
       // =========================================================
-      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา (อัปเดตชื่อไฟล์ VDO เรียบร้อย)
+      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา Target 1
       // =========================================================
 
       function speak1M() {
@@ -738,17 +781,13 @@
         );
       }
 
-      sceneEl.addEventListener("arReady", () => {
-        updateCameraBrightness(70);
-      });
-
       function speak2M() {
         performSpeakAction(
           {
             th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง",
             en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
             jp: "直接労務費とは、製造ラインで直接働く作業员に支払われる賃金や手当てのことです。",
-            cn: "直接人工是指直接参与生产线的工人的工资或报酬。"
+            cn: "直接人工是指直接参与生产线的工人的工资 or 报酬。"
           },
           {
             th: `<span class="sub-title-badge">👥 ค่าแรงทางตรง (Direct Labor)</span>
@@ -770,7 +809,7 @@
             th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง",
             en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
             jp: "製造間接費とは、直接材料費と直接労務費以外の製造過程で発生するすべての費用のことです。",
-            cn: "制造费用是指在产品生产过程中发生的，除直接材料และ直接人工以外的所有费用。"
+            cn: "制造费用是指在产品生产过程中发生的，除直接材料和直接人工以外的所有费用。"
           },
           {
             th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span>
@@ -813,7 +852,7 @@
           {
             th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
             en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
-            jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
+            jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門ของ賃金や報酬など）。",
             cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
           },
           {
@@ -851,10 +890,6 @@
           "./3_3M_VDO.mp4"
         );
       }
-
-      // ==========================================
-      // ฟังก์ชันสำหรับ 1A และ 2A
-      // ==========================================
 
       function speak1A() {
         performSpeakAction(
@@ -897,6 +932,165 @@
                  <span class="sub-description-text">与组织管理和支持相关的通用开支。<br>📝 <b>例如:</b> 后勤薪水（财务、人事）、办公室租金、水电网费、办公设备折旧。</span>`
           },
           "./2A_VDO.mp4" 
+        );
+      }
+
+
+      // =========================================================
+      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา Target 2 (7 MUDA)
+      // =========================================================
+
+      function speak1MUDA() {
+        performSpeakAction(
+          {
+            th: "การผลิตมากเกินไป หมายถึง การผลิตสินค้าออกมารอไว้เกินความต้องการจริง ปัญหาคือ เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก ทั้งยัง เพิ่มต้นทุนโดยไม่จำเป็น เช่น ค่าพลังงานเครื่องจักร และ ค่าล่วงเวลาพนักงานโดย ไม่เกิดรายได้ในทันที",
+            en: "Overproduction occurs when items are produced beyond actual demand, tying up capital in raw materials and excess inventory while causing unnecessary machine energy and overtime costs.",
+            jp: "生産過剰とは、実際の需要を超えて製品を製造することです。原材料や在庫に資金が固定され、機械のエネルギーや不要な残業代などのコストが増加します。",
+            cn: "过量生产是指产品产量超过了实际需求。问题在于资金积压在原材料和库存上，还增加了不必要的成本，如机器能耗和员工加班费，却无法立即带来收入。"
+          },
+          {
+            th: `<span class="sub-title-badge">🏭 1. การผลิตมากเกินไป (Overproduction)</span>
+                 <span class="sub-description-text">การผลิตสินค้าออกมารอไว้เกินความต้องการจริง<br>⚠️ <b>ผลกระทบ:</b> เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก เพิ่มต้นทุนพลังงานและค่าล่วงเวลาโดยไม่จำเป็น</span>`,
+            en: `<span class="sub-title-badge">🏭 1. Overproduction</span>
+                 <span class="sub-description-text">Producing items before they are actually needed.<br>⚠️ <b>Impact:</b> Ties up capital in inventory, wastes machine energy and unnecessary overtime.</span>`,
+            jp: `<span class="sub-title-badge">🏭 1. 生産過剰</span>
+                 <span class="sub-description-text">実際の需要を超えて製品を製造すること。<br>⚠️ <b>影響:</b> 原材料や在庫に資金が固定され、機械のエネルギーや不要な残業代などのコストが増加します。</span>`,
+            cn: `<span class="sub-title-badge">🏭 1. 过量生产</span>
+                 <span class="sub-description-text">产品产量超过了实际需求。<br>⚠️ <b>后果:</b> 资金积压在原材料和库存上，增加了无谓的机器能耗和未带来即时收入的员工加班费。</span>`
+          },
+          "./1MUDA_VDO.mp4"
+        );
+      }
+
+      function speak2MUDA() {
+        performSpeakAction(
+          {
+            th: "การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน",
+            en: "Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses.",
+            jp: "手待ち（ウェイティング）とは、作業員や機械が前工程の完了を待って停止している状態です。稼働していない時間への無駄な人件費や、機械を空転させる電気代・保守費が発生します。",
+            cn: "等待是指员工或机器由于等待前道工序而停滞不前。问题在于员工在工作时间内没有产出导致薪资浪费，同时机器空转还浪费电费和维护成本。"
+          },
+          {
+            th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span>
+                 <span class="sub-description-text">พนักงานหรือเครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า<br>⚠️ <b>ผลกระทบ:</b> ค่าแรงสูญเปล่า สิ้นเปลืองค่าไฟและค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดยไม่ได้งาน</span>`,
+            en: `<span class="sub-title-badge">⏳ 2. Waiting</span>
+                 <span class="sub-description-text">Idle time created when workers or machines wait for previous processes.<br>⚠️ <b>Impact:</b> Wasted labor wages, idle utility consumption, and idle machine maintenance costs.</span>`,
+            jp: `<span class="sub-title-badge">⏳ 2. 手待ち（ウェイティング）</span>
+                 <span class="sub-description-text">作業員や機械が前工程の完了を待って停止している状態。<br>⚠️ <b>影響:</b> 無駄な人件費や、機械を空転させる電気代・保守費が発生します。</span>`,
+            cn: `<span class="sub-title-badge">⏳ 2. 等待</span>
+                 <span class="sub-description-text">员工或机器由于等待前道工序而停滞不前。<br>⚠️ <b>后果:</b> 工作时间内无产出导致薪资白白浪费，同时机器开着不生产也徒增电费与维护费。</span>`
+          },
+          "./2MUDA_VDO.mp4"
+        );
+      }
+
+      function speak3MUDA() {
+        performSpeakAction(
+          {
+            th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น",
+            en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor.",
+            jp: "運搬の無駄とは、工場内で原材料や製品を必要以上に頻繁に、または遠くへ移動させることです。製品破損のリスクが高まり、エネルギーや倉庫作業員の不要な労働力が浪費されます。",
+            cn: "过分搬运是指在工厂内频繁或过远地移动 raw materials 或产品。问题在于过度搬运增加了产品损坏风险，也浪费了能源及仓储人员因重复劳动产生的工时成本。"
+          },
+          {
+            th: `<span class="sub-title-badge">🚚 3. ขนย้ายที่มากเกินไป (Transportation)</span>
+                 <span class="sub-description-text">การเคลื่อนย้ายวัตถุดิบหรือสินค้าไปมาบ่อยหรือไกลเกินจำเป็น<br>⚠️ <b>ผลกระทบ:</b> เพิ่มความเสี่ยงสินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และเกิดค่าแรงพนักงานจากงานซ้ำซ้อน</span>`,
+            en: `<span class="sub-title-badge">🚚 3. Transportation</span>
+                 <span class="sub-description-text">Unnecessary movement of materials or products.<br>⚠️ <b>Impact:</b> Elevates damage risks, wastes transport energy, and incurs redundant warehouse labor costs.</span>`,
+            jp: `<span class="sub-title-badge">🚚 3. 運搬の無駄</span>
+                 <span class="sub-description-text">工場内で原材料や製品を必要以上に移動させること。<br>⚠️ <b>影響:</b> 製品破損のリスクが高まり、エネルギーや倉庫作業員の不要な労働力が浪費されます。</span>`,
+            cn: `<span class="sub-title-badge">🚚 3. 过分搬运</span>
+                 <span class="sub-description-text">在工厂内频繁或过远地移动原材料或产品。<br>⚠️ <b>后果:</b> 增加产品磕碰损耗风险，徒增搬运能源及仓储人员进行重复性冗余劳动的工时。</span>`
+          },
+          "./3MUDA_VDO.mp4"
+        );
+      }
+
+      function speak4MUDA() {
+        performSpeakAction(
+          {
+            th: "เคลื่อนไหวที่ไม่จำเป็น หมายถึง ต้องเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปเนื่องจากหน้างานจัดไม่ดี ปัญหาคือ ความเหนื่อยล้าจากการทำงานผิดหลักการยศาสตร์ ส่งผลให้ประสิทธิภาพลดลงเสี่ยงต่ออุบัติเหตุสูงขึ้น นำไปสู่ต้นทุนค่ารักษาพยาบาล การหยุดไลน์ผลิตฉุกเฉิน",
+            en: "Motion waste is excessive physical movement like bending or reaching due to poor workstation design, leading to worker fatigue, reduced efficiency, and higher accident risks.",
+            jp: "動作の無駄とは、ワークステーションの配置が悪いために、過度に手を伸ばす、屈む、歩くなどの無駄な身体の動きが発生することです。エルゴノミクス（人間工学）に反する疲労が生じ、効率低下や労働災害、ライン停止のリスクを招きます。",
+            cn: "不良动作是指由于工位规划不佳导致员工必须过度伸手、拿取、弯腰或走动。问题在于违反人体工程学的劳动会带来疲劳，降低生产效率，增加工伤和紧急停線的成本。"
+          },
+          {
+            th: `<span class="sub-title-badge">🚶 4. เคลื่อนไหวที่ไม่จำเป็น (Motion)</span>
+                 <span class="sub-description-text">การเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปจากหน้างานจัดไม่ดี<br>⚠️ <b>ผลกระทบ:</b> พนักงานเหนื่อยล้า ประสิทธิภาพลดลง เสี่ยงอุบัติเหตุ และเกิดต้นทุนการหยุดไลน์ฉุกเฉิน</span>`,
+            en: `<span class="sub-title-badge">🚶 4. Motion</span>
+                 <span class="sub-description-text">Excessive physical movement by operators due to poor layout.<br>⚠️ <b>Impact:</b> Causes ergonomics fatigue, diminishes work efficiency, and heightens emergency line downtime risks.</span>`,
+            jp: `<span class="sub-title-badge">🚶 4. 動作の無駄</span>
+                 <span class="sub-description-text">配置が悪いために過度な身体の動きが発生すること。<br>⚠️ <b>影響:</b> 疲労が生じ、効率低下や労働災害、ライン停止のリスクを招きます。</span>`,
+            cn: `<span class="sub-title-badge">🚶 4. 不良动作</span>
+                 <span class="sub-description-text">因现场布局不合理导致必须过度伸手、拿取、弯腰或走动。<br>⚠️ <b>后果:</b> 造成违反人体工学的疲劳，导致效率下降、工伤风险变高及潜在的紧急停线医疗开支。</span>`
+          },
+          "./4MUDA_VDO.mp4"
+        );
+      }
+
+      function speak5MUDA() {
+        performSpeakAction(
+          {
+            th: "ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกว่ากำหนด",
+            en: "Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value.",
+            jp: "加工そのものの無駄とは、必要以上の工程を追加したり、顧客が求めていない品質を作り込もうとすることです。作業時間や機械の稼働時間が無駄に増え、付加価値を生まないまま電気代が増加し、機械の寿命を縮めます。",
+            cn: "过分加工是指多余の生产工序，或过度做了客户根本不需要的工作。问题在于虚耗的工序延长了作业工时、使机器运行时间变长而推高电费，机器也更易提前磨损，却没有创造任何增值。"
+          },
+          {
+            th: `<span class="sub-title-badge">⚙️ 5. ขั้นตอนที่มากเกินไป (Over-processing)</span>
+                 <span class="sub-description-text">ขั้นตอนที่มากเกินความจำเป็น หรือทำในสิ่งที่ลูกค้าไม่ได้ต้องการ<br>⚠️ <b>ผลกระทบ:</b> เพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ทำให้ค่าไฟสูงขึ้นโดยไม่สร้างมูลค่า และเครื่องจักรเสื่อมเร็ว</span>`,
+            en: `<span class="sub-title-badge">⚙️ 5. Over-processing</span>
+                 <span class="sub-description-text">Performing extra work or steps that do not add value for customers.<br>⚠️ <b>Impact:</b> Inflates working hours, elevates utility expenses, and causes premature machine wear without creating value.</span>`,
+            jp: `<span class="sub-title-badge">⚙️ 5. 加工そのものの無駄</span>
+                 <span class="sub-description-text">必要以上の工程を追加したり、顧客が求めていない品質を作り込むこと。<br>⚠️ <b>影響:</b> 作業時間や機械の稼働時間が無駄に増え、電気代が増加し、機械の寿命を縮めます。</span>`,
+            cn: `<span class="sub-title-badge">⚙️ 5. 过分加工</span>
+                 <span class="sub-description-text">超出了必要范畴或努力去做出客户并不买账的多余工作。<br>⚠️ <b>后果:</b> 增加了额外的工时，机台运行时间变长使电费开支上升且无法带来价值提升，设备折旧加快。</span>`
+          },
+          "./5MUDA_VDO.mp4"
+        );
+      }
+
+      function speak6MUDA() {
+        performSpeakAction(
+          {
+            th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย",
+            en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums.",
+            jp: "在庫の無駄とは、原材料、仕掛品、製品を倉庫に過剰に保管することです。長期間の滞留による品質劣化や陳腐化のリスクが生じ、倉庫の賃料、電気代、保険料などの保管コストが無駄に発生します。",
+            cn: "过量库存是指在仓库中积压了过多的原材料、在制品（WIP）和成品。问题在于库存积压太久容易变质、过期、过时而废棄，还要承担高昂的仓储费、仓库电费及保险保费。"
+          },
+          {
+            th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span>
+                 <span class="sub-description-text">การเก็บวัตถุดิบ งานระหว่างผลิต หรือสินค้าสำเร็จรูปไว้มากเกินไป<br>⚠️ <b>ผลกระทบ:</b> สินค้าเสี่ยงเสื่อมสภาพ/ตกรุ่น และเสียค่าใช้จ่ายจัดเก็บ เช่น ค่าเช่าโกดัง ค่าไฟ และค่าประกันภัย</span>`,
+            en: `<span class="sub-title-badge">📦 6. Inventory</span>
+                 <span class="sub-description-text">Excessive stockpiling of raw materials, WIP, or finished products.<br>⚠️ <b>Impact:</b> Increases degradation risks, obsolescence loss, and raises warehousing rent, power, and insurance costs.</span>`,
+            jp: `<span class="sub-title-badge">📦 6. 在庫の無駄</span>
+                 <span class="sub-description-text">原材料、仕掛品、製品を倉庫に過剰に保管すること。<br>⚠️ <b>影響:</b> 品質劣化や陳腐化のリスクが生じ、倉庫の賃料、電気代、保険料などの保管コストが無駄に発生します。</span>`,
+            cn: `<span class="sub-title-badge">📦 6. 过量库存</span>
+                 <span class="sub-description-text">将过多的原材料、在制品或成品存放在仓库中。<br>⚠️ <b>后果:</b> 货物长期积压面临劣化、过期及过时淘汰的归零风险，且需持续消耗库房租金、电费和保险费支出。</span>`
+          },
+          "./6MUDA_VDO.mp4"
+        );
+      }
+
+      function speak7MUDA() {
+        performSpeakAction(
+          {
+            th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้",
+            en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time.",
+            jp: "作り直しの無駄（不良・手直しの無駄）とは、規格外の製品を製造し、廃棄や修正が必要になることです。原材料の損失だけでなく、再調達コスト、人件費、電気代が発生し、QCチームが再検査に時間を取られることで生産の機会損失に繋がります。",
+            cn: "不良品/返工是指生产出的产品不达标，必须进行返修或直接报废。问题在于废弃或维修会损失原材料，产生重复的采购成本、人工费和机器电费，更占用了 QC 团队的大量重复检验工时。"
+          },
+          {
+            th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span>
+                 <span class="sub-description-text">การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง<br>⚠️ <b>ผลกระทบ:</b> สูญเสียวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งค่าซื้อล็อตใหม่ ค่าแรง ค่าไฟ และเสียเวลาทีม QC ตรวจสอบซ้ำ</span>`,
+            en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span>
+                 <span class="sub-description-text">Production of out-of-spec products requiring scrap or repair.<br>⚠️ <b>Impact:</b> Wastes materials, doubles labor and utility overheads, and squanders QC capacity on re-inspections.</span>`,
+            jp: `<span class="sub-title-badge">❌ 7. 作り直しの無駄</span>
+                 <span class="sub-description-text">規格外の製品を製造し、廃棄や修正が必要になること。<br>⚠️ <b>影響:</b> 原材料の損失、人件費、電気代が発生し、QCチームが再検査に時間を取られ機会損失に繋がります。</span>`,
+            cn: `<span class="sub-title-badge">❌ 7. 不良品/返工</span>
+                 <span class="sub-description-text">生产出的产品未达到标准而不得不重新返修或者直接报废。<br>⚠️ <b>后果:</b> 亏损原材料，引发二次采购、人工和电费的重叠重置成本，并且挤占了 QC 团队原本可用于正常产出创造收益的检验时间。</span>`
+          },
+          "./7MUDA_VDO.mp4"
         );
       }
     </script>
