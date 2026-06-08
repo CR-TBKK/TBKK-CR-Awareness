@@ -86,7 +86,6 @@
         outline: none;
       }
 
-      /* สไตล์แถบสไลด์ปรับความชัดข้อความ */
       .control-group input[type="range"] {
         width: 115px;
         -webkit-appearance: none;
@@ -124,6 +123,7 @@
       }
 
       .video-wrapper {
+        position: relative;
         width: 100%;
         background-color: #000000;
         border: 3px solid white;
@@ -135,6 +135,52 @@
       #ar-video-player {
         width: 100%;
         display: block;
+      }
+
+      /* เพิ่มแถบควบคุมวิดีโอแบบ Custom */
+      .video-controls {
+        display: flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.85);
+        padding: 8px 12px;
+        gap: 10px;
+      }
+
+      .video-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        outline: none;
+        padding: 0 5px;
+      }
+
+      .video-timeline {
+        flex-grow: 1;
+        -webkit-appearance: none;
+        background: #555;
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .video-timeline::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #0077B6;
+        cursor: pointer;
+      }
+
+      .video-time-text {
+        color: white;
+        font-family: sans-serif;
+        font-size: 11px;
+        min-width: 35px;
+        text-align: center;
       }
 
       #subtitles-box {
@@ -233,6 +279,12 @@
       <div id="video-overlay-container">
         <div class="video-wrapper">
           <video id="ar-video-player" muted playsinline></video>
+          <div class="video-controls">
+            <button id="video-play-btn" class="video-btn" onclick="toggleVideoPlay()">⏸</button>
+            <input type="range" id="video-timeline" class="video-timeline" min="0" max="100" value="0" oninput="seekVideo(this.value)">
+            <span id="video-time-text" class="video-time-text">0:00</span>
+            <button class="video-btn" onclick="closeVideoUI()" style="color: #FF6B35; font-weight: bold;">✕</button>
+          </div>
         </div>
         <div id="subtitles-box"></div>
       </div>
@@ -318,19 +370,19 @@
           <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>            
           
           <a-image src="./2VALUE.png" position="0.09 0.15 0.03" scale="0.20 0.05 1"></a-image>
-          <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>             
+          <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>              
 
           <a-image src="./3VALUE.png" position="0.09 0.07 0.04" scale="0.20 0.05 1"></a-image> 
-          <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>               
+          <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>                
           
           <a-image src="./4VALUE.png" position="0.09 -0.01 0.05" scale="0.20 0.05 1"></a-image>
           <a-image src="./4VALUE_PIC.png" position="0.45 -0.01 0.04" scale="0.14 0.09 1"></a-image>              
 
           <a-image src="./5VALUE.png" position="0.09 -0.09 0.06" scale="0.20 0.05 1"></a-image> 
-          <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                 
+          <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                  
           
           <a-image src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-image>
-          <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>                 
+          <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>                  
           
           <a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>      
@@ -360,6 +412,11 @@
       const videoContainer = document.getElementById('video-overlay-container');
       const videoPlayer = document.getElementById('ar-video-player');
       const subtitlesBox = document.getElementById('subtitles-box');
+
+      // ผูก Element ของแถบควบคุมวิดีโอใหม่
+      const videoPlayBtn = document.getElementById('video-play-btn');
+      const videoTimeline = document.getElementById('video-timeline');
+      const videoTimeText = document.getElementById('video-time-text');
 
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
@@ -433,6 +490,7 @@
         videoPlayer.pause();
         videoPlayer.src = "";
         videoContainer.style.display = "none";
+        videoPlayBtn.innerText = "⏸"; // รีเซ็ตปุ่มเป็นรูป Pause เสมอเมื่อเริ่มวิดีโอใหม่
       }
 
       function setLanguage(lang) {
@@ -521,6 +579,48 @@
         }
       }
 
+      /* ฟังก์ชันควบคุมวิดีโอ (เล่น/หยุด, เลื่อนเวลา, ปิด) */
+      function toggleVideoPlay() {
+        if (videoPlayer.paused) {
+          videoPlayer.play();
+          videoPlayBtn.innerText = "⏸";
+          // ถ้า TTS ถูกหยุดชั่วคราวอยู่ ให้สั่งพูดต่อ
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+        } else {
+          videoPlayer.pause();
+          videoPlayBtn.innerText = "▶";
+          // หยุด TTS ชั่วคราวไปพร้อมกับวิดีโอ
+          window.speechSynthesis.pause();
+        }
+      }
+
+      function seekVideo(val) {
+        // เลื่อนเวลาวิดีโอตามค่าเปอร์เซ็นต์ของ Slide Bar
+        if (videoPlayer.duration) {
+          const seekTo = (val / 100) * videoPlayer.duration;
+          videoPlayer.currentTime = seekTo;
+        }
+      }
+
+      function closeVideoUI() {
+        resetMediaUI();
+      }
+
+      // อัปเดตแถบเวลาและหน้าจอให้อัตโนมัติขณะวิดีโอเล่น
+      videoPlayer.addEventListener('timeupdate', () => {
+        if (videoPlayer.duration) {
+          const percentage = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+          videoTimeline.value = percentage;
+          
+          // คำนวณแสดงเป็น นาที:วินาที
+          const mins = Math.floor(videoPlayer.currentTime / 60);
+          const secs = Math.floor(videoPlayer.currentTime % 60);
+          videoTimeText.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+      });
+
       function performSpeakAction(textMap, videoSrc) {
         resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
@@ -553,9 +653,13 @@
         utterance.onerror = function(e) { hideMedia(); }
 
         function hideMedia() {
-          subtitlesBox.style.display = "none";
-          videoPlayer.pause();
-          videoContainer.style.display = "none"; 
+          // ถ้าถูกซ่อนเพราะจบการทำงานปกติ ให้ล้างหน้าจอออก
+          // แต่ถ้าแค่หยุดชั่วคราว (Paused) จะไม่เข้าฟังก์ชันนี้
+          if (!window.speechSynthesis.paused) {
+            subtitlesBox.style.display = "none";
+            videoPlayer.pause();
+            videoContainer.style.display = "none"; 
+          }
         }
         
         utterance.rate = parseFloat(speedSelect.value);
@@ -567,12 +671,11 @@
         performSpeakAction({
           th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม",
           en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
-          jp: "直接材料費とは、アルミニウムなど、製品ของ製造に直接使用される主要な原材料のことです。",
+          jp: "直接材料費とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。",
           cn: "直接材料是指生产中使用的主要原材料，例如铝。"
         }, "./video1.mp4");
       }
 
-      // 🌟 สั่งให้หรี่แสงกล้องลง 70% ทันทีที่ระบบเริ่มสแกนเจอและพร้อมทำงาน
       sceneEl.addEventListener("arReady", () => {
         updateCameraBrightness(70);
       });
@@ -597,7 +700,7 @@
 
       function speak3_1M() {
         performSpeakAction({
-          th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟา ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบํารุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ",
+          th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟ้า ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบำรุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ",
           en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses.",
           jp: "その他の製造費用（電気、水、工場の賃料、保守、建物の減価償却、機械の減価償却、その他の工場経費など）。",
           cn: "其他制造费用，例如电费、水费、工厂租金、维修费、厂房折旧、机器折旧以及其他工厂开支。"
@@ -609,7 +712,7 @@
           th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต",
           en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
           jp: "間接労務費（スーパーバイザー、保守スタッフ、製造マネージャーなどの製造支援部門の賃金や報酬など）。",
-          cn: "间接人工，例如生产辅助人员的工资หรือ报酬，如主管、维修人员、生产经理。"
+          cn: "间接人工，例如生产辅助人员的工资或报酬，如主管、维修人员、生产经理。"
         }, "./video5.mp4");
       }
 
