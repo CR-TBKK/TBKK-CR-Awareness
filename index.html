@@ -183,6 +183,32 @@
         text-align: center;
       }
 
+      /* ปุ่มปิด (กากบาท) รูปแบบใหม่ เหนือขอบกรอบวิดีโอด้านบนขวา */
+      .video-close-top-btn {
+        position: absolute;
+        top: -45px; 
+        right: 0px;  
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #FF6B35;
+        border: 2px solid white;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+        outline: none;
+        transition: transform 0.1s ease;
+        -webkit-appearance: none;
+      }
+      .video-close-top-btn:active {
+        transform: scale(0.9);
+      }
+
       /* ปรับปรุงกล่องคำอธิบาย (Dashboard Card) */
       #subtitles-box {
         position: relative; 
@@ -298,13 +324,14 @@
       </div>
       
       <div id="video-overlay-container">
+        <button class="video-close-top-btn" onclick="closeVideoUI()">✕</button>
+        
         <div class="video-wrapper">
           <video id="ar-video-player" muted playsinline></video>
           <div class="video-controls">
             <button id="video-play-btn" class="video-btn" onclick="toggleVideoPlay()">⏸</button>
             <input type="range" id="video-timeline" class="video-timeline" min="0" max="100" value="0" oninput="seekVideo(this.value)">
             <span id="video-time-text" class="video-time-text">0:00</span>
-            <button class="video-btn" onclick="closeVideoUI()" style="color: #FF6B35; font-weight: bold;">✕</button>
           </div>
         </div>
         <div id="subtitles-box"></div>
@@ -381,29 +408,6 @@
 
           <a-image src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./6MUDA_PIC.png" position="-0.09 -0.19 0.05" scale="0.15 0.10 1"></a-image> 
-          
-          <a-image src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
-          <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image> 
-
-          <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
-          
-          <a-image src="./1VALUE.png" position="0.09  0.23 0.02" scale="0.20 0.05 1"></a-image> 
-          <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>            
-          
-          <a-image src="./2VALUE.png" position="0.09 0.15 0.03" scale="0.20 0.05 1"></a-image>
-          <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>              
-
-          <a-image src="./3VALUE.png" position="0.09 0.07 0.04" scale="0.20 0.05 1"></a-image> 
-          <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>                
-          
-          <a-image src="./4VALUE.png" position="0.09 -0.01 0.05" scale="0.20 0.05 1"></a-image>
-          <a-image src="./4VALUE_PIC.png" position="0.45 -0.01 0.04" scale="0.14 0.09 1"></a-image>              
-
-          <a-image src="./5VALUE.png" position="0.09 -0.09 0.06" scale="0.20 0.05 1"></a-image> 
-          <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                  
-          
-          <a-image src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-image>
-          <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>                  
           
           <a-entity id="muda7-content" data-text-th="การเคลื่อนไหวที่ไม่จำเป็น หมายถึง ท่าทางการทำงานที่ไม่กระชับ เช่น การเอื้อมหยิบของไกลตัว" data-html-th="&lt;span class='sub-title-badge'&gt;🚶‍♂️ Motion (การเคลื่อนไหว)&lt;/span&gt;&lt;span class='sub-description-text'&gt;การเคลื่อนไหวของพนักงานที่สูญเปล่า ท่าทางไม่กระชับ&lt;br&gt;📍 &lt;b&gt;ตัวอย่าง:&lt;/b&gt; เอื้อมหยิบเครื่องมือไกลตัว, เดินไปกลับหลายรอบ&lt;/span&gt;" data-video="./video_muda7.mp4"></a-entity><a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>      
@@ -635,7 +639,6 @@
         }
       });
 
-      // ฟังก์ชันแกนหลักที่ได้รับการปรับปรุงให้รองรับตัวแปร htmlMap สำหรับ Dashboard Card
       function performSpeakAction(textMap, htmlMap, videoSrc) {
         resetMediaUI(); 
         const utterance = new SpeechSynthesisUtterance();
@@ -667,16 +670,9 @@
           }
         };
 
-        utterance.onend = function() { hideMedia(); };
-        utterance.onerror = function(e) { hideMedia(); }
-
-        function hideMedia() {
-          if (!window.speechSynthesis.paused) {
-            subtitlesBox.style.display = "none";
-            videoPlayer.pause();
-            videoContainer.style.display = "none"; 
-          }
-        }
+        // ลบคำสั่งปิดอัตโนมัติออกเพื่อให้ทั้งกล่องวิดีโอและการ์ดสรุปเปิดค้างไว้ตามบรีฟ
+        utterance.onend = function() { };
+        utterance.onerror = function(e) { }
         
         utterance.rate = parseFloat(speedSelect.value);
         utterance.voice = getSelectedVoice();
@@ -684,7 +680,7 @@
       }
 
       // ==========================================
-      // ชุดฟังก์ชันปุ่มกด (อัปเดตข้อมูลการจัดวางข้อความครบถ้วน)
+      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา (ค้างหน้าจอจนกว่าจะกดกากบาท)
       // ==========================================
 
       function speak1M() {
@@ -741,7 +737,7 @@
             th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง",
             en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
             jp: "製造間接費とは、直接材料費と直接労務費以外の製造過程で発生するすべての費用のことです。",
-            cn: "制造费用是指在产品生产过程中发生的，除直接材料和直接人工以外的所有费用。"
+            cn: "制造费用是指在产品生产过程中发生的，除直接材料และ直接人工以外的所有费用。"
           },
           {
             th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span>
