@@ -337,12 +337,17 @@
         <div id="subtitles-box"></div>
       </div>
 
+      <!-- ปุ่มเสียง UI หลักเดิม -->
       <button id="speak-ui-btn-1m" class="speak-btn-ui" onclick="speak1M()">🔊</button>
       <button id="speak-ui-btn-2m" class="speak-btn-ui" onclick="speak2M()">🔊</button>
       <button id="speak-ui-btn-3m" class="speak-btn-ui" onclick="speak3M()">🔊</button>
       <button id="speak-ui-btn-3_1m" class="speak-btn-ui" onclick="speak3_1M()">🔊</button>
       <button id="speak-ui-btn-3_2m" class="speak-btn-ui" onclick="speak3_2M()">🔊</button>
       <button id="speak-ui-btn-3_3m" class="speak-btn-ui" onclick="speak3_3M()">🔊</button>
+
+      <!-- เพิ่มปุ่มเสียง UI สำหรับฝั่ง Admin Cost (1A และ 2A) -->
+      <button id="speak-ui-btn-1a" class="speak-btn-ui" onclick="speak1A()">🔊</button>
+      <button id="speak-ui-btn-2a" class="speak-btn-ui" onclick="speak2A()">🔊</button>
 
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
     </div>
@@ -355,6 +360,21 @@
           <a-image src="./Manu_Cost_sign.png" position="-0.27 0.095 0" scale="0.45 0.039 1"></a-image>
           <a-image src="./Admin_Cost_sign.png" position="0.23 0.09 0" scale="0.45 0.039 1"></a-image>
 
+          <!-- ผูก ID ให้รูปภาพ 1A และ 2A เพื่อนำไปใช้คำนวณตำแหน่งปุ่มเสียง -->
+          <a-image id="admin-1a" src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 1"></a-image>
+          <a-image src="./1_1A.png" position="0.16 0.01 0" scale="0.27 0.03 1"></a-image>
+          <a-image src="./1_2A.png" position="0.16 -0.02 0" scale="0.27 0.03 1"></a-image>
+          <a-image src="./1_3A.png" position="0.16 -0.05 0" scale="0.27 0.03 1"></a-image>
+          
+          <a-image src="./Office.png" position="0.41 -0.01 0.01" scale="0.19 0.12 0.01"></a-image>
+          <a-image src="./Meeting.png" position="0.40 -0.17 0.01" scale="0.19 0.13 0"></a-image>
+
+          <a-image id="admin-2a" src="./2A.png" position="0.10 -0.09 0" scale="0.20 0.04 1"></a-image>
+          <a-image src="./2_1A.png" position="0.16 -0.13 0" scale="0.27 0.03 1"></a-image>
+          <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 1"></a-image>
+          <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 1"></a-image>
+          <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 1"></a-image>
+
           <a-image id="material-1m" src="./1M.png" position="-0.41 0.05 0" scale="0.18 0.05 1"></a-image>    
           <a-image src="./ingot.png" position="-0.38 -0.02 0" scale="0.09 0.07 1"></a-image> 
         
@@ -364,26 +384,12 @@
           <a-image id="over-3m" src="./3M.png" position="-0.21 0.05 0" scale="0.21 0.05 1"></a-image>
           <a-image id="over-3_1m" src="./3_1M.png" position="-0.19 -0.03 0" scale="0.25 0.06 1"></a-image>
           <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.10 0" scale="0.20 0.06 1"></a-image>
-          <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>          
+          <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 1"></a-image>                  
 
           <a-image src="./LPG.png" position="-0.07 0.08 0.01" scale="0.13 0.10 1"></a-image>
           <a-image src="./OtherExpen.png" position="-0.06 -0.01 0.02" scale="0.11 0.09 1"></a-image>
           <a-image src="./IndirectLabor.png" position="-0.06 -0.14 0" scale="0.09 0.12 1"></a-image>
           <a-image src="./IndirectMat.png" position="-0.07 -0.21 0.01" scale="0.12 0.06 1"></a-image>
-
-          <a-image src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 1"></a-image>
-          <a-image src="./1_1A.png" position="0.16 0.01 0" scale="0.27 0.03 1"></a-image>
-          <a-image src="./1_2A.png" position="0.16 -0.02 0" scale="0.27 0.03 1"></a-image>
-          <a-image src="./1_3A.png" position="0.16 -0.05 0" scale="0.27 0.03 1"></a-image>
-          
-          <a-image src="./Office.png" position="0.41 -0.01 0.01" scale="0.19 0.12 0.01"></a-image>
-          <a-image src="./Meeting.png" position="0.40 -0.17 0.01" scale="0.19 0.13 0"></a-image>
-
-          <a-image src="./2A.png" position="0.10 -0.09 0" scale="0.20 0.04 1"></a-image>
-          <a-image src="./2_1A.png" position="0.16 -0.13 0" scale="0.27 0.03 1"></a-image>
-          <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 1"></a-image>
-          <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 1"></a-image>
-          <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 1"></a-image>
         </a-entity>
       </a-entity>
 
@@ -412,7 +418,7 @@
           <a-image src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image>
 
-<a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
+          <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
           
           <a-image src="./1VALUE.png" position="0.09  0.23 0.02" scale="0.20 0.05 1"></a-image> 
           <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>            
@@ -434,10 +440,8 @@
 
           <a-image src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>
-          
         </a-entity>
       </a-entity>
-
     </a-scene>
 
     <script>
@@ -473,6 +477,10 @@
       const ent3_2M = document.getElementById('over-3_2m');
       const ent3_3M = document.getElementById('over-3_3m');
 
+      // ดึง Element ภาพฝั่ง Admin 
+      const ent1A = document.getElementById('admin-1a');
+      const ent2A = document.getElementById('admin-2a');
+
       const btnUI1M = document.getElementById('speak-ui-btn-1m');
       const btnUI2M = document.getElementById('speak-ui-btn-2m'); 
       const btnUI3M = document.getElementById('speak-ui-btn-3m');
@@ -480,7 +488,12 @@
       const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m');
       const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m');
 
-      const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M];
+      // ดึง Element ปุ่มเสียงฝั่ง Admin
+      const btnUI1A = document.getElementById('speak-ui-btn-1a');
+      const btnUI2A = document.getElementById('speak-ui-btn-2a');
+
+      // เพิ่มปุ่ม 1A และ 2A เข้าใน Array ควบคุมการเปิด/ปิดแสดงผล
+      const allSpeakBtnUIs = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M, btnUI1A, btnUI2A];
 
       function updateCameraBrightness(val) {
         const mindarVideo = document.querySelector('body > video');
@@ -597,6 +610,10 @@
           positionButton(ent3_1M, btnUI3_1M, 90, -2);
           positionButton(ent3_2M, btnUI3_2M, 75, -2);
           positionButton(ent3_3M, btnUI3_3M, 70, -2);
+
+          // คำนวณตำแหน่งปุ่มเสียง 1A และ 2A ให้ลอยอยู่ด้านหลังข้อความการ์ดต้นทุนทางขวา
+          positionButton(ent1A, btnUI1A, 75, -2);
+          positionButton(ent2A, btnUI2A, 75, -2);
         }
         requestAnimationFrame(updateAllButtonPositions);
       }
@@ -694,7 +711,6 @@
           }
         };
 
-        // ลบคำสั่งปิดอัตโนมัติออกเพื่อให้ทั้งกล่องวิดีโอและการ์ดสรุปเปิดค้างไว้ตามบรีฟ
         utterance.onend = function() { };
         utterance.onerror = function(e) { }
         
@@ -704,7 +720,7 @@
       }
 
       // ==========================================
-      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา (ค้างหน้าจอจนกว่าจะกดกากบาท)
+      // ฟังก์ชันปุ่มกดเดิม (1M - 3_3M)
       // ==========================================
 
       function speak1M() {
@@ -840,6 +856,54 @@
                  <span class="sub-description-text">用于辅助生产的消耗品，如润滑油、刀片或手套。</span>`
           },
           "./video6.mp4"
+        );
+      }
+
+      // ==========================================
+      // เพิ่มฟังก์ชันใหม่สำหรับ 1A และ 2A
+      // ==========================================
+
+      function speak1A() {
+        performSpeakAction(
+          {
+            th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า",
+            en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing.",
+            jp: "販売費とは、売上を上げるために発生する費用、または顧客への製品配送に関連する費用のことです（販売手数料、給与、マーケティング、広告、運賃、倉庫保管料など）。",
+            cn: "销售成本是指为实现销售或与向客户分销产品相关的费用，例如销售人员的佣金和薪水、线上线下营销与广告、货运以及仓储费用。"
+          },
+          {
+            th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span>
+                 <span class="sub-description-text">ค่าใช้จ่ายเพื่อให้ได้ยอดขาย หรือเกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า<br>💰 <b>เช่น:</b> ค่าคอมมิชชัน, เงินเดือนทีมขาย, ค่าการตลาด/โฆษณา, ค่าขนส่งและคลังสินค้า</span>`,
+            en: `<span class="sub-title-badge">📈 Selling Expenses</span>
+                 <span class="sub-description-text">Costs incurred to generate sales or distribute products.<br>💰 <b>e.g.,</b> Commissions, Sales salaries, Marketing, Freight & Warehousing.</span>`,
+            jp: `<span class="sub-title-badge">📈 販売費</span>
+                 <span class="sub-description-text">売上向上や製品配送のための費用。<br>💰 <b>例:</b> コミッション、営業給与、広告費、運賃・倉庫費。</span>`,
+            cn: `<span class="sub-title-badge">📈 销售成本</span>
+                 <span class="sub-description-text">为实现销售或分销产品而发生的费用。<br>💰 <b>例如:</b> 提成、销售薪水、营销广告、运输与仓储。</span>`
+          },
+          "" // หากมีวิดีโออนาคต เช่น "./video_1a.mp4" สามารถนำมาใส่ตรงนี้ได้ครับ
+        );
+      }
+
+      function speak2A() {
+        performSpeakAction(
+          {
+            th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ",
+            en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees.",
+            jp: "管理費とは、管理、運営、組織支援に関する一般的な費用のことです（バックオフィス（会計、人事、役員）の給与、オフィスの家賃、水道光熱費、通信費、オフィスの減価償却費、法務費用など）。",
+            cn: "管理费用是指与组织管理、行政和支持相关的通用费用，例如支持部门（财务、人事、高管）的薪水、办公室租金、水电费、网费、办公设备折旧以及法律与专业服务费。"
+          },
+          {
+            th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span>
+                 <span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพอร์ต (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`,
+            en: `<span class="sub-title-badge">🏢 Administrative Expenses</span>
+                 <span class="sub-description-text">General costs for corporate management and support.<br>📝 <b>e.g.,</b> Support staff salaries (Accounting, HR), Office rent, Utilities, Office asset depreciation.</span>`,
+            jp: `<span class="sub-title-badge">🏢 管理費</span>
+                 <span class="sub-description-text">管理や組織支援に関する一般費用。<br>📝 <b>例:</b> 間接部門給与（会計・人事）、家賃、光熱費、備品減価償却費。</span>`,
+            cn: `<span class="sub-title-badge">🏢 管理费用</span>
+                 <span class="sub-description-text">与组织管理和支持相关的通用开支。<br>📝 <b>例如:</b> 后勤薪水（财务、人事）、办公室租金、水电网费、办公设备折旧。</span>`
+          },
+          "" // หากมีวิดีโออนาคต เช่น "./video_2a.mp4" สามารถนำมาใส่ตรงนี้ได้ครับ
         );
       }
     </script>
