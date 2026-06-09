@@ -110,13 +110,14 @@
         transform: scale(1.2);
       }
 
+      /* ปรับความกว้างตัวครอบ VDO ให้ใหญ่ขึ้นตรงนี้ */
       #video-overlay-container {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 75%;
-        max-width: 450px;
+        width: 92%;              /* ปรับจาก 75% เป็น 92% */
+        max-width: 600px;        /* ปรับจาก 450px เป็น 600px */
         display: none; 
         z-index: 1000000;
         pointer-events: auto; 
@@ -185,7 +186,7 @@
       .video-close-top-btn {
         position: absolute;
         top: -45px; 
-        right: 0px;  
+        right: 0px;    
         background-color: rgba(0, 0, 0, 0.7);
         color: #FF6B35;
         border: 2px solid white;
@@ -236,7 +237,6 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       }
 
-      /* กล่องสีครอบหัวข้อหลักฝั่ง VALUE ให้ใช้สีเขียว/น้ำเงินสร้างความแตกต่างทางอารมณ์อย่างชัดเจน */
       .sub-title-badge.value-badge {
         background-color: #2A9D8F;
       }
@@ -327,7 +327,7 @@
         <button class="video-close-top-btn" onclick="closeVideoUI()">✕</button>
         
         <div class="video-wrapper">
-          <video id="ar-video-player" muted playsinline></video>
+          <video id="ar-video-player" playsinline></video>
           <div class="video-controls">
             <button id="video-play-btn" class="video-btn" onclick="toggleVideoPlay()">⏸</button>
             <input type="range" id="video-timeline" class="video-timeline" min="0" max="100" value="0" oninput="seekVideo(this.value)">
@@ -501,7 +501,7 @@
       const entMuda6 = document.getElementById('muda-6');
       const entMuda7 = document.getElementById('muda-7');
 
-      // Elements Target 2 (7 VALUE) [เพิ่มใหม่]
+      // Elements Target 2 (7 VALUE)
       const entValue1 = document.getElementById('value-1');
       const entValue2 = document.getElementById('value-2');
       const entValue3 = document.getElementById('value-3');
@@ -529,7 +529,7 @@
       const btnUI6Muda = document.getElementById('speak-ui-btn-6muda');
       const btnUI7Muda = document.getElementById('speak-ui-btn-7muda');
 
-      // UI Buttons Target 2 (7 VALUE) [เพิ่มใหม่]
+      // UI Buttons Target 2 (7 VALUE)
       const btnUI1Value = document.getElementById('speak-ui-btn-1value');
       const btnUI2Value = document.getElementById('speak-ui-btn-2value');
       const btnUI3Value = document.getElementById('speak-ui-btn-3value');
@@ -665,7 +665,6 @@
             positionButton(ent1A, btnUI1A, 75, -2);
             positionButton(ent2A, btnUI2A, 75, -2);
           } else if (activeTargetIndex === 1 || (isFrozen && activeTargetIndex === 1)) {
-            // ฝั่งด้านซ้าย: 7 MUDA
             positionButton(entMuda1, btnUI1Muda, 75, -2);
             positionButton(entMuda2, btnUI2Muda, 75, -2);
             positionButton(entMuda3, btnUI3Muda, 75, -2);
@@ -674,7 +673,6 @@
             positionButton(entMuda6, btnUI6Muda, 75, -2);
             positionButton(entMuda7, btnUI7Muda, 75, -2);
 
-            // ฝั่งด้านขวา: 7 VALUE [คำนวณพิกัดจากป้ายชื่อหัวข้อ]
             positionButton(entValue1, btnUI1Value, 75, -2);
             positionButton(entValue2, btnUI2Value, 75, -2);
             positionButton(entValue3, btnUI3Value, 75, -2);
@@ -689,8 +687,8 @@
       requestAnimationFrame(updateAllButtonPositions);
 
       function toggleFreeze() {
-        isFrozen = !isFrozen;
         const mindarSystem = sceneEl.systems["mindar-image-system"];
+        isFrozen = !isFrozen;
         if (isFrozen) {
           if (mindarSystem) mindarSystem.pause(true); 
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
@@ -714,24 +712,34 @@
         }
       }
 
+      // ปรับปรุงฟังก์ชันการเล่นและหยุดเสียงให้สัมพันธ์กับวิดีโอ
       function toggleVideoPlay() {
         if (videoPlayer.paused) {
           videoPlayer.play();
           videoPlayBtn.innerText = "⏸";
-          if (window.speechSynthesis.paused) {
+          // ถ้ามีเสียงพากย์สังเคราะห์ค้างอยู่และถูกหยุดไว้ ให้พูดต่อ
+          if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
             window.speechSynthesis.resume();
           }
         } else {
           videoPlayer.pause();
           videoPlayBtn.innerText = "▶";
-          window.speechSynthesis.pause();
+          // ถ้ากดหยุดวิดีโอ ให้สั่งหยุดเสียงพากย์ชั่วคราวด้วย
+          if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+            window.speechSynthesis.pause();
+          }
         }
       }
 
+      // ปรับปรุงฟังก์ชันกรอวิดีโอเพื่อไม่ให้เสียงสังเคราะห์ทำงานซ้อนดีเลย์
       function seekVideo(val) {
         if (videoPlayer.duration) {
           const seekTo = (val / 100) * videoPlayer.duration;
           videoPlayer.currentTime = seekTo;
+          
+          // เนื่องจาก Web Speech API ไม่สามารถกรอเสียงตามได้ 
+          // จึงต้องเคลียร์เสียงสังเคราะห์เดิมออก เพื่อให้ผู้ใช้ฟังเสียงพากย์หลักจากตัววิดีโอได้อย่างถูกต้อง
+          window.speechSynthesis.cancel();
         }
       }
 
@@ -917,14 +925,13 @@
           },
           {
             th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span>
-                 <span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพอร์ต (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`,
+                 <span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพॉर्ट (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`,
             en: `<span class="sub-title-badge">🏢 Administrative Expenses</span>
                  <span class="sub-description-text">General costs for corporate management and support.<br>📝 <b>e.g.,</b> Support staff salaries (Accounting, HR), Office rent, Utilities, Office asset depreciation.</span>`
           },
           "./2A_VDO.mp4" 
         );
       }
-
 
       // =========================================================
       // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา Target 2 (7 MUDA)
@@ -965,7 +972,7 @@
       function speak3MUDA() {
         performSpeakAction(
           {
-            th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น",
+            th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำมุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น",
             en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor."
           },
           {
@@ -1042,9 +1049,8 @@
         );
       }
 
-
       // =========================================================
-      // [เพิ่มใหม่] ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา Target 2 (7 VALUE)
+      // ชุดฟังก์ชันปุ่มกดแสดงผลเนื้อหา Target 2 (7 VALUE)
       // =========================================================
 
       function speak1VALUE() {
@@ -1146,7 +1152,7 @@
       function speak7VALUE() {
         performSpeakAction(
           {
-            th: "ทำถูกต้อง ตั้งแต่แรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใช้วัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด",
+            th: "ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใช้วัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด",
             en: "Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight."
           },
           {
