@@ -110,14 +110,13 @@
         transform: scale(1.2);
       }
 
-      /* ปรับความกว้างตัวครอบ VDO ให้ใหญ่ขึ้นตรงนี้ */
       #video-overlay-container {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 92%;              /* ปรับจาก 75% เป็น 92% */
-        max-width: 600px;        /* ปรับจาก 450px เป็น 600px */
+        width: 92%;              
+        max-width: 600px;        
         display: none; 
         z-index: 1000000;
         pointer-events: auto; 
@@ -462,6 +461,10 @@
       let currentLang = 'th'; 
       let allVoices = []; 
       
+      // ตัวแปรเก็บข้อมูลโครงสร้างประโยคที่จะพากย์ปัจจุบัน เพื่อใช้สั่งเริ่มใหม่เวลาวิดีโอนับหนึ่งใหม่
+      let currentSpeechText = "";
+      let currentSpeechLang = "th-TH";
+      
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       
@@ -601,6 +604,7 @@
         videoPlayer.src = "";
         videoContainer.style.display = "none";
         videoPlayBtn.innerText = "⏸"; 
+        currentSpeechText = "";
       }
 
       function setLanguage(lang) {
@@ -712,35 +716,64 @@
         }
       }
 
-      // ปรับปรุงฟังก์ชันการเล่นและหยุดเสียงให้สัมพันธ์กับวิดีโอ
+      // ปรับปรุงฟังก์ชันควบคุมปุ่ม Play/Pause วิดีโอและเสียงพากย์ตามเงื่อนไขใหม่
       function toggleVideoPlay() {
         if (videoPlayer.paused) {
-          videoPlayer.play();
-          videoPlayBtn.innerText = "⏸";
-          // ถ้ามีเสียงพากย์สังเคราะห์ค้างอยู่และถูกหยุดไว้ ให้พูดต่อ
-          if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
+          // เงื่อนไข: ถ้าเล่นจากจุดเริ่มต้น (0 วินาที) ให้สั่งพากย์เสียงใหม่ตั้งแต่ต้นเสมอ
+          if (videoPlayer.currentTime === 0) {
+            triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
+          } else {
+            // ถ้าเป็นการกด Play ต่อจากการ Pause กลางคัน ให้ดึงเสียงเดิมมาพูดต่อ (Resume)
+            if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
           }
+          videoPlayer.play().catch(e => console.log(e));
+          videoPlayBtn.innerText = "⏸";
         } else {
           videoPlayer.pause();
           videoPlayBtn.innerText = "▶";
-          // ถ้ากดหยุดวิดีโอ ให้สั่งหยุดเสียงพากย์ชั่วคราวด้วย
+          // ถ้าสั่งหยุดวิดีโอ ให้สั่งหยุดพักเสียงพากย์ด้วยชั่วคราว
           if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
             window.speechSynthesis.pause();
           }
         }
       }
 
-      // ปรับปรุงฟังก์ชันกรอวิดีโอเพื่อไม่ให้เสียงสังเคราะห์ทำงานซ้อนดีเลย์
+      // ปรับปรุงฟังก์ชันการกรอวิดีโอ
       function seekVideo(val) {
         if (videoPlayer.duration) {
           const seekTo = (val / 100) * videoPlayer.duration;
           videoPlayer.currentTime = seekTo;
           
-          // เนื่องจาก Web Speech API ไม่สามารถกรอเสียงตามได้ 
-          // จึงต้องเคลียร์เสียงสังเคราะห์เดิมออก เพื่อให้ผู้ใช้ฟังเสียงพากย์หลักจากตัววิดีโอได้อย่างถูกต้อง
+          // สั่งล้างคิวเสียงเก่าออกทันทีก่อนเมื่อทำการลากสไลเดอร์กรอเวลา
           window.speechSynthesis.cancel();
+          
+          // เงื่อนไข: ถ้ากรอกลับมาที่จุดเริ่มต้น (0 วินาที) และวิดีโอกำลังเปิดเล่นอยู่ ให้เริ่มพากย์คำแรกใหม่ทันที
+          if (seekTo === 0 && !videoPlayer.paused) {
+            triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
+          } else if (seekTo === 0 && videoPlayer.paused) {
+            // หากกรอมาจุดเริ่มต้นแต่สถานะวิดีโอถูกหยุดอยู่ จะยังไม่พูด จนกว่าจะกดปุ่มเล่น (ตามเงื่อนไขที่ 2)
+            videoPlayBtn.innerText = "▶";
+          }
         }
+      }
+
+      // ฟังก์ชันสำหรับสั่งให้ Web Speech API ทำการสร้างเสียงพากย์และพูด
+      function triggerSpeechSynthesis(text, lang) {
+        window.speechSynthesis.cancel(); // ล้างคิวค้างทั้งหมดก่อนเริ่มใหม่
+        if (!text) return;
+
+        const utterance = new SpeechSynthesisUtterance();
+        utterance.text = text;
+        utterance.lang = lang;
+        utterance.rate = parseFloat(speedSelect.value);
+        utterance.voice = getSelectedVoice();
+
+        // หน่วงเวลาเซ็ตติ้ง 50ms ป้องกันเบราว์เซอร์กระตุกหรือคิวล็อก
+        setTimeout(() => {
+          window.speechSynthesis.speak(utterance);
+        }, 50);
       }
 
       function closeVideoUI() {
@@ -758,43 +791,44 @@
         }
       });
 
+      // ฟังก์ชันเมื่อกดปุ่มเมนูหลักจากวัตถุ AR
       function performSpeakAction(textMap, htmlMap, videoSrc) {
-        resetMediaUI(); 
-        const utterance = new SpeechSynthesisUtterance();
+        window.speechSynthesis.cancel(); // ตัดงานเสียงเดิมทิ้งทั้งหมดทันที
         
+        // แยกวิเคราะห์ข้อความพากย์ตามประเภทภาษาที่เลือกปัจจุบัน
         if (currentLang === 'th') {
-          utterance.text = textMap.th;
-          utterance.lang = "th-TH"; 
+          currentSpeechText = textMap.th;
+          currentSpeechLang = "th-TH"; 
           subtitlesBox.innerHTML = htmlMap.th;
         } else if (currentLang === 'en') {
-          utterance.text = textMap.en || textMap.th;
-          utterance.lang = "en-US"; 
+          currentSpeechText = textMap.en || textMap.th;
+          currentSpeechLang = "en-US"; 
           subtitlesBox.innerHTML = htmlMap.en || htmlMap.th;
         } else if (currentLang === 'jp') {
-          utterance.text = textMap.jp || textMap.th;
-          utterance.lang = "ja-JP"; 
+          currentSpeechText = textMap.jp || textMap.th;
+          currentSpeechLang = "ja-JP"; 
           subtitlesBox.innerHTML = htmlMap.jp || htmlMap.th;
         } else if (currentLang === 'cn') {
-          utterance.text = textMap.cn || textMap.th;
-          utterance.lang = "zh-CN"; 
+          currentSpeechText = textMap.cn || textMap.th;
+          currentSpeechLang = "zh-CN"; 
           subtitlesBox.innerHTML = htmlMap.cn || htmlMap.th;
         }
         
-        utterance.onstart = function() {
-          subtitlesBox.style.display = "block";
-          if(videoSrc) {
-            videoPlayer.src = videoSrc;
-            videoContainer.style.display = "block";
-            videoPlayer.play().catch(e => console.log("Video auto-play blocked:", e));
-          }
-        };
-
-        utterance.onend = function() { };
-        utterance.onerror = function(e) { }
+        subtitlesBox.style.display = "block";
         
-        utterance.rate = parseFloat(speedSelect.value);
-        utterance.voice = getSelectedVoice();
-        window.speechSynthesis.speak(utterance);
+        if(videoSrc) {
+          videoPlayer.src = videoSrc;
+          videoContainer.style.display = "block";
+          videoPlayer.currentTime = 0; // บังคับกรอวิดีโอไปจุดเริ่มต้นเสมอก่อนเริ่มเล่น
+          videoPlayBtn.innerText = "⏸";
+          
+          // เล่นวิดีโอ และเมื่อเล่นจาก 0 ระบบจะดักฟังก์ชันไปสั่งเปิดเสียงพากย์เวอร์ชันเริ่มใหม่โดยอัตโนมัติ
+          videoPlayer.play()
+            .then(() => {
+              triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
+            })
+            .catch(e => console.log("Video auto-play blocked:", e));
+        }
       }
 
       sceneEl.addEventListener("arReady", () => {
