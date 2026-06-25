@@ -20,6 +20,37 @@
         pointer-events: none;
       }
 
+      /* กล่องสำหรับเล่นวิดีโอเปิดตัวแรกรวมสไตล์ป๊อปอัปเต็มหน้าจอ */
+      #intro-video-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+      }
+      #intro-video-player {
+        width: 92%;
+        max-width: 600px;
+        border: 3px solid white;
+        border-radius: 12px;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.8);
+        background: #000;
+      }
+      .intro-skip-msg {
+        color: rgba(255,255,255,0.6);
+        font-family: sans-serif;
+        font-size: 12px;
+        margin-top: 10px;
+        letter-spacing: 0.5px;
+      }
+
       /* กล่อง Container รวมโลโก้และแคมเปญละครด้านซ้ายบน */
       .logo-campaign-box {
         position: absolute;
@@ -333,6 +364,14 @@
   </head>
 
   <body>
+    <div id="intro-video-overlay" onclick="closeIntroVideo()">
+      <video id="intro-video-player" playsinline>
+        <source src="./MR_CR_FIRST.webm" type="video/webm">
+        Your browser does not support the video tag.
+      </video>
+      <div class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อข้ามวิดีโอ ✕</div>
+    </div>
+
     <div class="ar-ui-layer">
       <div class="logo-campaign-box">
         <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
@@ -531,6 +570,10 @@
       const videoTimeline = document.getElementById('video-timeline');
       const videoTimeText = document.getElementById('video-time-text');
 
+      // Elements สำหรับวิดีโอป๊อปอัปแรก
+      const introOverlay = document.getElementById('intro-video-overlay');
+      const introPlayer = document.getElementById('intro-video-player');
+
       // Elements Target 1
       const ent1M = document.getElementById('material-1m');
       const ent2M = document.getElementById('labor-2m'); 
@@ -561,6 +604,16 @@
         btnUI1Muda, btnUI2Muda, btnUI3Muda, btnUI4Muda, btnUI5Muda, btnUI6Muda, btnUI7Muda,
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
       ];
+
+      // ฟังก์ชันสำหรับควบคุมวิดีโอป๊อปอัปแรก
+      function closeIntroVideo() {
+        introPlayer.pause();
+        introOverlay.style.display = 'none';
+      }
+
+      introPlayer.addEventListener('ended', () => {
+        introOverlay.style.display = 'none';
+      });
 
       function updateCameraBrightness(val) {
         const mindarVideo = document.querySelector('body > video');
@@ -825,16 +878,20 @@
 
       sceneEl.addEventListener("arReady", () => {
         updateCameraBrightness(70);
+        // สั่งให้วิดีโอแรกเล่นทันทีเมื่อระบบ AR ตรวจสอบสิทธิ์และกล้องพร้อมทำงาน
+        introPlayer.play().catch(e => {
+          console.log("Autoplay blocked by browser policy, waiting for user click.");
+        });
       });
 
-     // =========================================================
+      // =========================================================
       // ฟังก์ชันสำหรับแคมเปญ ละคร "ต้นทุน" คุณธรรม
       // =========================================================
       function playCampaignEP1() {
         performSpeakAction(
           { 
-            th: "", // ลบข้อความเสียงพากย์ไทยออก
-            en: ""  // ลบข้อความเสียงพากย์อังกฤษออก
+            th: "", 
+            en: ""  
           }, 
           { 
             th: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 ละคร "ต้นทุน" คุณธรรม EP.1</span><span class="sub-description-text"><b>ตอน: ก็แค่...บาทเดียว (It's just... One-BAHT)</b><br>💡 ร่วมสร้างจิตสำนึกและการตระหนักรู้เรื่องการลดความสูญเสียในองค์กร เริ่มต้นง่าย ๆ จากสิ่งรอบตัวที่มีมูลค่าเพียงแค่บาทเดียว</span>`, 
@@ -863,7 +920,7 @@
       function speak2MUDA() { performSpeakAction({ th: "การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน", en: "Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses." }, { th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span><span class="sub-description-text">พนักงานหรือเครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า<br>⚠️ <b>ผลกระทบ:</b> ค่าแรงสูญเปล่า สิ้นเปลืองค่าไฟและค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดยไม่ได้งาน</span>`, en: `<span class="sub-title-badge">⏳ 2. Waiting</span><span class="sub-description-text">Idle time created when workers or machines wait for previous processes.<br>⚠️ <b>Impact:</b> Wasted labor wages, idle utility consumption, and idle machine maintenance costs.</span>` }, "./2MUDA_VDO.mp4"); }
       function speak3MUDA() { performSpeakAction({ th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำมุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น", en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor." }, { th: `<span class="sub-title-badge">🚚 3. ขนย้ายที่มากเกินไป (Transportation)</span><span class="sub-description-text">การเคลื่อนย้ายวัตถุดิบหรือสินค้าไปมาบ่อยหรือไกลเกินจำเป็น<br>⚠️ <b>ผลกระทบ:</b> เพิ่มความเสี่ยงสินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และเกิดค่าแรงพนักงานจากงานซ้ำซ้อน</span>`, en: `<span class="sub-title-badge">🚚 3. Transportation</span><span class="sub-description-text">Unnecessary movement of materials or products.<br>⚠️ <b>Impact:</b> Elevates damage risks, wastes transport energy, and incurs redundant warehouse labor costs.</span>` }, "./3MUDA_VDO.mp4"); }
       function speak4MUDA() { performSpeakAction({ th: "เคลื่อนไหวที่ไม่จำเป็น หมายถึง ต้องเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปเนื่องจากหน้างานจัดไม่ดี ปัญหาคือ ความเหนื่อยล้าจากการทำงานผิดหลักการยศาสตร์ ส่งผลให้ประสิทธิภาพลดลงเสี่ยงต่ออุบัติเหตุสูงขึ้น นำไปสู่ต้นทุนค่ารักษาพยาบาล การหยุดไลน์ผลิตฉุกเฉิน", en: "Motion waste is excessive physical movement like bending or reaching due to poor workstation design, leading to worker fatigue, reduced efficiency, and higher accident risks." }, { th: `<span class="sub-title-badge">🚶 4. เคลื่อนไหวที่ไม่จำเป็น (Motion)</span><span class="sub-description-text">การเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปจากหน้างานจัดไม่ดี<br>⚠️ <b>ผลกระทบ:</b> พนักงานเหนื่อยล้า ประสิทธิภาพลดลง เสี่ยงอุบัติเหตุ และเกิดต้นทุนการหยุดไลน์ฉุกเฉิน</span>`, en: `<span class="sub-title-badge">🚶 4. Motion</span><span class="sub-description-text">Excessive physical movement by operators due to poor layout.<br>⚠️ <b>Impact:</b> Causes ergonomics fatigue, diminishes work efficiency, and heightens emergency line downtime risks.</span>` }, "./4MUDA_VDO.mp4"); }
-      function speak5MUDA() { performSpeakAction({ th: "ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกว่ากำหนด", en: "Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value." }, { th: `<span class="sub-title-badge">⚙️ 5. ขั้นตอนที่มากเกินไป (Over-processing)</span><span class="sub-description-text">ขั้นตอนที่มากเกินความจำเป็น หรือทำในสิ่งที่ลูกค้าไม่ได้ต้องการ<br>⚠️ <b>ผลกระทบ:</b> เพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ทำให้ค่าไฟสูงขึ้นโดยไม่สร้างมูลค่า และเครื่องจักรเสื่อมเร็ว</span>`, en: `<span class="sub-title-badge">⚙️ 5. Over-processing</span><span class="sub-description-text">Performing extra work or steps that do not add value for customers.<br>⚠️ <b>Impact:</b> Inflates working hours, elevates utility expenses, and causes premature machine wear without creating value.</span>` }, "./5MUDA_VDO.mp4"); }
+      function speak5MUDA() { performSpeakAction({ th: "ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกกว่ากำหนด", en: "Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value." }, { th: `<span class="sub-title-badge">⚙️ 5. ขั้นตอนที่มากเกินไป (Over-processing)</span><span class="sub-description-text">ขั้นตอนที่มากเกินความจำเป็น หรือทำในสิ่งที่ลูกค้าไม่ได้ต้องการ<br>⚠️ <b>ผลกระทบ:</b> เพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ทำให้ค่าไฟสูงขึ้นโดยไม่สร้างมูลค่า และเครื่องจักรเสื่อมเร็ว</span>`, en: `<span class="sub-title-badge">⚙️ 5. Over-processing</span><span class="sub-description-text">Performing extra work or steps that do not add value for customers.<br>⚠️ <b>Impact:</b> Inflates working hours, elevates utility expenses, and causes premature machine wear without creating value.</span>` }, "./5MUDA_VDO.mp4"); }
       function speak6MUDA() { performSpeakAction({ th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย", en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums." }, { th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">การเก็บวัตถุดิบ งานระหว่างผลิต หรือสินค้าสำเร็จรูปไว้มากเกินไป<br>⚠️ <b>ผลกระทบ:</b> สินค้าเสี่ยงเสื่อมสภาพ/ตกรุ่น และเสียค่าใช้จ่ายจัดเก็บ เช่น ค่าเช่าโกดัง ค่าไฟ และค่าประกันภัย</span>`, en: `<span class="sub-title-badge">📦 6. Inventory</span><span class="sub-description-text">Excessive stockpiling of raw materials, WIP, or finished products.<br>⚠️ <b>Impact:</b> Increases degradation risks, obsolescence loss, and raises warehousing rent, power, and insurance costs.</span>` }, "./6MUDA_VDO.mp4"); }
       function speak7MUDA() { performSpeakAction({ th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้", en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time." }, { th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง<br>⚠️ <b>ผลกระทบ:</b> สูญเสียวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งค่าซื้อล็อตใหม่ ค่าแรง ค่าไฟ และเสียเวลาทีม QC ตรวจสอบซ้ำ</span>`, en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span><span class="sub-description-text">Production of out-of-spec products requiring scrap or repair.<br>⚠️ <b>Impact:</b> Wastes materials, doubles labor and utility overheads, and squanders QC capacity on re-inspections.</span>` }, "./7MUDA_VDO.mp4"); }
 
