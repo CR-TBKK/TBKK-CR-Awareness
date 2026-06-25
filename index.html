@@ -20,14 +20,14 @@
         pointer-events: none;
       }
 
-      /* กล่องสำหรับเล่นวิดีโอเปิดตัวแรกรวมสไตล์ป๊อปอัปเต็มหน้าจอ */
+      /* กล่องครอบป๊อปอัปแรก: ปรับให้รองรับภาพ GIF โปร่งใส */
       #intro-video-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
+        background-color: rgba(0, 0, 0, 0.5); /* ฉากหลังมืดลงเล็กน้อยเพื่อให้เห็นตัวละครลอยเด่น */
         z-index: 9999999;
         display: flex;
         flex-direction: column;
@@ -35,20 +35,24 @@
         justify-content: center;
         pointer-events: auto;
       }
+      
+      /* ปลดกรอบสีขาวและเงาออก เพื่อความโปร่งใสแบบไม่มีกรอบ */
       #intro-video-player {
         width: 92%;
         max-width: 600px;
-        border: 3px solid white;
-        border-radius: 12px;
-        box-shadow: 0px 10px 25px rgba(0,0,0,0.8);
-        background: #000;
+        border: none !important;
+        border-radius: 0px !important;
+        box-shadow: none !important;
+        background: transparent !important;
       }
+      
       .intro-skip-msg {
-        color: rgba(255,255,255,0.6);
+        color: rgba(255,255,255,0.9);
         font-family: sans-serif;
-        font-size: 12px;
-        margin-top: 10px;
+        font-size: 14px;
+        margin-top: 15px;
         letter-spacing: 0.5px;
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
       }
 
       /* กล่อง Container รวมโลโก้และแคมเปญละครด้านซ้ายบน */
@@ -365,11 +369,8 @@
 
   <body>
     <div id="intro-video-overlay" onclick="closeIntroVideo()">
-      <video id="intro-video-player" playsinline>
-        <source src="./MR_CR_FIRST.webm" type="video/webm">
-        Your browser does not support the video tag.
-      </video>
-      <div class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อข้ามวิดีโอ ✕</div>
+      <img id="intro-video-player" src="./MR_CR_FIRST.gif" alt="Intro Animation">
+      <div class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
     </div>
 
     <div class="ar-ui-layer">
@@ -570,9 +571,8 @@
       const videoTimeline = document.getElementById('video-timeline');
       const videoTimeText = document.getElementById('video-time-text');
 
-      // Elements สำหรับวิดีโอป๊อปอัปแรก
+      // Elements สำหรับภาพ GIF ป๊อปอัปแรก
       const introOverlay = document.getElementById('intro-video-overlay');
-      const introPlayer = document.getElementById('intro-video-player');
 
       // Elements Target 1
       const ent1M = document.getElementById('material-1m');
@@ -605,15 +605,10 @@
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
       ];
 
-      // ฟังก์ชันสำหรับควบคุมวิดีโอป๊อปอัปแรก
+      // ฟังก์ชันสำหรับสั่งปิดภาพ GIF ป๊อปอัปเมื่อแตะหน้าจอเพื่อเข้าสู่โหมดกล้อง AR
       function closeIntroVideo() {
-        introPlayer.pause();
         introOverlay.style.display = 'none';
       }
-
-      introPlayer.addEventListener('ended', () => {
-        introOverlay.style.display = 'none';
-      });
 
       function updateCameraBrightness(val) {
         const mindarVideo = document.querySelector('body > video');
@@ -818,7 +813,6 @@
         }
       }
 
-      // Web Speech API
       function triggerSpeechSynthesis(text, lang) {
         window.speechSynthesis.cancel(); 
         if (!text) return;
@@ -878,21 +872,12 @@
 
       sceneEl.addEventListener("arReady", () => {
         updateCameraBrightness(70);
-        // สั่งให้วิดีโอแรกเล่นทันทีเมื่อระบบ AR ตรวจสอบสิทธิ์และกล้องพร้อมทำงาน
-        introPlayer.play().catch(e => {
-          console.log("Autoplay blocked by browser policy, waiting for user click.");
-        });
+        // เนื่องจากเป็นภาพ GIF จึงทำงานอัตโนมัติทันทีโดยไม่ต้องรันคำสั่งสั่งเล่นผ่านสคริปต์
       });
 
-      // =========================================================
-      // ฟังก์ชันสำหรับแคมเปญ ละคร "ต้นทุน" คุณธรรม
-      // =========================================================
       function playCampaignEP1() {
         performSpeakAction(
-          { 
-            th: "", 
-            en: ""  
-          }, 
+          { th: "", en: "" }, 
           { 
             th: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 ละคร "ต้นทุน" คุณธรรม EP.1</span><span class="sub-description-text"><b>ตอน: ก็แค่...บาทเดียว (It's just... One-BAHT)</b><br>💡 ร่วมสร้างจิตสำนึกและการตระหนักรู้เรื่องการลดความสูญเสียในองค์กร เริ่มต้นง่าย ๆ จากสิ่งรอบตัวที่มีมูลค่าเพียงแค่บาทเดียว</span>`, 
             en: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 Cost Awareness Drama EP.1</span><span class="sub-description-text"><b>Episode: It's just... One-BAHT</b><br>💡 Building cost awareness and eliminating organizational waste. Big differences start from saving just a single Baht.</span>` 
@@ -901,9 +886,6 @@
         );
       }
 
-      // =========================================================
-      // ฟังก์ชันปุ่มกด Target 1
-      // =========================================================
       function speak1M() { performSpeakAction({ th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม", en: "Direct materials refer to the primary raw materials used in production, such as aluminum." }, { th: `<span class="sub-title-badge">📦 วัตถุดิบทางตรง (Direct Materials)</span><span class="sub-description-text">หมายถึง วัตถุดิบหลักที่ใช้ในการผลิตโครงสร้างสินค้าโดยตรง<br>📍 <b>ตัวอย่าง:</b> อลูมิเนียม, เม็ดพลาสติกหลัก</span>`, en: `<span class="sub-title-badge">📦 Direct Materials</span><span class="sub-description-text">Refers to the primary raw materials used in production.<br>📍 <b>Example:</b> Aluminum, Core Pellets</span>` }, "./1M_VDO.mp4"); }
       function speak2M() { performSpeakAction({ th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง", en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line." }, { th: `<span class="sub-title-badge">👥 ค่าแรงทางตรง (Direct Labor)</span><span class="sub-description-text">หมายถึง ค่าจ้าง ผลประโยชน์ หรือค่าตอบแทนของกลุ่มพนักงาน<br>⚙️ ที่ปฏิบัติงานอยู่บน <b>ไลน์ผลิตโดยตรง</b></span>`, en: `<span class="sub-title-badge">👥 Direct Labor</span><span class="sub-description-text">Refers to the wages or compensation paid to workers who are directly involved in the <b>production line</b>.</span>` }, "./2M_VDO.mp4"); }
       function speak3M() { performSpeakAction({ th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง", en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor." }, { th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span><span class="sub-description-text">หมายถึง ค่าใช้จ่ายภาพรวมที่เกิดขึ้นในโรงงานระหว่างกระบวนการผลิต<br>❌ <i>โดยไม่นับรวม</i> วัตถุดิบทางตรงและค่าแรงทางตรง</span>`, en: `<span class="sub-title-badge">🏭 Manufacturing Overhead</span><span class="sub-description-text">Refers to all costs incurred during production <b>other than</b> direct materials and direct labor.</span>` }, "./3M_VDO.mp4"); }
@@ -913,20 +895,14 @@
       function speak1A() { performSpeakAction({ th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า", en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing." }, { th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span><span class="sub-description-text">ค่าใช้จ่ายเพื่อให้ได้ยอดขาย หรือเกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า<br>💰 <b>เช่น:</b> ค่าคอมมิชชัน, เงินเดือนทีมขาย, ค่าการตลาด/โฆษณา, ค่าขนส่งและคลังสินค้า</span>`, en: `<span class="sub-title-badge">📈 Selling Expenses</span><span class="sub-description-text">Costs incurred to generate sales or distribute products.<br>💰 <b>e.g.,</b> Commissions, Sales salaries, Marketing, Freight & Warehousing.</span>` }, "./1A_VDO.mp4"); }
       function speak2A() { performSpeakAction({ th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ", en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees." }, { th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span><span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพॉर्ट (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`, en: `<span class="sub-title-badge">🏢 Administrative Expenses</span><span class="sub-description-text">General costs for corporate management and support.<br>📝 <b>e.g.,</b> Support staff salaries (Accounting, HR), Office rent, Utilities, Office asset depreciation.</span>` }, "./2A_VDO.mp4"); }
 
-      // =========================================================
-      // ฟังก์ชันปุ่มกด Target 2 (7 MUDA)
-      // =========================================================
       function speak1MUDA() { performSpeakAction({ th: "การผลิตมากเกินไป หมายถึง การผลิตสินค้าออกมารอไว้เกินความต้องการจริง ปัญหาคือ เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก ทั้งยัง เพิ่มต้นทุนโดยไม่จำเป็น เช่น ค่าพลังงานเครื่องจักร และ ค่าล่วงเวลาพนักงานโดย ไม่เกิดรายได้ในทันที", en: "Overproduction occurs when items are produced beyond actual demand, tying up capital in raw materials and excess inventory while causing unnecessary machine energy and overtime costs." }, { th: `<span class="sub-title-badge">🏭 1. การผลิตมากเกินไป (Overproduction)</span><span class="sub-description-text">การผลิตสินค้าออกมารอไว้เกินความต้องการจริง<br>⚠️ <b>ผลกระทบ:</b> เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก เพิ่มต้นทุนพลังงานและค่าล่วงเวลาโดยไม่จำเป็น</span>`, en: `<span class="sub-title-badge">🏭 1. Overproduction</span><span class="sub-description-text">Producing items before they are actually needed.<br>⚠️ <b>Impact:</b> Ties up capital in inventory, wastes machine energy and unnecessary overtime.</span>` }, "./1MUDA_VDO.mp4"); }
       function speak2MUDA() { performSpeakAction({ th: "การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน", en: "Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses." }, { th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span><span class="sub-description-text">พนักงานหรือเครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า<br>⚠️ <b>ผลกระทบ:</b> ค่าแรงสูญเปล่า สิ้นเปลืองค่าไฟและค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดยไม่ได้งาน</span>`, en: `<span class="sub-title-badge">⏳ 2. Waiting</span><span class="sub-description-text">Idle time created when workers or machines wait for previous processes.<br>⚠️ <b>Impact:</b> Wasted labor wages, idle utility consumption, and idle machine maintenance costs.</span>` }, "./2MUDA_VDO.mp4"); }
-      function speak3MUDA() { performSpeakAction({ th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำมุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น", en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor." }, { th: `<span class="sub-title-badge">🚚 3. ขนย้ายที่มากเกินไป (Transportation)</span><span class="sub-description-text">การเคลื่อนย้ายวัตถุดิบหรือสินค้าไปมาบ่อยหรือไกลเกินจำเป็น<br>⚠️ <b>ผลกระทบ:</b> เพิ่มความเสี่ยงสินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และเกิดค่าแรงพนักงานจากงานซ้ำซ้อน</span>`, en: `<span class="sub-title-badge">🚚 3. Transportation</span><span class="sub-description-text">Unnecessary movement of materials or products.<br>⚠️ <b>Impact:</b> Elevates damage risks, wastes transport energy, and incurs redundant warehouse labor costs.</span>` }, "./3MUDA_VDO.mp4"); }
+      function speak3MUDA() { performSpeakAction({ th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำมุดเสียหาย Сิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น", en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor." }, { th: `<span class="sub-title-badge">🚚 3. ขนย้ายที่มากเกินไป (Transportation)</span><span class="sub-description-text">การเคลื่อนย้ายวัตถุดิบหรือสินค้าไปมาบ่อยหรือไกลเกินจำเป็น<br>⚠️ <b>ผลกระทบ:</b> เพิ่มความเสี่ยงสินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และเกิดค่าแรงพนักงานจากงานซ้ำซ้อน</span>`, en: `<span class="sub-title-badge">🚚 3. Transportation</span><span class="sub-description-text">Unnecessary movement of materials or products.<br>⚠️ <b>Impact:</b> Elevates damage risks, wastes transport energy, and incurs redundant warehouse labor costs.</span>` }, "./3MUDA_VDO.mp4"); }
       function speak4MUDA() { performSpeakAction({ th: "เคลื่อนไหวที่ไม่จำเป็น หมายถึง ต้องเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปเนื่องจากหน้างานจัดไม่ดี ปัญหาคือ ความเหนื่อยล้าจากการทำงานผิดหลักการยศาสตร์ ส่งผลให้ประสิทธิภาพลดลงเสี่ยงต่ออุบัติเหตุสูงขึ้น นำไปสู่ต้นทุนค่ารักษาพยาบาล การหยุดไลน์ผลิตฉุกเฉิน", en: "Motion waste is excessive physical movement like bending or reaching due to poor workstation design, leading to worker fatigue, reduced efficiency, and higher accident risks." }, { th: `<span class="sub-title-badge">🚶 4. เคลื่อนไหวที่ไม่จำเป็น (Motion)</span><span class="sub-description-text">การเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปจากหน้างานจัดไม่ดี<br>⚠️ <b>ผลกระทบ:</b> พนักงานเหนื่อยล้า ประสิทธิภาพลดลง เสี่ยงอุบัติเหตุ และเกิดต้นทุนการหยุดไลน์ฉุกเฉิน</span>`, en: `<span class="sub-title-badge">🚶 4. Motion</span><span class="sub-description-text">Excessive physical movement by operators due to poor layout.<br>⚠️ <b>Impact:</b> Causes ergonomics fatigue, diminishes work efficiency, and heightens emergency line downtime risks.</span>` }, "./4MUDA_VDO.mp4"); }
       function speak5MUDA() { performSpeakAction({ th: "ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกกว่ากำหนด", en: "Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value." }, { th: `<span class="sub-title-badge">⚙️ 5. ขั้นตอนที่มากเกินไป (Over-processing)</span><span class="sub-description-text">ขั้นตอนที่มากเกินความจำเป็น หรือทำในสิ่งที่ลูกค้าไม่ได้ต้องการ<br>⚠️ <b>ผลกระทบ:</b> เพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ทำให้ค่าไฟสูงขึ้นโดยไม่สร้างมูลค่า และเครื่องจักรเสื่อมเร็ว</span>`, en: `<span class="sub-title-badge">⚙️ 5. Over-processing</span><span class="sub-description-text">Performing extra work or steps that do not add value for customers.<br>⚠️ <b>Impact:</b> Inflates working hours, elevates utility expenses, and causes premature machine wear without creating value.</span>` }, "./5MUDA_VDO.mp4"); }
       function speak6MUDA() { performSpeakAction({ th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย", en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums." }, { th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">การเก็บวัตถุดิบ งานระหว่างผลิต หรือสินค้าสำเร็จรูปไว้มากเกินไป<br>⚠️ <b>ผลกระทบ:</b> สินค้าเสี่ยงเสื่อมสภาพ/ตกรุ่น และเสียค่าใช้จ่ายจัดเก็บ เช่น ค่าเช่าโกดัง ค่าไฟ และค่าประกันภัย</span>`, en: `<span class="sub-title-badge">📦 6. Inventory</span><span class="sub-description-text">Excessive stockpiling of raw materials, WIP, or finished products.<br>⚠️ <b>Impact:</b> Increases degradation risks, obsolescence loss, and raises warehousing rent, power, and insurance costs.</span>` }, "./6MUDA_VDO.mp4"); }
       function speak7MUDA() { performSpeakAction({ th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้", en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time." }, { th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง<br>⚠️ <b>ผลกระทบ:</b> สูญเสียวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งค่าซื้อล็อตใหม่ ค่าแรง ค่าไฟ และเสียเวลาทีม QC ตรวจสอบซ้ำ</span>`, en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span><span class="sub-description-text">Production of out-of-spec products requiring scrap or repair.<br>⚠️ <b>Impact:</b> Wastes materials, doubles labor and utility overheads, and squanders QC capacity on re-inspections.</span>` }, "./7MUDA_VDO.mp4"); }
 
-      // =========================================================
-      // ฟังก์ชันปุ่มกด Target 2 (7 VALUE)
-      // =========================================================
       function speak1VALUE() { performSpeakAction({ th: "ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา", en: "Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs." }, { th: `<span class="sub-title-badge value-badge">💡 1. ผลิตพอดีตามต้องการ (Just in Time)</span><span class="sub-description-text">ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี<br>✅ <b>ข้อดี:</b> เพิ่มกระแสเงินสดหมุนเวียน ลดวัตถุดิบและสินค้าค้างคลัง ประหยัดค่าไฟเครื่องจักรและค่าล่วงเวลา (OT)</span>`, en: `<span class="sub-title-badge value-badge">💡 1. Just-in-Time Production</span><span class="sub-description-text">Right product, right quantity, right at the needed time.<br>✅ <b>Benefits:</b> Boosts cash flow, lowers stock accumulation, saves energy and unnecessary overtime.</span>` }, "./1VALUE_VDO.mp4"); }
       function speak2VALUE() { performSpeakAction({ th: "งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป", en: "Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity." }, { th: `<span class="sub-title-badge value-badge">🏃 2. งานไหลลื่น ไม่สะดุด (Continuous Flow)</span><span class="sub-description-text">เคลื่อนที่ส่งต่อจากกระบวนการหนึ่งไปอีกกระบวนการหนึ่งต่อเนื่องชิ้นต่อชิ้น<br>✅ <b>ข้อดี:</b> ใช้เครื่องจักรเต็มกำลัง ไม่มีเวลาหยุดรอ เคลียร์ชิ้นงานไว ลดค่าไฟจากการเปิดระบบทิ้งไว้ ได้งานคุ้มทุกค่าแรง</span>`, en: `<span class="sub-title-badge value-badge">🏃 2. Continuous Flow</span><span class="sub-description-text">Moving products from process to process without interruptions.<br>✅ <b>Benefits:</b> Maximizes machine capacity, cuts down wait time, prevents standby utility waste, and ensures value out of wages.</span>` }, "./2VALUE_VDO.mp4"); }
       function speak3VALUE() { performSpeakAction({ th: "จัดวางใกล้จุดใช้ หมายถึง วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็น อยู่ในตำแหน่งที่หยิบใช้ได้ทันที ข้อดีคือ การจัดไลน์ผลิตให้กระชับช่วยลดความเสี่ยงสินค้าชำรุดจากการขนย้าย ช่วยประหยัดค่าน้ำมันและค่าบำรุงรักษารถยก ลดต้นทุนแรงงานจากการร่นระยะทางให้สั้นลง", en: "Point-of-use storage places materials and tools right where they are needed. This tight layout prevents damage during transport, lowers forklift fuel/maintenance fees, and saves travel time." }, { th: `<span class="sub-title-badge value-badge">📍 3. จัดวางใกล้จุดใช้ (Point of Use)</span><span class="sub-description-text">วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็นอยู่ในตำแหน่งที่หยิบใช้งานได้ทันที<br>✅ <b>ข้อดี:</b> ลดความเสี่ยงชิ้นงานกระแทกชำรุด ประหยัดค่าน้ำมันและค่าซ่อมรถยก (Forklift) ร่นเวลาเดินทางพนักงาน</span>`, en: `<span class="sub-title-badge value-badge">📍 3. Point-of-Use Storage</span><span class="sub-description-text">Keeping materials and tools exactly where work is done.<br>✅ <b>Benefits:</b> Reduces risk of material damage during relocation, cuts forklift fuel/upkeep costs, and slashes redundant walking labor.</span>` }, "./3VALUE_VDO.mp4"); }
