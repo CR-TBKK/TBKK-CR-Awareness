@@ -83,7 +83,7 @@
         height: 100%;
         background-color: rgba(0, 0, 0, 0.65);
         z-index: 9999999;
-        display: none; /* เริ่มต้นซ่อนไว้ก่อนเลือกภาษา */
+        display: none; 
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -108,15 +108,15 @@
         text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
       }
 
-      /* เพิ่มสไตล์สำหรับซับไตเติลหน้า Intro */
+      /* ส่วนแสดงซับไตเติลหน้า Intro */
       #intro-subtitles {
         background-color: rgba(20, 20, 20, 0.85);
         color: #FFFFFF;
-        padding: 12px 20px;
+        padding: 14px 22px;
         border-radius: 10px;
         font-family: sans-serif;
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
         max-width: 85%;
         text-align: center;
         margin-top: 15px;
@@ -436,7 +436,6 @@
   </head>
 
   <body>
-    <!-- หน้าเลือกภาษาเริ่มต้นอันดับแรก -->
     <div id="lang-select-overlay">
       <div class="lang-select-modal">
         <h2>กรุณาเลือกภาษาเริ่มต้น<br>Please Select Language<br>言語を選択してください</h2>
@@ -448,10 +447,8 @@
       </div>
     </div>
 
-    <!-- กล่องครอบแอนิเมชัน GIF -->
     <div id="intro-video-overlay" onclick="closeIntroVideo()">
       <img id="intro-video-player" src="./MR_CR_FIRST.gif" alt="Intro Animation">
-      <!-- ส่วนแสดงซับไตเติลหน้า Intro (เพิ่มใหม่) -->
       <div id="intro-subtitles"></div>
       <div class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
     </div>
@@ -634,6 +631,9 @@
       let currentSpeechText = "";
       let currentSpeechLang = "th-TH";
       
+      // ตัวแปรสำหรับคุมการทำงานของชุดเวลาการเว้นวรรคคำหน้า Intro
+      let introTimeouts = [];
+
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
       
@@ -688,37 +688,107 @@
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
       ];
 
-      // ฟังก์ชันเลือกภาษาเริ่มต้น พร้อมสั่งเล่นเสียงบรรยายหน้า Intro และแสดงซับไตเติล (เพิ่มใหม่)
+      // ฟังก์ชันสำหรับสั่งพูดแบบล็อกเว้นวรรคคำตาม Array ชุดประโยค (เพิ่มใหม่)
+      function speakIntroPhrases(phrasesArray, langCode) {
+        window.speechSynthesis.cancel();
+        // ล้างคิว Timeout เก่าทิ้งทั้งหมดป้องกันการทำงานซ้อนกัน
+        introTimeouts.forEach(t => clearTimeout(t));
+        introTimeouts = [];
+
+        let currentDelay = 0;
+
+        phrasesArray.forEach((phrase) => {
+          let tId = setTimeout(() => {
+            // แสดงข้อความบน UI ซับไตเติลหน้าจอ
+            introSubtitles.innerHTML = phrase.html;
+
+            // สั่งสังเคราะห์เสียงพูด
+            const utterance = new SpeechSynthesisUtterance(phrase.text);
+            utterance.lang = langCode;
+            utterance.rate = parseFloat(speedSelect.value);
+            utterance.voice = getSelectedVoice();
+            window.speechSynthesis.speak(utterance);
+          }, currentDelay);
+
+          introTimeouts.push(tId);
+          // คำนวณความหน่วงคำถัดไปตามความยาวตัวอักษร + ระยะเวลาหยุด (pause) ที่ตั้งไว้
+          currentDelay += (phrase.text.length * 250) + phrase.pause;
+        });
+      }
+
+      // ฟังก์ชันเลือกภาษาเริ่มต้น พร้อมแบ่งคำบรรยายแยกชุดและทำความหน่วงเวลา
       function selectInitialLanguage(lang) {
         setLanguage(lang);
         document.getElementById('lang-select-overlay').style.display = 'none';
         introOverlay.style.display = 'flex';
 
-        // ข้อความและซับไตเติลสำหรับการแนะนำตัวหน้า Intro
-        let introText = "";
-        let speechLang = "th-TH";
-
         if (lang === 'th') {
-          introText = "สวัสดีครับผม Mister CR ยินดีต้อนรับทุกท่านเข้าสู่ AR SMART BOARD หลังจากที่ทุกท่านนำมือถือสแกน QR Code เรียบร้อยแล้ว ให้เอากล้องมือถือมาสแกนต่อที่บอร์ดที่มีป้าย AR SMART BOARD ได้เลยครับ ขอให้ทุกท่านสนุกกับการเรียนรู้นะครับ";
-          speechLang = "th-TH";
-          introSubtitles.innerHTML = "<b>Mister CR:</b> สวัสดีครับผม Mister CR ยินดีต้อนรับทุกท่านเข้าสู่ AR SMART BOARD<br>หลังจากที่ทุกท่านนำมือถือสแกน QR Code เรียบร้อยแล้ว ให้เอากล้องมือถือมาสแกนต่อที่บอร์ดที่มีป้าย AR SMART BOARD ได้เลยครับ ขอให้ทุกท่านสนุกกับการเรียนรู้นะครับ";
+          const thIntro = [
+            { 
+              text: "ยินดีต้อนรับสู่ AR SMART BOARD", 
+              html: "<b>Mister CR:</b> ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> 🌟", 
+              pause: 800 
+            },
+            { 
+              text: "เมื่อสแกนคิวอาร์โค้ดแล้ว ให้ใช้กล้องมือถือสแกนต่อที่ป้ายบนบอร์ดได้เลย", 
+              html: "<b>Mister CR:</b> เมื่อสแกน QR Code แล้ว<br>ให้ใช้กล้องมือถือสแกนต่อที่ป้ายบนบอร์ดได้เลยครับ 📸", 
+              pause: 800 
+            },
+            { 
+              text: "มาร่วมสนุกกับการเรียนรู้ไปด้วยกันนะ", 
+              html: "<b>Mister CR:</b> มาร่วมสนุกกับการเรียนรู้ไปด้วยกันนะ ครับ! 🎉", 
+              pause: 0 
+            }
+          ];
+          speakIntroPhrases(thIntro, "th-TH");
+          
         } else if (lang === 'en') {
-          introText = "Hello, I am Mister CR. Welcome everyone to AR SMART BOARD! After you have successfully scanned the QR Code, please point your mobile camera at the board with the AR SMART BOARD sign. Enjoy your learning journey!";
-          speechLang = "en-US";
-          introSubtitles.innerHTML = "<b>Mister CR:</b> Hello, I am Mister CR. Welcome everyone to AR SMART BOARD!<br>After you have successfully scanned the QR Code, please point your mobile camera at the board with the AR SMART BOARD sign. Enjoy your learning journey!";
-        } else if (lang === 'jp') {
-          introText = "こんにちは、私はミスターCRです。ARスマートボードへようこそ！QRコードの スキャンが完了しましたら、スマートフォンのカメラを「AR SMART BOARD」の標識があるボードに向けてください。それでは、楽しく学んでくださいね！";
-          speechLang = "ja-JP";
-          introSubtitles.innerHTML = "<b>Mister CR:</b> こんにちは、私はミスターCRです。ARスマートボードへようこそ！<br>QRコードのスキャンが完了しましたら、スマートフォンのカメラを「AR SMART BOARD」の標識があるボードに向けてください。それでは、楽しく学んでくださいね！";
-        }
+          const enIntro = [
+            { 
+              text: "Welcome to AR SMART BOARD.", 
+              html: "<b>Mister CR:</b> Welcome to <b>AR SMART BOARD</b> 🌟", 
+              pause: 800 
+            },
+            { 
+              text: "Once you have scanned the QR Code, please use your mobile camera to scan the sign on the board.", 
+              html: "<b>Mister CR:</b> Once you have scanned the QR Code,<br>please use your mobile camera to scan the sign on the board. 📸", 
+              pause: 800 
+            },
+            { 
+              text: "Let's enjoy this learning journey together!", 
+              html: "<b>Mister CR:</b> Let's enjoy this learning journey together! 🎉", 
+              pause: 0 
+            }
+          ];
+          speakIntroPhrases(enIntro, "en-US");
 
-        // สั่งให้ระบบสังเคราะห์เสียงพูดหน้า Intro ทันที
-        triggerSpeechSynthesis(introText, speechLang);
+        } else if (lang === 'jp') {
+          const jpIntro = [
+            { 
+              text: "ARスマートボードへようこそ。", 
+              html: "<b>Mister CR:</b> <b>ARスマートボード</b>へようこそ！ 🌟", 
+              pause: 800 
+            },
+            { 
+              text: "QRコードをスキャンしたら、スマートフォンのカメラでボード上のサインをスキャンしてください。", 
+              html: "<b>Mister CR:</b> QRコードをスキャンしたら、<br>スマートフォンのカメラでボード上のサインをスキャンしてください。 📸", 
+              pause: 800 
+            },
+            { 
+              text: "一緒に楽しく学びましょう！", 
+              html: "<b>Mister CR:</b> 一緒に楽しく学びましょう！ 🎉", 
+              pause: 0 
+            }
+          ];
+          speakIntroPhrases(jpIntro, "ja-JP");
+        }
       }
 
       // ฟังก์ชันสำหรับสั่งปิดภาพ GIF ป๊อปอัปเมื่อแตะหน้าจอเพื่อเข้าสู่โหมดกล้อง AR
       function closeIntroVideo() {
-        window.speechSynthesis.cancel(); // หยุดเสียงพูดหน้า Intro ทันทีเมื่อผู้ใช้แตะข้าม
+        // ล้างคำสั่งจับเวลาที่เหลือทิ้งทั้งหมดทันทีเมื่อผู้ใช้แตะปิดหน้าจอ
+        introTimeouts.forEach(t => clearTimeout(t));
+        window.speechSynthesis.cancel(); 
         introOverlay.style.display = 'none';
       }
 
