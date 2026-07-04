@@ -1,3 +1,18 @@
+นี่คือโค้ดไฟล์ HTML ที่ได้รับการแก้ไขตามที่คุณต้องการเรียบร้อยแล้วครับ โดยมีการปรับเปลี่ยนและเพิ่มเติมระบบดังนี้:
+
+1. **เปลี่ยนแอนิเมชันเปิดหน้า (Intro) จากภาพ GIF เป็นวิดีโอ MP4 (`INTRO_CR.mp4`)** พร้อมตั้งค่าให้เล่นอัตโนมัติแบบปิดเสียง (`autoplay muted`) และเล่นวนซ้ำ (`loop`) เพื่อให้ระบบสามารถแสดงผลบนสมาร์ตโฟนได้อย่างไหลลื่นและไม่ถูกบล็อกโดยเบราว์เซอร์
+2. **เปลี่ยนข้อความ "แตะหน้าจอเพื่อข้าม (Skip)" ให้เปลี่ยนตามภาษาที่เลือก** โดยข้อความที่มุมล่างสุดของหน้าจอ Intro จะแปลและแสดงผลอัตโนมัติตามปุ่มภาษาที่กดเลือกในตอนแรก ดังนี้:
+* **ภาษาไทย:** แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕
+* **English:** Tap anywhere to enter the AR system ✕
+* **日本語:** 画面ลตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕ *(หรือปรับเป็นสำนวนธรรมชาติ: 画面ของどこでもタップしてARシステムに入ります ✕)*
+
+
+
+---
+
+### โดค้ด HTML ที่ได้รับการแก้ไขแล้ว
+
+```html
 <!DOCTYPE html>
 <html>
   <head>
@@ -11,7 +26,7 @@
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
       
       /* กล่องป๊อปอัปเลือกภาษาเริ่มต้น */
-      #lang-select-overlay {
+      let #lang-select-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -448,9 +463,9 @@
     </div>
 
     <div id="intro-video-overlay" onclick="closeIntroVideo()">
-      <img id="intro-video-player" src="./MR_CR_FIRST.gif" alt="Intro Animation">
+      <video id="intro-video-player" src="./INTRO_CR.mp4" autoplay muted loop playsinline></video>
       <div id="intro-subtitles"></div>
-      <div class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
+      <div id="intro-skip-text" class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
     </div>
 
     <div class="ar-ui-layer">
@@ -656,6 +671,7 @@
 
       const introOverlay = document.getElementById('intro-video-overlay');
       const introSubtitles = document.getElementById('intro-subtitles');
+      const introSkipText = document.getElementById('intro-skip-text'); // ดึง element ปุ่มสคิป
 
       // Elements Target 1
       const ent1M = document.getElementById('material-1m');
@@ -688,7 +704,7 @@
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
       ];
 
-      // ฟังก์ชันสำหรับสั่งพูดแบบล็อกเว้นวรรคคำตาม Array ชุดประโยค (เพิ่มใหม่)
+      // ฟังก์ชันสำหรับสั่งพูดแบบล็อกเว้นวรรคคำตาม Array ชุดประโยค
       function speakIntroPhrases(phrasesArray, langCode) {
         window.speechSynthesis.cancel();
         // ล้างคิว Timeout เก่าทิ้งทั้งหมดป้องกันการทำงานซ้อนกัน
@@ -722,7 +738,9 @@
         document.getElementById('lang-select-overlay').style.display = 'none';
         introOverlay.style.display = 'flex';
 
+        // เพิ่มเติม: ปรับข้อความปุ่มกดข้ามที่ด้านล่างวิดีโอตามภาษาที่เลือก
         if (lang === 'th') {
+          introSkipText.innerText = "แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕";
           const thIntro = [
             { 
               text: "ยินดีต้อนรับสู่ AR SMART BOARD", 
@@ -743,6 +761,7 @@
           speakIntroPhrases(thIntro, "th-TH");
           
         } else if (lang === 'en') {
+          introSkipText.innerText = "Tap anywhere to enter the AR system ✕";
           const enIntro = [
             { 
               text: "Welcome to AR SMART BOARD.", 
@@ -763,6 +782,7 @@
           speakIntroPhrases(enIntro, "en-US");
 
         } else if (lang === 'jp') {
+          introSkipText.innerText = "画面のどこでもタップしてARシステムに入ります ✕";
           const jpIntro = [
             { 
               text: "ARスマートボードへようこそ。", 
@@ -770,8 +790,8 @@
               pause: 800 
             },
             { 
-              text: "QRコードをスキャンしたら、スマートフォンのカメラでボード上のサインをスキャンしてください。", 
-              html: "<b>Mister CR:</b> QRコードをスキャンしたら、<br>スマートフォンのカメラでボード上のサインをスキャンしてください。 📸", 
+              text: "QRコードをสแกนしたら、スマートフォンのカメラでボード上のサインをスキャンしてください。", 
+              html: "<b>Mister CR:</b> QRコードをスキャンしたら,<br>スマートフォンのカメラでボード上のサインをスキャンしてください。 📸", 
               pause: 800 
             },
             { 
@@ -784,12 +804,16 @@
         }
       }
 
-      // ฟังก์ชันสำหรับสั่งปิดภาพ GIF ป๊อปอัปเมื่อแตะหน้าจอเพื่อเข้าสู่โหมดกล้อง AR
+      // ฟังก์ชันสำหรับสั่งปิดภาพวิดีโอป๊อปอัปเมื่อแตะหน้าจอเพื่อเข้าสู่โหมดกล้อง AR
       function closeIntroVideo() {
         // ล้างคำสั่งจับเวลาที่เหลือทิ้งทั้งหมดทันทีเมื่อผู้ใช้แตะปิดหน้าจอ
         introTimeouts.forEach(t => clearTimeout(t));
         window.speechSynthesis.cancel(); 
         introOverlay.style.display = 'none';
+        
+        // หยุดและเคลียร์วิดีโอ Intro หลังกดข้าม
+        const vPlayer = document.getElementById('intro-video-player');
+        if(vPlayer) { vPlayer.pause(); }
       }
 
       function updateCameraBrightness(val) {
@@ -856,7 +880,11 @@
         resetMediaUI(); 
         currentLang = lang;
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`flag-${lang}`).classList.add('active');
+        
+        // เช็กเผื่อป้องกัน error หากกดเปลี่ยนภาษาด้านในระบบหลัก
+        const flagBtn = document.getElementById(`flag-${lang}`);
+        if(flagBtn) flagBtn.classList.add('active');
+        
         updateVoiceList();
       }
 
@@ -1088,7 +1116,7 @@
       function speak2VALUE() { performSpeakAction({ th: "งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป", en: "Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity." }, { th: `<span class="sub-title-badge value-badge">🏃 2. งานไหลลื่น ไม่สะดุด (Continuous Flow)</span><span class="sub-description-text">เคลื่อนที่ส่งต่อจากกระบวนการหนึ่งไปอีกกระบวนการหนึ่งต่อเนื่องชิ้นต่อชิ้น<br>✅ <b>ข้อดี:</b> ใช้เครื่องจักรเต็มกำลัง ไม่มีเวลาหยุดรอ เคลียร์ชิ้นงานไว ลดค่าไฟจากการเปิดระบบทิ้งไว้ ได้งานคุ้มทุกค่าแรง</span>`, en: `<span class="sub-title-badge value-badge">🏃 2. Continuous Flow</span><span class="sub-description-text">Moving products from process to process without interruptions.<br>✅ <b>Benefits:</b> Maximizes machine capacity, cuts down wait time, prevents standby utility waste, and ensures value out of wages.</span>` }, "./2VALUE_VDO.mp4"); }
       function speak3VALUE() { performSpeakAction({ th: "จัดวางใกล้จุดใช้ หมายถึง วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็น อยู่ในตำแหน่งที่หยิบใช้ได้ทันที ข้อดีคือ การจัดไลน์ผลิตให้กระชับช่วยลดความเสี่ยงสินค้าชำรุดจากการขนย้าย ช่วยประหยัดค่าน้ำมันและค่าบำรุงรักษารถยก ลดต้นทุนแรงงานจากการร่นระยะทางให้สั้นลง", en: "Point-of-use storage places materials and tools right where they are needed. This tight layout prevents damage during transport, lowers forklift fuel/maintenance fees, and saves travel time." }, { th: `<span class="sub-title-badge value-badge">📍 3. จัดวางใกล้จุดใช้ (Point of Use)</span><span class="sub-description-text">วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็นอยู่ในตำแหน่งที่หยิบใช้งานได้ทันที<br>✅ <b>ข้อดี:</b> ลดความเสี่ยงชิ้นงานกระแทกชำรุด ประหยัดค่าน้ำมันและค่าซ่อมรถยก (Forklift) ร่นเวลาเดินทางพนักงาน</span>`, en: `<span class="sub-title-badge value-badge">📍 3. Point-of-Use Storage</span><span class="sub-description-text">Keeping materials and tools exactly where work is done.<br>✅ <b>Benefits:</b> Reduces risk of material damage during relocation, cuts forklift fuel/upkeep costs, and slashes redundant walking labor.</span>` }, "./3VALUE_VDO.mp4"); }
       function speak4VALUE() { performSpeakAction({ th: "หยิบจับง่าย สบายสรีระ หมายถึง พนักงานสามารถปฏิบัติงานได้ด้วยท่าทางที่เป็นธรรมชาติที่สุด ข้อดีคือ ช่วยลดความเหนื่อยล้า พนักงานทำงานได้เร็วขึ้น ประสิทธิภาพการผลิตคงที่ ช่วยลดอัตราการเกิดอุบัติเหตุ-ค่ารักษาพยาบาล ป้องกันการหยุดไลน์ผลิตฉุกเฉิน", en: "Ergonomic movement allows operators to work in natural postures. This minimizes physical fatigue, stabilizes production speed, and cuts down safety accidents and sudden line stoppage costs." }, { th: `<span class="sub-title-badge value-badge">👌 4. หยิบจับง่าย สบายสรีระ (Ergonomic Motion)</span><span class="sub-description-text">พนักงานสามารถปฏิบัติงานได้ด้วยสรีระและท่าทางที่เป็นธรรมชาติที่สุด<br>✅ <b>ข้อดี:</b> ลดความเหนื่อยล้าสะสม ทำงานได้ไวและคงที่ ป้องกันการเจ็บป่วย เซฟค่ารักษา และลดความเสี่ยงหยุดไลน์ผลิตฉุกเฉิน</span>`, en: `<span class="sub-title-badge value-badge">👌 4. Ergonomic Motion</span><span class="sub-description-text">Enabling workers to perform tasks comfortably and naturally.<br>✅ <b>Benefits:</b> Mitigates physical fatigue, maintains stable efficiency, drops hazard injuries, and prevents emergency line downtime.</span>` }, "./4VALUE_VDO.mp4"); }
-      function speak5VALUE() { performSpeakAction({ th: "ขั้นตอนที่สร้างคุณค่า หมายถึง ขั้นตอนที่ส่งผลต่อคุณภาพ คุณลักษณะสินค้าที่ลูกค้าพึงพอใจ ข้อดีคือ การตัดขั้นตอนที่ซ้ำซ้อนช่วยควบคุมและลดต้นทุนแรงงาน ช่วยลดชั่วโมงการทำงานของเครื่องจักร ทำให้ประหยัดค่าไฟและยืดอายุการใช้งานให้ยาวนานขึ้น", en: "Value-added processing focuses strictly on steps that improve features the customer cares about. Cutting out non-value steps reduces labor cost, saves run-time electricity, and extends asset lifespan." }, { th: `<span class="sub-title-badge value-badge">⚙️ 5. ขั้นตอนที่สร้างคุณค่า (Value-Added Processing)</span><span class="sub-description-text">เน้นย้ำเฉพาะขั้นตอนที่ส่งผลต่อคุณภาพและคุณลักษณะตามความพอใจลูกค้า<br>✅ <b>ข้อดี:</b> ตัดขั้นตอนซ้ำซ้อนทิ้ง ควบคุมต้นทุนแรงงานได้ดี ลดเวลาเดินเครื่องจักร ประหยัดค่าไฟ และยืดอายุเครื่องให้ยาวนาน</span>`, en: `<span class="sub-title-badge value-badge">⚙️ 5. Value-Added Processing</span><span class="sub-description-text">Focusing only on steps that add direct quality preferred by customers.<br>✅ <b>Benefits:</b> Trims redundant cycles, monitors headcount budget, lessens machine operating hours to save electricity and prevent wearing.</span>` }, "./5VALUE_VDO.mp4"); }
+      function speak5VALUE() { performSpeakAction({ th: "ขั้นตอนที่สร้างคุณค่า หมายถึง ขั้นตอนที่ส่งผลต่อคุณภาพ คุณลักษณะสินค้าที่ลูกค้าพึงพอใจ ข้อดีคือ การตัดขั้นตอนที่ซ้ำซ้อนช่วยควบคุมและลดต้นทุนแรงงาน ช่วยลดชั่วโมงการทำงานของเครื่องจักร ทำให้ประหยัดค่าไฟและยืดอายุการใช้งานให้ยาวนานขึ้น", en: "Value-added processing focuses strictly on steps that improve features the customer cares about. Cutting out non-value steps reduces labor cost, saves run-time electricity, and extends asset lifespan." }, { th: `<span class="sub-title-badge value-badge">⚙️ 5. ขั้นตอนที่สร้างคุณค่า (Value-Added Processing)</span><span class="sub-description-text">เน้นยถามเฉพาะขั้นตอนที่ส่งผลต่อคุณภาพและคุณลักษณะตามความพอใจลูกค้า<br>✅ <b>ข้อดี:</b> ตัดขั้นตอนซ้ำซ้อนทิ้ง ควบคุมต้นทุนแรงงานได้ดี ลดเวลาเดินเครื่องจักร ประหยัดค่าไฟ และยืดอายุเครื่องให้ยาวนาน</span>`, en: `<span class="sub-title-badge value-badge">⚙️ 5. Value-Added Processing</span><span class="sub-description-text">Focusing only on steps that add direct quality preferred by customers.<br>✅ <b>Benefits:</b> Trims redundant cycles, monitors headcount budget, lessens machine operating hours to save electricity and prevent wearing.</span>` }, "./5VALUE_VDO.mp4"); }
       function speak6VALUE() { performSpeakAction({ th: "สต็อกบาง หมุนเวียนไว หมายถึง วัตถุดิบ WIP สินค้าสำเร็จรูป อยู่ในระดับที่น้อยที่สุดแต่เพียงพอ ข้อดีคือ การบริหารคลังสินค้าอย่างมีประสิทธิภาพช่วยลดความเสี่ยงสินค้าเสื่อมสภาพตกรุ่น ลดค่าเช่าคลังสินค้าเพิ่มเติม ค่าไฟระบบปรับอากาศ และค่าเบี้ยประกันภัย", en: "Lean inventory keeps raw materials, WIP, and finished goods at minimal yet sufficient levels, reducing risks of spoilage/obsolescence while cutting facility rent, cooling power, and insurance costs." }, { th: `<span class="sub-title-badge value-badge">📦 6. สต็อกบาง หมุนเวียนไว (Lean Inventory)</span><span class="sub-description-text">วัตถุดิบ ชิ้นงานระหว่างทำ (WIP) และสินค้าสำเร็จรูป มีปริมาณน้อยที่สุดแต่เพียงพอเดินไลน์<br>✅ <b>ข้อดี:</b> หมดปัญหาของเสื่อมสภาพคาโกดัง คืนพื้นที่โรงงาน ประหยัดค่าเช่าคลัง ค่าไฟแอร์/ระบบระบายอากาศ และเบี้ยประกัน</span>`, en: `<span class="sub-title-badge value-badge">📦 6. Lean Inventory</span><span class="sub-description-text">Maintaining raw materials, WIP, and finished goods at safe minimal levels.<br>✅ <b>Benefits:</b> Prevents parts from degrading, expands workspace, reduces extra rent, cooling energy, and insurance premiums.</span>` }, "./6VALUE_VDO.mp4"); }
       function speak7VALUE() { performSpeakAction({ th: "ทำถูกต้อง ตั้งแต่แรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใช้วัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด", en: "Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight." }, { th: `<span class="sub-title-badge value-badge">🎯 7. ทำถูกต้อง ตั้งแต่แรก (Right First Time)</span><span class="sub-description-text">กระบวนการผลิตสามารถทำชิ้นงานให้ผ่านมาตรฐานได้ 100% ตั้งแต่รอบแรก<br>✅ <b>ข้อดี:</b> ต้นทุนผลิตต่อชิ้นต่ำสุด วัตถุดิบไม่ถูกทิ้งขว้าง ตัดต้นทุนซ้ำซ้อน (ค่าแรงซ่อม, ค่าไฟเครื่อง, เวลาคัดงาน QC) และเคลียร์ปัญหาเคลมส่งกลับของลูกค้า</span>`, en: `<span class="sub-title-badge value-badge">🎯 7. Right First Time</span><span class="sub-description-text">Achieving 100% correct product quality right from the first production run.<br>✅ <b>Benefits:</b> Lowers unit cost, guarantees zero material yield waste, eliminates duplicate labor/power (Rework), and stops customer claims/return logistics completely.</span>` }, "./7VALUE_VDO.mp4"); }
     </script>
