@@ -10,7 +10,6 @@
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
       
-      /* แก้ไข: ลบคำว่า let ออกเพื่อให้สไตล์ทำงานได้ถูกต้อง และบังหน้าจอได้สมบูรณ์ */
       #lang-select-overlay {
         position: fixed;
         top: 0;
@@ -64,7 +63,6 @@
         background-color: #0096C7;
       }
 
-      /* แก้ไข: ใส่ display: none; เพื่อซ่อน UI หลักไว้ก่อน ไม่ให้ขึ้นมาซ้อนตอนเลือกภาษาและดู Intro */
       .ar-ui-layer {
         position: fixed;
         top: 0;
@@ -76,7 +74,6 @@
         display: none; 
       }
 
-      /* กล่องครอบป๊อปอัปแรก */
       #intro-video-overlay {
         position: fixed;
         top: 0;
@@ -110,7 +107,6 @@
         text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
       }
 
-      /* ส่วนแสดงซับไตเติลหน้า Intro */
       #intro-subtitles {
         background-color: rgba(20, 20, 20, 0.85);
         color: #FFFFFF;
@@ -126,7 +122,6 @@
         text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
       }
 
-      /* กล่อง Container รวมโลโก้และแคมเปญละครด้านซ้ายบน */
       .logo-campaign-box {
         position: absolute;
         top: 20px;
@@ -449,14 +444,13 @@
       </div>
     </div>
 
-    <!-- Intro Video Layer -->
+    <!-- แก้ไข: เอาแอตทริบิวต์ muted ออกเพื่อให้เสียงจากไฟล์วิดีโอเล่นออกมา -->
     <div id="intro-video-overlay" onclick="closeIntroVideo()">
-      <video id="intro-video-player" src="./INTRO_CR.mp4" autoplay muted loop playsinline></video>
+      <video id="intro-video-player" src="./INTRO_CR.mp4" loop playsinline></video>
       <div id="intro-subtitles"></div>
       <div id="intro-skip-text" class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
     </div>
 
-    <!-- Main AR UI Layer (ถูกตั้งค่าให้ซ่อนเริ่มต้นใน CSS) -->
     <div class="ar-ui-layer">
       <div class="logo-campaign-box">
         <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
@@ -635,7 +629,8 @@
       let currentSpeechText = "";
       let currentSpeechLang = "th-TH";
       
-      let introTimeouts = [];
+      // ตัวแปรเก็บชุดข้อมูลซับไตเติลของ Intro
+      let introSubtitlesData = [];
 
       const sceneEl = document.getElementById('scene');
       const cameraEl = document.getElementById('camera');
@@ -660,6 +655,7 @@
       const introOverlay = document.getElementById('intro-video-overlay');
       const introSubtitles = document.getElementById('intro-subtitles');
       const introSkipText = document.getElementById('intro-skip-text');
+      const introVideoElement = document.getElementById('intro-video-player');
 
       // Elements Target 1
       const ent1M = document.getElementById('material-1m');
@@ -692,73 +688,63 @@
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
       ];
 
-      function speakIntroPhrases(phrasesArray, langCode) {
-        window.speechSynthesis.cancel();
-        introTimeouts.forEach(t => clearTimeout(t));
-        introTimeouts = [];
+      // แก้ไข: เปลี่ยนการแสดงซับไตเติล Intro ให้ผูกไปตามช่วงเวลาจริงของตัววิดีโอ (Time-Synced Subtitles)
+      introVideoElement.addEventListener('timeupdate', () => {
+        const currentTime = introVideoElement.currentTime;
+        let activeHtml = "";
 
-        let currentDelay = 0;
-
-        phrasesArray.forEach((phrase) => {
-          let tId = setTimeout(() => {
-            introSubtitles.innerHTML = phrase.html;
-
-            const utterance = new SpeechSynthesisUtterance(phrase.text);
-            utterance.lang = langCode;
-            utterance.rate = parseFloat(speedSelect.value);
-            utterance.voice = getSelectedVoice();
-            window.speechSynthesis.speak(utterance);
-          }, currentDelay);
-
-          introTimeouts.push(tId);
-          currentDelay += (phrase.text.length * 250) + phrase.pause;
-        });
-      }
+        // วนลูปเช็กว่า ณ เวลานี้ ควรขึ้นซับไตเติลตัวไหน
+        for (let i = 0; i < introSubtitlesData.length; i++) {
+          if (currentTime >= introSubtitlesData[i].time) {
+            activeHtml = introSubtitlesData[i].html;
+          }
+        }
+        introSubtitles.innerHTML = activeHtml;
+      });
 
       function selectInitialLanguage(lang) {
         setLanguage(lang);
         document.getElementById('lang-select-overlay').style.display = 'none';
         introOverlay.style.display = 'flex';
 
+        // ปรับแก้: ล้างเสียงสังเคราะห์ของหน้าหลัก และเซ็ตข้อมูลซับไตเติลตามช่วงเวลาวินาทีของวิดีโอ
+        window.speechSynthesis.cancel();
+
         if (lang === 'th') {
           introSkipText.innerText = "แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕";
-          const thIntro = [
-            { text: "ยินดีต้อนรับสู่ AR SMART BOARD", html: "<b>Mister CR:</b> ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> 🌟", pause: 800 },
-            { text: "เมื่อสแกนคิวอาร์โค้ดแล้ว ให้ใช้กล้องมือถือสแกนต่อที่ป้ายบนบอร์ดได้เลย", html: "<b>Mister CR:</b> เมื่อสแกน QR Code แล้ว<br>ให้ใช้กล้องมือถือสแกนต่อที่ป้ายบนบอร์ดได้เลยครับ 📸", pause: 800 },
-            { text: "มาร่วมสนุกกับการเรียนรู้ไปด้วยกันนะ", html: "<b>Mister CR:</b> มาร่วมสนุกกับการเรียนรู้ไปด้วยกันนะ ครับ! 🎉", pause: 0 }
+          introSubtitlesData = [
+            { time: 0.0, html: "<b>Mister CR:</b> ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> 🌟" },
+            { time: 3.0, html: "<b>Mister CR:</b> เมื่อสแกน QR Code แล้ว<br>ให้ใช้กล้องมือถือสแกนต่อที่ป้ายบนบอร์ดได้เลยครับ 📸" },
+            { time: 7.0, html: "<b>Mister CR:</b> มาร่วมสนุกกับการเรียนรู้ไปด้วยกันนะครับ! 🎉" }
           ];
-          speakIntroPhrases(thIntro, "th-TH");
           
         } else if (lang === 'en') {
           introSkipText.innerText = "Tap anywhere to enter the AR system ✕";
-          const enIntro = [
-            { text: "Welcome to AR SMART BOARD.", html: "<b>Mister CR:</b> Welcome to <b>AR SMART BOARD</b> 🌟", pause: 800 },
-            { text: "Once you have scanned the QR Code, please use your mobile camera to scan the sign on the board.", html: "<b>Mister CR:</b> Once you have scanned the QR Code,<br>please use your mobile camera to scan the sign on the board. 📸", pause: 800 },
-            { text: "Let's enjoy this learning journey together!", html: "<b>Mister CR:</b> Let's enjoy this learning journey together! 🎉", pause: 0 }
+          introSubtitlesData = [
+            { time: 0.0, html: "<b>Mister CR:</b> Welcome to <b>AR SMART BOARD</b> 🌟" },
+            { time: 3.0, html: "<b>Mister CR:</b> Once you have scanned the QR Code,<br>please use your mobile camera to scan the sign on the board. 📸" },
+            { time: 7.0, html: "<b>Mister CR:</b> Let's enjoy this learning journey together! 🎉" }
           ];
-          speakIntroPhrases(enIntro, "en-US");
 
         } else if (lang === 'jp') {
           introSkipText.innerText = "画面のどこでもタップしてARシステムに入ります ✕";
-          const jpIntro = [
-            { text: "ARスマートボードへようこそ。", html: "<b>Mister CR:</b> <b>ARスマートボード</b>へようこそ！ 🌟", pause: 800 },
-            { text: "QRコードをスキャンしたら、スマートフォンのカメラでボード上のサインをスキャンしてください。", html: "<b>Mister CR:</b> QRコードをスキャンしたら、<br>スマートフォンのカメラでボード上のサインをスキャンしてください。 📸", pause: 800 },
-            { text: "一緒に楽しく学びましょう！", html: "<b>Mister CR:</b> 一緒に楽しく学びましょう！ 🎉", pause: 0 }
+          introSubtitlesData = [
+            { time: 0.0, html: "<b>Mister CR:</b> <b>ARスマートボード</b>へようこそ！ 🌟" },
+            { time: 3.0, html: "<b>Mister CR:</b> QRコードをスキャンしたら、<br>スマートフォンのカメラでボード上のサインをスキャンしてください。 📸" },
+            { time: 7.0, html: "<b>Mister CR:</b> 一緒に楽しく学びましょう！ 🎉" }
           ];
-          speakIntroPhrases(jpIntro, "ja-JP");
         }
+
+        // เริ่มเล่นวิดีโอ Intro พร้อมเสียงแบบเปิดปกติ
+        introVideoElement.currentTime = 0;
+        introVideoElement.play().catch(e => console.log("Intro video play error:", e));
       }
 
-      // แก้ไข: เมื่อปิดวิดีโอ Intro แล้ว ถึงจะทำการสั่งแสดง Layer UI หลักด้านหลังทั้งหมดขึ้นมา
       function closeIntroVideo() {
-        introTimeouts.forEach(t => clearTimeout(t));
-        window.speechSynthesis.cancel(); 
+        if(introVideoElement) { introVideoElement.pause(); }
         introOverlay.style.display = 'none';
         
-        const vPlayer = document.getElementById('intro-video-player');
-        if(vPlayer) { vPlayer.pause(); }
-
-        // ปลดบล็อกให้ UI ส่วนของระบบกล้องและการควบคุมหลักทำงานได้
+        // แสดง Layer UI หลักด้านหลังทั้งหมดขึ้นมา
         document.querySelector('.ar-ui-layer').style.display = 'block';
       }
 
@@ -812,6 +798,7 @@
         return allVoices.find(voice => voice.name === selectedName) || null;
       }
 
+      mixins = null;
       function resetMediaUI() {
         window.speechSynthesis.cancel();
         subtitlesBox.style.display = "none";
@@ -954,7 +941,6 @@
         }
       }
 
-      // ... [ฟังก์ชันย่อยที่เหลือคงเดิมตามความจำเป็นของระบบ AR] ...
       function seekVideo(val) {
         if (videoPlayer.duration) {
           const seekTo = (val / 100) * videoPlayer.duration;
@@ -1030,11 +1016,11 @@
       function speak1M() { performSpeakAction({ th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิต เช่น อลูมิเนียม", en: "Direct materials refer to the primary raw materials used in production, such as aluminum." }, { th: `<span class="sub-title-badge">📦 วัตถุดิบทางตรง (Direct Materials)</span><span class="sub-description-text">หมายถึง วัตถุดิบหลักที่ใช้ในการผลิตโครงสร้างสินค้าโดยตรง<br>📍 <b>ตัวอย่าง:</b> อลูมิเนียม, เม็ดพลาสติกหลัก</span>`, en: `<span class="sub-title-badge">📦 Direct Materials</span><span class="sub-description-text">Refers to the primary raw materials used in production.<br>📍 <b>Example:</b> Aluminum, Core Pellets</span>` }, "./1M_VDO.mp4"); }
       function speak2M() { performSpeakAction({ th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง", en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line." }, { th: `<span class="sub-title-badge">👥 ค่าแรงทางตรง (Direct Labor)</span><span class="sub-description-text">หมายถึง ค่าจ้าง ผลประโยชน์ หรือค่าตอบแทนของกลุ่มพนักงาน<br>⚙️ ที่ปฏิบัติงานอยู่บน <b>ไลน์ผลิตโดยตรง</b></span>`, en: `<span class="sub-title-badge">👥 Direct Labor</span><span class="sub-description-text">Refers to the wages or compensation paid to workers who are directly involved in the <b>production line</b>.</span>` }, "./2M_VDO.mp4"); }
       function speak3M() { performSpeakAction({ th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง", en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor." }, { th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span><span class="sub-description-text">หมายถึง ค่าใช้จ่ายภาพรวมที่เกิดขึ้นในโรงงานระหว่างกระบวนการผลิต<br>❌ <i>โดยไม่นับรวม</i> วัตถุดิบทางตรงและค่าแรงทางตรง</span>`, en: `<span class="sub-title-badge">🏭 Manufacturing Overhead</span><span class="sub-description-text">Refers to all costs incurred during production <b>other than</b> direct materials and direct labor.</span>` }, "./3M_VDO.mp4"); }
-      function speak3_1M() { performSpeakAction({ th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟ้า ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบำรุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ", en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses." }, { th: `<span class="sub-title-badge">⚡ ค่าใช้จ่ายการผลิตอื่นๆ</span><span class="sub-description-text">ค่าสาธารณูปโภและค่าเสื่อมสภาพในพื้นที่โรงงาน<br>🔌 <b>เช่น:</b> ค่าไฟฟ้า, ค่าน้ำประปา, ค่าเช่าโรงงาน, ค่าเสื่อมเครื่องจักร</span>`, en: `<span class="sub-title-badge">⚡ Other Manufacturing Costs</span><span class="sub-description-text">Factory utilities and depreciations.<br>🔌 <b>e.g.,</b> Electricity, Water, Factory rent, Machine depreciation.</span>` }, "./3_1M_VDO.mp4"); }
+      function speak3_1M() { performSpeakAction({ th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟ้า ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบำรุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ", en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses." }, { th: `<span class="sub-title-badge">⚡ ค่าใช้จ่ายการผลิตอื่นๆ</span><span class="sub-description-text">ค่าสาธารณูปโภคและค่าเสื่อมสภาพในพื้นที่โรงงาน<br>🔌 <b>เช่น:</b> ค่าไฟฟ้า, ค่าน้ำประปา, ค่าเช่าโรงงาน, ค่าเสื่อมเครื่องจักร</span>`, en: `<span class="sub-title-badge">⚡ Other Manufacturing Costs</span><span class="sub-description-text">Factory utilities and depreciations.<br>🔌 <b>e.g.,</b> Electricity, Water, Factory rent, Machine depreciation.</span>` }, "./3_1M_VDO.mp4"); }
       function speak3_2M() { performSpeakAction({ th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต", en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers." }, { th: `<span class="sub-title-badge">🛠️ ค่าแรงงานทางอ้อม (Indirect Labor)</span><span class="sub-description-text">ค่าตอบแทนของทีมสนับสนุนที่ไม่ได้นั่งประกอบชิ้นงานเอง<br>👨‍✈️ <b>เช่น:</b> หัวหน้างาน (Supervisor), พนักงานซ่อมบำรุง, ผู้จัดการฝ่าย</span>`, en: `<span class="sub-title-badge">🛠️ Indirect Labor</span><span class="sub-description-text">Wages for production support units.<br>👨‍✈️ <b>e.g.,</b> Supervisors, Maintenance staff, Production managers.</span>` }, "./3_2M_VDO.mp4"); }
       function speak3_3M() { performSpeakAction({ th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ", en: "Indirect materials such as consumables used to support production like lubricants, inserts, or gloves." }, { th: `<span class="sub-title-badge">🧤 วัตถุดิบทางอ้อม (Indirect Materials)</span><span class="sub-description-text">วัสดุสิ้นเปลืองชิ้นเล็กชิ้นน้อยที่ใช้เพื่อสนับสนุนให้ไลน์ผลิตเดินหน้าได้<br>🛢️ <b>เช่น:</b> น้ำมันหล่อลื่นเครื่องจักร, เม็ดมีดตัดกลึง, ถุงมือเซฟตี้</span>`, en: `<span class="sub-title-badge">🧤 Indirect Materials</span><span class="sub-description-text">Consumables used to support production.<br>🛢️ <b>e.g.,</b> Lubricants, Cutting inserts, Safety gloves.</span>` }, "./3_3M_VDO.mp4"); }
       function speak1A() { performSpeakAction({ th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า", en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing." }, { th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span><span class="sub-description-text">ค่าใช้จ่ายเพื่อให้ได้ยอดขาย หรือเกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า<br>💰 <b>เช่น:</b> ค่าคอมมิชชัน, เงินเดือนทีมขาย, ค่าการตลาด/โฆษณา, ค่าขนส่งและคลังสินค้า</span>`, en: `<span class="sub-title-badge">📈 Selling Expenses</span><span class="sub-description-text">Costs incurred to generate sales or distribute products.<br>💰 <b>e.g.,</b> Commissions, Sales salaries, Marketing, Freight & Warehousing.</span>` }, "./1A_VDO.mp4"); }
-      function speak2A() { performSpeakAction({ th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ", en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees." }, { th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span><span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพอร์ต (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`, en: `<span class="sub-title-badge">🏢 Administrative Expenses</span><span class="sub-description-text">General costs for corporate management and support.<br>📝 <b>e.g.,</b> Support staff salaries (Accounting, HR), Office rent, Utilities, Office asset depreciation.</span>` }, "./2A_VDO.mp4"); }
+      function speak2A() { performSpeakAction({ th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ", en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees." }, { th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span><span class="sub-description-text">ค่าใช้จ่ายทั่วไปเกี่ยวกับการจัดการและการสนับสนุนองค์กรภาพรวม<br>📝 <b>เช่น:</b> เงินเดือนทีมซัพพॉर्ट (บัญชี, HR), ค่าเช่าออฟฟิศ, ค่าน้ำ/ไฟ/เน็ต, ค่าเสื่อมอุปกรณ์สำนักงาน</span>`, en: `<span class="sub-title-badge">🏢 Administrative Expenses</span><span class="sub-description-text">General costs for corporate management and support.<br>📝 <b>e.g.,</b> Support staff salaries (Accounting, HR), Office rent, Utilities, Office asset depreciation.</span>` }, "./2A_VDO.mp4"); }
 
       function speak1MUDA() { performSpeakAction({ th: "การผลิตมากเกินไป หมายถึง การผลิตสินค้าออกมารอไว้เกินความต้องการจริง ปัญหาคือ เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก ทั้งยัง เพิ่มต้นทุนโดยไม่จำเป็น เช่น ค่าพลังงานเครื่องจักร และ ค่าล่วงเวลาพนักงานโดย ไม่เกิดรายได้ในทันที", en: "Overproduction occurs when items are produced beyond actual demand, tying up capital in raw materials and excess inventory while causing unnecessary machine energy and overtime costs." }, { th: `<span class="sub-title-badge">🏭 1. การผลิตมากเกินไป (Overproduction)</span><span class="sub-description-text">การผลิตสินค้าออกมารอไว้เกินความต้องการจริง<br>⚠️ <b>ผลกระทบ:</b> เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก เพิ่มต้นทุนพลังงานและค่าล่วงเวลาโดยไม่จำเป็น</span>`, en: `<span class="sub-title-badge">🏭 1. Overproduction</span><span class="sub-description-text">Producing items before they are actually needed.<br>⚠️ <b>Impact:</b> Ties up capital in inventory, wastes machine energy and unnecessary overtime.</span>` }, "./1MUDA_VDO.mp4"); }
       function speak2MUDA() { performSpeakAction({ th: "การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน", en: "Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses." }, { th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span><span class="sub-description-text">พนักงานหรือเครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า<br>⚠️ <b>ผลกระทบ:</b> ค่าแรงสูญเปล่า สิ้นเปลืองค่าไฟและค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดยไม่ได้งาน</span>`, en: `<span class="sub-title-badge">⏳ 2. Waiting</span><span class="sub-description-text">Idle time created when workers or machines wait for previous processes.<br>⚠️ <b>Impact:</b> Wasted labor wages, idle utility consumption, and idle machine maintenance costs.</span>` }, "./2MUDA_VDO.mp4"); }
@@ -1044,7 +1030,7 @@
       function speak6MUDA() { performSpeakAction({ th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย", en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums." }, { th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">การเก็บวัตถุดิบ งานระหว่างผลิต หรือสินค้าสำเร็จรูปไว้มากเกินไป<br>⚠️ <b>ผลกระทบ:</b> สินค้าเสี่ยงเสื่อมสภาพ/ตกรุ่น และเสียค่าใช้จ่ายจัดเก็บ เช่น ค่าเช่าโกดัง ค่าไฟ และค่าประกันภัย</span>`, en: `<span class="sub-title-badge">📦 6. Inventory</span><span class="sub-description-text">Excessive stockpiling of raw materials, WIP, or finished products.<br>⚠️ <b>Impact:</b> Increases degradation risks, obsolescence loss, and raises warehousing rent, power, and insurance costs.</span>` }, "./6MUDA_VDO.mp4"); }
       function speak7MUDA() { performSpeakAction({ th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้", en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time." }, { th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง<br>⚠️ <b>ผลกระทบ:</b> สูญเสียวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งค่าซื้อล็อตใหม่ ค่าแรง ค่าไฟ และเสียเวลาทีม QC ตรวจสอบซ้ำ</span>`, en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span><span class="sub-description-text">Production of out-of-spec products requiring scrap or repair.<br>⚠️ <b>Impact:</b> Wastes materials, doubles labor and utility overheads, and squanders QC capacity on re-inspections.</span>` }, "./7MUDA_VDO.mp4"); }
 
-      function speak1VALUE() { performSpeakAction({ th: "ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา", en: "Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs." }, { th: `<span class="sub-title-badge value-badge">💡 1. ผลิตพอดีตามต้องการ (Just in Time)</span><span class="sub-description-text">ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี<br>✅ <b>ข้อดี:</b> เพิ่มกระแสเงินสดหมุนเวียน ลดวัตถุดิบและสินค้าค้างคลัง ประหยัดค่าไฟเครื่องจักรและค่าล่วงเวลา (OT)</span>`, en: `<span class="sub-title-badge value-badge">💡 1. Just-in-Time Production</span><span class="sub-description-text">Right product, right quantity, right at the needed time.<br>✅ <b>Benefits:</b> Boosts cash flow, lowers stock accumulation, saves energy and unnecessary overtime.</span>` }, "./1VALUE_VDO.mp4"); }
+      function speak1VALUE() { performSpeakAction({ th: "ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา", en: "Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs." }, { th: `<span class="sub-title-badge value-badge">💡 1. ผลิตพอดีตามต้องการ (Just in Time)</span><span class="sub-description-text">ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี<br>✅ <b>ข้อดี:</b> เพิ่มกระแสเงินสดหมุนเวียน ลดวัตถิบและสินค้าค้างคลัง ประหยัดค่าไฟเครื่องจักรและค่าล่วงเวลา (OT)</span>`, en: `<span class="sub-title-badge value-badge">💡 1. Just-in-Time Production</span><span class="sub-description-text">Right product, right quantity, right at the needed time.<br>✅ <b>Benefits:</b> Boosts cash flow, lowers stock accumulation, saves energy and unnecessary overtime.</span>` }, "./1VALUE_VDO.mp4"); }
       function speak2VALUE() { performSpeakAction({ th: "งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป", en: "Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity." }, { th: `<span class="sub-title-badge value-badge">🏃 2. งานไหลลื่น ไม่สะดุด (Continuous Flow)</span><span class="sub-description-text">เคลื่อนที่ส่งต่อจากกระบวนการหนึ่งไปอีกกระบวนการหนึ่งต่อเนื่องชิ้นต่อชิ้น<br>✅ <b>ข้อดี:</b> ใช้เครื่องจักรเต็มกำลัง ไม่มีเวลาหยุดรอ เคลียร์ชิ้นงานไว ลดค่าไฟจากการเปิดระบบทิ้งไว้ ได้งานคุ้มทุกค่าแรง</span>`, en: `<span class="sub-title-badge value-badge">🏃 2. Continuous Flow</span><span class="sub-description-text">Moving products from process to process without interruptions.<br>✅ <b>Benefits:</b> Maximizes machine capacity, cuts down wait time, prevents standby utility waste, and ensures value out of wages.</span>` }, "./2VALUE_VDO.mp4"); }
       function speak3VALUE() { performSpeakAction({ th: "จัดวางใกล้จุดใช้ หมายถึง วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็น อยู่ในตำแหน่งที่หยิบใช้ได้ทันที ข้อดีคือ การจัดไลน์ผลิตให้กระชับช่วยลดความเสี่ยงสินค้าชำรุดจากการขนย้าย ช่วยประหยัดค่าน้ำมันและค่าบำรุงรักษารถยก ลดต้นทุนแรงงานจากการร่นระยะทางให้สั้นลง", en: "Point-of-use storage places materials and tools right where they are needed. This tight layout prevents damage during transport, lowers forklift fuel/maintenance fees, and saves travel time." }, { th: `<span class="sub-title-badge value-badge">📍 3. จัดวางใกล้จุดใช้ (Point of Use)</span><span class="sub-description-text">วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็นอยู่ในตำแหน่งที่หยิบใช้งานได้ทันที<br>✅ <b>ข้อดี:</b> ลดความเสี่ยงชิ้นงานกระแทกชำรุด ประหยัดค่าน้ำมันและค่าซ่อมรถยก (Forklift) ร่นเวลาเดินทางพนักงาน</span>`, en: `<span class="sub-title-badge value-badge">📍 3. Point-of-Use Storage</span><span class="sub-description-text">Keeping materials and tools exactly where work is done.<br>✅ <b>Benefits:</b> Reduces risk of material damage during relocation, cuts forklift fuel/upkeep costs, and slashes redundant walking labor.</span>` }, "./3VALUE_VDO.mp4"); }
       function speak4VALUE() { performSpeakAction({ th: "หยิบจับง่าย สบายสรีระ หมายถึง พนักงานสามารถปฏิบัติงานได้ด้วยท่าทางที่เป็นธรรมชาติที่สุด ข้อดีคือ ช่วยลดความเหนื่อยล้า พนักงานทำงานได้เร็วขึ้น ประสิทธิภาพการผลิตคงที่ ช่วยลดอัตราการเกิดอุบัติเหตุ-ค่ารักษาพยาบาล ป้องกันการหยุดไลน์ผลิตฉุกเฉิน", en: "Ergonomic movement allows operators to work in natural postures. This minimizes physical fatigue, stabilizes production speed, and cuts down safety accidents and sudden line stoppage costs." }, { th: `<span class="sub-title-badge value-badge">👌 4. หยิบจับง่าย สบายสรีระ (Ergonomic Motion)</span><span class="sub-description-text">พนักงานสามารถปฏิบัติงานได้ด้วยสรีระและท่าทางที่เป็นธรรมชาติที่สุด<br>✅ <b>ข้อดี:</b> ลดความเหนื่อยล้าสะสม ทำงานได้ไวและคงที่ ป้องกันการเจ็บป่วย เซฟค่ารักษา และลดความเสี่ยงหยุดไลน์ผลิตฉุกเฉิน</span>`, en: `<span class="sub-title-badge value-badge">👌 4. Ergonomic Motion</span><span class="sub-description-text">Enabling workers to perform tasks comfortably and naturally.<br>✅ <b>Benefits:</b> Mitigates physical fatigue, maintains stable efficiency, drops hazard injuries, and prevents emergency line downtime.</span>` }, "./4VALUE_VDO.mp4"); }
