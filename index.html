@@ -704,14 +704,13 @@
         }
       }
 
-      function selectInitialLanguage(lang) {
+  function selectInitialLanguage(lang) {
         setLanguage(lang);
         document.getElementById('lang-select-overlay').style.display = 'none';
         introOverlay.style.display = 'flex';
 
         window.speechSynthesis.cancel();
         
-        // บังคับวิดีโอหลักเป็น Mute เสมอเพื่อเลี่ยงเสียงทับซ้อน
         introVideoElement.muted = true;
 
         let audioSrc = "";
@@ -719,43 +718,39 @@
           audioSrc = "./INTRO_TH.mp3";
           introSkipText.innerText = "แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕";
           introSubtitlesData = [
-        { time: 0.0, html: "ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> สแกนบน BOARD แล้วมาร่วมสนุกกับการเรียนรู้ไปด้วยกัน 🎉" }
+            { time: 0.0, html: "ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> สแกนบน BOARD แล้วมาร่วมสนุกกับการเรียนรู้ไปด้วยกัน 🎉" }
           ];
         } else if (lang === 'en') {
           audioSrc = "./INTRO_ENG.mp3";
           introSkipText.innerText = "Tap anywhere to enter the AR system ✕";
           introSubtitlesData = [
-        { time: 0.0, html: "Welcome to <b>AR SMART BOARD</b>! Scan the board, and let's enjoy this learning journey together! 🎉" }
+            { time: 0.0, html: "Welcome to <b>AR SMART BOARD</b>! Scan the board, and let's enjoy this learning journey together! 🎉" }
           ];
         } else if (lang === 'jp') {
           audioSrc = "./INTRO_JP.mp3";
           introSkipText.innerText = "画面のどこでもタップしてARシステムに入ります ✕";
           introSubtitlesData = [
-        { time: 0.0, html: "<b>ARスマートボード</b>へようこそ！ボードをスキャンして、一緒に楽しく学びましょう！ 🎉" }    
+            { time: 0.0, html: "<b>ARスマートボード</b>へようこそ！ボードをスキャンして、一緒に楽しく学びましょう！ 🎉" }
           ];
         }
 
-        // ล้างอ็อบเจกต์เสียงตัวเก่าหากมีอยู่ค้างระบบ
         if (introAudio) {
           introAudio.pause();
           introAudio = null;
         }
 
-        // ผูกไฟล์ Audio ใหม่ตามภาษา
         introAudio = new Audio(audioSrc);
 
         introVideoElement.currentTime = 0;
         introVideoElement.load();
         
         setTimeout(() => {
-          // สั่งให้ตัวภาพวิดีโอ และไฟล์เสียงแยก ทำงานไปพร้อม ๆ กัน
           introVideoElement.play().catch(e => console.log("Video playback blocked:", e));
           introAudio.play()
             .then(() => { requestAnimationFrame(updateIntroSubtitles); })
-            .catch(e => console.log("Audio playback blocked, waiting user interact:", e));
+            .catch(e => console.log("Audio playback blocked:", e));
         }, 100);
       }
-
       function closeIntroVideo() {
         if(introVideoElement) { introVideoElement.pause(); }
         if(introAudio) { introAudio.pause(); }
