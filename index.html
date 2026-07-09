@@ -1,3 +1,8 @@
+จัดให้เลยครับท่านเทพ! นี่คือโค้ด **เวอร์ชันเต็ม (Full Version)** ที่รวมเอา Logic การปิดเสียงวิดีโอภาษาไทยดั้งเดิมเมื่อเลือกภาษาอื่น (`en`, `jp`, `cn`) แล้วสลับไปใช้เสียงสังเคราะห์ AI (Web Speech API) พากย์แทนอย่างสมบูรณ์แบบในทุก ๆ ปุ่มกด ควบคุมอาการเสียงหลุดตอนกด Play/Pause หรือตอนเลื่อน Timeline เรียบร้อยแล้วครับ
+
+ท่านสามารถคัดลอกโค้ดทั้งหมดนี้ไปวางทับไฟล์เดิมใช้งานได้ทันทีครับ:
+
+```html
 <!DOCTYPE html>
 <html>
   <head>
@@ -675,6 +680,7 @@
           </a-entity>
         </a-entity>
       </a-entity>
+    </a-scene>
 
     <script>
       let isFrozen = false;
@@ -929,15 +935,12 @@
         }
       }
 
-      /* =========================================================================
-         [แก้ไขจุดนี้] คืนค่าฟังก์ชันจัดตำแหน่งและค่าพิกเซล Offset ให้กลับไปอยู่หลังรูปภาพเป๊ะๆ เหมือนเดิม
-         ========================================================================= */
       function updateAllButtonPositions() {
         if (cameraEl) {
           if (activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) {
             positionButton(ent1M, btnUI1M, 70, -1);
             positionButton(ent2M, btnUI2M, 65, -1);
-            positionButton(ent3M, btnUI3M, 80, 0);  // เรียกฟังก์ชันคืนพิกัด 3M ตัวหลักกลับเข้าระบบ
+            positionButton(ent3M, btnUI3M, 80, 0); 
             positionButton(ent3_1M, btnUI3_1M, 90, -2);
             positionButton(ent3_2M, btnUI3_2M, 75, -2);
             positionButton(ent3_3M, btnUI3_3M, 70, -2);
@@ -1000,6 +1003,14 @@
               window.speechSynthesis.resume();
             }
           }
+          
+          // บังคับและตรวจสอบระบบเสียงคลิปทุกครั้งที่กด Play ป้องกันเสียงแทรก
+          if (currentLang === 'th') {
+            videoPlayer.muted = false;
+          } else {
+            videoPlayer.muted = true;
+          }
+
           videoPlayer.play().catch(e => console.log(e));
           videoPlayBtn.innerText = "⏸";
         } else {
@@ -1016,17 +1027,18 @@
           const seekTo = (val / 100) * videoPlayer.duration;
           videoPlayer.currentTime = seekTo;
           window.speechSynthesis.cancel();
+          
+          // ล็อกระบบ Mute ไว้เสมอเมื่อมีการขยับ Timeline
+          if (currentLang === 'th') {
+            videoPlayer.muted = false;
+          } else {
+            videoPlayer.muted = true;
+          }
+
           if (seekTo === 0 && !videoPlayer.paused) {
             triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
           } else if (seekTo === 0 && videoPlayer.paused) {
             videoPlayBtn.innerText = "▶";
-          }
-          
-          // ล็อกไว้เผื่อกรณีเลื่อน Timeline แล้วเบราว์เซอร์แอบคลาย Mute เอง
-          if (currentLang !== 'th') {
-            videoPlayer.muted = true;
-          } else {
-            videoPlayer.muted = false;
           }
         }
       }
@@ -1072,13 +1084,12 @@
           videoPlayer.currentTime = 0; 
           videoPlayBtn.innerText = "⏸";
 
-          // ====== [จุดแก้ไขหลัก: จัดการระบบเสียงวิดีโอ] ======
+          // ล็อกระบบ Muted ให้เหมาะสมกับสวิตช์ภาษาหลักที่ถูกเลือก
           if (currentLang === 'th') {
-            videoPlayer.muted = false; // ภาษาไทย: เปิดเสียงคลิปปกติ
+            videoPlayer.muted = false; 
           } else {
-            videoPlayer.muted = true;  // ภาษาอื่น: ปิดเสียงคลิป แล้วใช้เสียงสังเคราะห์แทน
+            videoPlayer.muted = true;  
           }
-          // =============================================
 
           videoPlayer.play()
             .then(() => { triggerSpeechSynthesis(currentSpeechText, currentSpeechLang); })
@@ -1101,7 +1112,6 @@
         );
       }
 
-      // ดึงฟังก์ชันสปีช 3M ตัวหลักกลับเข้าทำระบบตาม Logic เดิม
       function speak3M() { 
         performSpeakAction(
           { 
@@ -1114,7 +1124,7 @@
             th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span><span class="sub-description-text">ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง</span>`, 
             en: `<span class="sub-title-badge">🏭 Manufacturing Overhead</span><span class="sub-description-text">Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.</span>`,
             jp: `<span class="sub-title-badge">🏭 製造間接費 (Manufacturing Overhead)</span><span class="sub-description-text">製造間接費とは、直接材料費および直接労務費以外の、製品製造過程で発生するすべての製造費用のことです。</span>`,
-            cn: `<span class="sub-title-badge">🏭 制造费用 (Manufacturing Overhead)</span><span class="sub-description-text">制造费用是指在产品生产过程中发生的、除直接材料和直接人工以外的所有生产费用。</span>`
+            cn: `<span class="sub-title-badge">🏭 制造费用 (Manufacturing Overhead)</span><span class="sub-description-text">制造费用是指在产品生产过程中发生的、除直接材料และ直接人工以外的所有生产费用。</span>`
           }, 
           "./3M_VDO.mp4"
         ); 
@@ -1144,7 +1154,7 @@
             th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง", 
             en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
             jp: "直接労務費とは、製造ラインで直接作業を行う従業員の賃金や手当のことです。",
-            cn: "直接人工是指直接在生产线上工作的员工的工资或薪酬。"
+            cn: "直接人工是指直接在生产线上工作的员工ของ工资或薪酬。"
           }, 
           { 
             th: `<span class="sub-title-badge">👥 ค่าแรงทางตรง (Direct Labor)</span><span class="sub-description-text">ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง</span>`, 
@@ -1216,7 +1226,7 @@
             th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า", 
             en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing.",
             jp: "販売費とは、売上を上げるために発生する費用、または顧客への製品配送に関連する費用のことで、販売コミッション、給与、マーケティング、広告、運賃、倉庫保管料などが含まれます。",
-            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上和线下的营销与广告费、运费 and 仓储费等。"
+            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上และ线下的营销与广告费、运费 and 仓储费等。"
           }, 
           { 
             th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span><span class="sub-description-text">ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า</span>`, 
@@ -1342,7 +1352,7 @@
             th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย", 
             en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums.",
             jp: "在庫のムダとは、原材料、仕掛品、製品を倉庫に過剰に保管することです。問題は、長期在庫が劣化、期限切れ、型落ちにより廃棄されるリスクがあるだけでなく、倉庫の賃貸料、電気代、保険料などの保管コストが無駄に発生する点です。",
-            cn: "库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂的保险费。"
+            cn: "库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂ของ保险费。"
           }, 
           { 
             th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย</span>`, 
@@ -1396,13 +1406,13 @@
             th: "งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป", 
             en: "Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity.",
             jp: "一個流し（スムーズな生産）とは、工程から工程へ製品が1個ずつ連続して途切れることなく移動することです。メリットは、連続的な生産により機械を最大限に活用でき、待機時間がなくなるため、システムのアイドル状態による電気代を削減し、支払ったすべての労務費から効率的な成果を得られる点です。",
-            cn: "连续流是指产品在各工序之间呈单件连续传递，不发生任何停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。"
+            cn: "连续流是指产品在各工序之间呈单件连续传递，不发生 any 停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。"
           }, 
           { 
             th: `<span class="sub-title-badge value-badge">🏃 2. งานไหลลื่น ไม่สะดุด (Continuous Flow)</span><span class="sub-description-text">งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป</span>`, 
             en: `<span class="sub-title-badge value-badge">🏃 2. Continuous Flow</span><span class="sub-description-text">Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity.</span>`,
             jp: `<span class="sub-title-badge value-badge">🏃 2. 一个流し (Continuous Flow)</span><span class="sub-description-text">一個流し（スムーズな生産）とは、工程から工程へ製品が1個ずつ連続して途切れることなく移動することです。メリットは、連続的な生産により機械を最大限に活用でき、待機時間がなくなるため、システムのアイドル状態による電気代を削減し、支払ったすべての労務費から効率的な成果を得られる点です。</span>`,
-            cn: `<span class="sub-title-badge value-badge">🏃 2. 连续流 (Continuous Flow)</span><span class="sub-description-text">连续流是指产品在各工序之间呈单件连续传递，不发生任何停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。</span>`
+            cn: `<span class="sub-title-badge value-badge">🏃 2. 连续流 (Continuous Flow)</span><span class="sub-description-text">连续流是指产品在各工序之间呈单件连续传递，不发生 any 停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。</span>`
           }, 
           "./2VALUE_VDO.mp4"
         ); 
@@ -1473,7 +1483,7 @@
           { 
             th: `<span class="sub-title-badge value-badge">📦 6. สต็อกบาง หมุนเวียนไว (Lean Inventory)</span><span class="sub-description-text">สต็อกบาง หมุนเวียนไว หมายถึง วัตถุดิบ WIP สินค้าสำเร็จรูป อยู่ในระดับที่น้อยที่สุดแต่เพียงพอ ข้อดีคือ การบริหารคลังสินค้าอย่างมีประสิทธิภาพช่วยลดความเสี่ยงสินค้าเสื่อมสภาพตกรุ่น ลดค่าเช่าคลังสินค้าเพิ่มเติม ค่าไฟระบบปรับอากาศ และค่าเบี้ยประกันภัย</span>`, 
             en: `<span class="sub-title-badge value-badge">📦 6. Lean Inventory</span><span class="sub-description-text">Lean inventory keeps raw materials, WIP, and finished goods at minimal yet sufficient levels, reducing risks of spoilage/obsolescence while cutting facility rent, cooling power, and insurance costs.</span>`,
-            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限의レベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
+            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
             cn: `<span class="sub-title-badge value-badge">📦 6. 精益库存管理 (Lean Inventory)</span><span class="sub-description-text">精益库存管理是指将原材料、在制品及产成品的库存控制在刚好满足连续生产的最低水平。其优点是能够从根本上避免物料因长期存放而产生的老化与过时风险，有效释放工厂空间，省去增租外部仓库的费用、恒温空调的电费支出，并降低物料保险费的计提金额。</span>`
           }, 
           "./6VALUE_VDO.mp4"
@@ -1485,14 +1495,14 @@
           { 
             th: "ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด", 
             en: "Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight.",
-            jp: "最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から撲滅できます。",
-            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
+            jp: "最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から搬滅できます。",
+            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免 any 下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
           }, 
           { 
             th: `<span class="sub-title-badge value-badge">🎯 7. ทำถูกต้อง ตั้งแต่แรก (Right First Time)</span><span class="sub-description-text">ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด</span>`, 
             en: `<span class="sub-title-badge value-badge">🎯 7. Right First Time</span><span class="sub-description-text">Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight.</span>`,
             jp: `<span class="sub-title-badge value-badge">🎯 7. 最初から正しく行う (Right First Time)</span><span class="sub-description-text">最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から撲滅できます。</span>`,
-            cn: `<span class="sub-title-badge value-badge">🎯 7. 第一次就做对 (Right First Time)</span><span class="sub-description-text">第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
+            cn: `<span class="sub-title-badge value-badge">🎯 7. 第一次就做对 (Right First Time)</span><span class="sub-description-text">第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免 any 下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
           }, 
           "./7VALUE_VDO.mp4"
         ); 
@@ -1500,3 +1510,5 @@
     </script>
   </body>
 </html>
+
+```
