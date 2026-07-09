@@ -1021,6 +1021,13 @@
           } else if (seekTo === 0 && videoPlayer.paused) {
             videoPlayBtn.innerText = "▶";
           }
+          
+          // ล็อกไว้เผื่อกรณีเลื่อน Timeline แล้วเบราว์เซอร์แอบคลาย Mute เอง
+          if (currentLang !== 'th') {
+            videoPlayer.muted = true;
+          } else {
+            videoPlayer.muted = false;
+          }
         }
       }
 
@@ -1064,6 +1071,15 @@
           videoContainer.style.display = "block";
           videoPlayer.currentTime = 0; 
           videoPlayBtn.innerText = "⏸";
+
+          // ====== [จุดแก้ไขหลัก: จัดการระบบเสียงวิดีโอ] ======
+          if (currentLang === 'th') {
+            videoPlayer.muted = false; // ภาษาไทย: เปิดเสียงคลิปปกติ
+          } else {
+            videoPlayer.muted = true;  // ภาษาอื่น: ปิดเสียงคลิป แล้วใช้เสียงสังเคราะห์แทน
+          }
+          // =============================================
+
           videoPlayer.play()
             .then(() => { triggerSpeechSynthesis(currentSpeechText, currentSpeechLang); })
             .catch(e => console.log("Video auto-play blocked:", e));
