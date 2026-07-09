@@ -1,1507 +1,2972 @@
 <!DOCTYPE html>
+
 <html>
+
   <head>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
     <title> TBKK ตระหนักรู้ เรื่องต้นทุน </title>
+
     
+
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
     
+
     <style>
+
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+
       
+
       #lang-select-overlay {
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         background-color: rgba(15, 15, 15, 0.98);
+
         z-index: 100000000;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         pointer-events: auto;
+
       }
+
       .lang-select-modal {
+
         background-color: #222222;
+
         padding: 25px;
+
         border-radius: 20px;
+
         border: 2px solid #FF6B35;
+
         text-align: center;
+
         max-width: 400px;
+
         width: 85%;
+
         box-shadow: 0px 10px 30px rgba(0,0,0,0.7);
+
       }
+
       .lang-select-modal h2 {
+
         color: white;
+
         font-family: sans-serif;
+
         font-size: 16px;
+
         margin-bottom: 20px;
+
         line-height: 1.6;
+
       }
+
       .lang-select-buttons {
+
         display: flex;
+
         flex-direction: column;
+
         gap: 12px;
+
       }
+
       .lang-select-buttons button {
+
         background-color: #0077B6;
+
         color: white;
+
         border: 2px solid white;
+
         border-radius: 10px;
+
         padding: 14px;
+
         font-family: sans-serif;
+
         font-size: 15px;
+
         font-weight: bold;
+
         cursor: pointer;
+
         transition: transform 0.1s ease, background-color 0.2s;
+
         -webkit-appearance: none;
+
         pointer-events: auto;
+
       }
+
       .lang-select-buttons button:active {
+
         transform: scale(0.96);
+
         background-color: #0096C7;
+
       }
+
+
 
       .ar-ui-layer {
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         z-index: 999999;
+
         pointer-events: none;
+
         display: none; 
+
       }
+
+
 
       #intro-video-overlay {
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         background-color: rgba(0, 0, 0, 0.85);
+
         z-index: 9999999;
+
         display: none; 
+
         flex-direction: column;
+
         align-items: center;
+
         justify-content: center;
+
         pointer-events: auto;
+
       }
+
       
+
       #intro-video-player {
+
         width: 92%;
+
         max-width: 600px;
+
         border: none !important;
+
         border-radius: 0px !important;
+
         box-shadow: none !important;
+
         background: transparent !important;
+
       }
+
       
+
       .intro-skip-msg {
+
         color: rgba(255,255,255,0.9);
+
         font-family: sans-serif;
+
         font-size: 14px;
+
         margin-top: 15px;
+
         letter-spacing: 0.5px;
+
         text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+
       }
+
+
 
       #intro-subtitles {
+
         background-color: rgba(20, 20, 20, 0.85);
+
         color: #FFFFFF;
+
         padding: 14px 22px;
+
         border-radius: 10px;
+
         font-family: sans-serif;
+
         font-size: 14px;
+
         line-height: 1.6;
+
         max-width: 85%;
+
         text-align: center;
+
         margin-top: 15px;
+
         border: 1px solid rgba(255, 255, 255, 0.2);
+
         text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
+
       }
+
+
 
       .logo-campaign-box {
+
         position: absolute;
+
         top: 20px;
+
         left: 20px;
+
         pointer-events: auto; 
+
         display: flex;
+
         flex-direction: column;
+
         gap: 8px;
+
         z-index: 99999;
+
       }
+
+
 
       .top-left-logo {
+
         max-width: 120px;       
+
         height: auto;
+
         filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4)); 
+
       }
+
+
 
       .campaign-title {
+
         color: #FFFFFF;
+
         font-family: sans-serif;
+
         font-size: 16px;
+
         font-weight: bold;
+
         text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+
         margin: 4px 0 0 2px;
+
         letter-spacing: 0.5px;
+
       }
+
+
 
       .campaign-btn {
+
         background-color: #E63946;
+
         color: white;
+
         border: 2px solid white;
+
         border-radius: 8px;
+
         padding: 8px 18px;
+
         font-family: sans-serif;
+
         font-size: 14px;
+
         font-weight: bold;
+
         cursor: pointer;
+
         box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+
         text-align: left;
+
         line-height: 1.3;
+
         transition: transform 0.1s ease;
+
         -webkit-appearance: none;
+
       }
+
       .campaign-btn:active {
+
         transform: scale(0.95);
+
         background-color: #D62828;
+
       }
+
+
 
       .lang-container {
+
         position: absolute;
+
         top: 20px;
+
         right: 20px;
+
         pointer-events: auto;
+
         display: flex;
+
         flex-direction: column;
+
         align-items: flex-end;
+
         gap: 10px;
+
         background-color: rgba(0, 0, 0, 0.75);
+
         padding: 12px 18px;
+
         border-radius: 16px;
+
         box-shadow: 0px 4px 15px rgba(0,0,0,0.4);
+
       }
+
+
 
       .flags-row {
+
         display: flex;
+
         gap: 10px;
+
         margin-bottom: 4px;
+
       }
+
+
 
       .flag-btn {
+
         width: 35px;
+
         height: 25px;
+
         cursor: pointer;
+
         border-radius: 4px;
+
         border: 2px solid transparent;
+
         transition: all 0.2s ease;
+
         object-fit: cover;
+
       }
+
       .flag-btn.active {
+
         border-color: #FF6B35;
+
         transform: scale(1.1);
+
       }
+
+
 
       .control-group {
+
         display: flex;
+
         align-items: center;
+
         justify-content: space-between;
+
         width: 170px;
+
         color: white;
+
         font-size: 12px;
+
         font-family: sans-serif;
+
       }
+
+
 
       .control-group select {
+
         width: 115px;
+
         padding: 4px;
+
         font-size: 11px;
+
         border-radius: 4px;
+
         border: 1px solid #ccc;
+
         background-color: white;
+
         color: #333;
+
         outline: none;
+
       }
+
+
 
       .control-group input[type="range"] {
+
         width: 115px;
+
         -webkit-appearance: none;
+
         background: #ddd;
+
         height: 6px;
+
         border-radius: 3px;
+
         outline: none;
+
       }
+
+
 
       .control-group input[type="range"]::-webkit-slider-thumb {
+
         -webkit-appearance: none;
+
         appearance: none;
+
         width: 16px;
+
         height: 16px;
+
         border-radius: 50%;
+
         background: #FF6B35;
+
         cursor: pointer;
+
         transition: transform 0.1s;
+
       }
+
+
 
       .control-group input[type="range"]::-webkit-slider-thumb:active {
+
         transform: scale(1.2);
+
       }
+
+
 
       #video-overlay-container {
+
         position: absolute;
+
         top: 50%;
+
         left: 50%;
+
         transform: translate(-50%, -50%);
+
         width: 92%;              
+
         max-width: 600px;        
+
         display: none; 
+
         z-index: 10000000;
+
         pointer-events: auto; 
+
       }
+
+
 
       .video-wrapper {
+
         position: relative;
+
         width: 100%;
+
         background-color: #000000;
+
         border: 3px solid white;
+
         border-radius: 12px;
+
         box-shadow: 0px 10px 25px rgba(0,0,0,0.6);
+
         overflow: hidden;
+
       }
+
+
 
       #ar-video-player {
+
         width: 100%;
+
         display: block;
+
       }
+
+
 
       .video-controls {
+
         display: flex;
+
         align-items: center;
+
         background-color: rgba(0, 0, 0, 0.85);
+
         padding: 8px 12px;
+
         gap: 10px;
+
       }
+
+
 
       .video-btn {
+
         background: none;
+
         border: none;
+
         color: white;
+
         font-size: 16px;
+
         cursor: pointer;
+
         outline: none;
+
         padding: 0 5px;
+
       }
+
+
 
       .video-timeline {
+
         flex-grow: 1;
+
         -webkit-appearance: none;
+
         background: #555;
+
         height: 6px;
+
         border-radius: 3px;
+
         outline: none;
+
         cursor: pointer;
+
       }
+
+
 
       .video-timeline::-webkit-slider-thumb {
+
         -webkit-appearance: none;
+
         width: 14px;
+
         height: 14px;
+
         border-radius: 50%;
+
         background: #0077B6;
+
         cursor: pointer;
+
       }
+
+
 
       .video-time-text {
+
         color: white;
+
         font-family: sans-serif;
+
         font-size: 11px;
+
         min-width: 35px;
+
         text-align: center;
+
       }
+
+
 
       .video-close-top-btn {
+
         position: absolute;
+
         top: -45px; 
+
         right: 0px;    
+
         background-color: rgba(0, 0, 0, 0.7);
+
         color: #FF6B35;
+
         border: 2px solid white;
+
         width: 34px;
+
         height: 34px;
+
         border-radius: 50%;
+
         font-size: 16px;
+
         font-weight: bold;
+
         cursor: pointer;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+
         outline: none;
+
         transition: transform 0.1s ease;
+
         -webkit-appearance: none;
+
       }
+
       .video-close-top-btn:active {
+
         transform: scale(0.9);
+
       }
+
+
 
       #subtitles-box {
+
         position: relative; 
+
         margin-top: 12px;   
+
         width: 100%;        
+
         box-sizing: border-box;
+
         background-color: rgba(20, 20, 20, 0.9);
+
         color: #FFFFFF;
+
         padding: 16px;
+
         border-radius: 12px;
+
         font-family: sans-serif;
+
         box-shadow: 0px 8px 20px rgba(0,0,0,0.6);
+
         display: none;
+
         pointer-events: none;
+
         text-align: left;
+
       }
+
+
 
       .sub-title-badge {
+
         display: inline-block;
+
         background-color: #FF6B35;
+
         color: white;
+
         padding: 4px 12px;
+
         border-radius: 6px;
+
         font-size: 15px;
+
         font-weight: bold;
+
         margin-bottom: 10px;
+
         letter-spacing: 0.5px;
+
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
       }
+
+
 
       .sub-title-badge.value-badge {
+
         background-color: #2A9D8F;
+
       }
+
+
 
       .sub-description-text {
+
         font-size: 14px;
+
         line-height: 1.6;
+
         color: #E0E0E0;
+
         font-weight: normal;
+
         display: block;
+
       }
+
+
 
       .speak-btn-ui {
+
         position: absolute;
+
         pointer-events: auto;
+
         padding: 6px 12px;
+
         background-color: #0077B6;
+
         color: white;
+
         border: 2px solid white;
+
         border-radius: 6px;
+
         font-weight: bold;
+
         font-family: sans-serif;
+
         font-size: 13px;
+
         box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+
         cursor: pointer;
+
         display: none;
+
         transform: translate(-50%, -50%);
+
         z-index: 100000;
+
         -webkit-appearance: none;
+
         white-space: nowrap;
+
       }
+
       .speak-btn-ui:active { background-color: #0096C7; }
 
+
+
       #freeze-btn {
+
         position: absolute;
+
         bottom: 30px;
+
         right: 20px;
+
         pointer-events: auto;
+
         padding: 14px 24px;
+
         background-color: #004E98;
+
         color: white;
+
         border: 2px solid white;
+
         border-radius: 8px;
+
         font-weight: bold;
+
         font-family: sans-serif;
+
         font-size: 16px;
+
         box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+
         cursor: pointer;
+
         -webkit-appearance: none;
+
         z-index: 10001;
+
       }
+
       #freeze-btn.active { background-color: #FF6B35; }
+
       .mindar-ui-scanning { background: none !important; }
+
     </style>
+
   </head>
 
+
+
   <body>
+
     <div id="lang-select-overlay">
+
       <div class="lang-select-modal">
+
         <h2>กรุณาเลือกภาษาเริ่มต้น<br>Please Select Language<br>言語を選択してください</h2>
+
         <div class="lang-select-buttons">
+
           <button onclick="selectInitialLanguage('th')">🇹🇭 ภาษาไทย</button>
+
           <button onclick="selectInitialLanguage('en')">🇬🇧 English</button>
+
           <button onclick="selectInitialLanguage('jp')">🇯🇵 日本語</button>
+
         </div>
+
       </div>
+
     </div>
+
+
 
     <div id="intro-video-overlay" onclick="closeIntroVideo()">
+
       <video id="intro-video-player" src="./INTRO_CR.mp4" playsinline preload="auto"></video>
+
       <div id="intro-subtitles"></div>
+
       <div id="intro-skip-text" class="intro-skip-msg">แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕</div>
+
     </div>
+
+
 
     <div class="ar-ui-layer">
+
       <div class="logo-campaign-box">
+
         <img src="./CRTBKK.png" class="top-left-logo" alt="Logo" />
+
         <div class="campaign-title">🎬 ละคร "ต้นทุน" คุณธรรม</div>
+
         <button class="campaign-btn" onclick="playCampaignEP1()">
+
           ▶ 1. ก็แค่...บาทเดียว (คลิ๊ก)<br>
+
           <span style="font-size: 14px; font-weight: normal; opacity: 0.85;">It's just...One-BAHT (CLICK)</span>
+
         </button>
+
       </div>
+
+
 
       <div class="lang-container">
+
         <div class="flags-row">
+
           <img id="flag-th" class="flag-btn active" src="./th.png" onclick="setLanguage('th')" title="ภาษาไทย" />
+
           <img id="flag-en" class="flag-btn" src="./gb.png" onclick="setLanguage('en')" title="English" />
+
           <img id="flag-jp" class="flag-btn" src="./jp.png" onclick="setLanguage('jp')" title="日本語" />
+
           <img id="flag-cn" class="flag-btn" src="./cn.png" onclick="setLanguage('cn')" title="中文" />
+
         </div>
+
         <div class="control-group">
+
           <label>🗣️เสียง : </label>
+
           <select id="voice-select"></select>
+
         </div>
+
         <div class="control-group">
+
           <label>⚡ความเร็ว : </label>
+
           <select id="speed-select">
+
             <option value="0.6">ช้ามาก (0.6x)</option>
+
             <option value="0.8" selected>ช้า (0.8x)</option>
+
             <option value="1.0">ปกติ (1.0x)</option>
+
             <option value="1.2">เร็ว (1.2x)</option>
+
           </select>
+
         </div>
+
         <div class="control-group">
+
           <label>🕶️ลดแสงฉาก : </label>
+
           <input type="range" id="dimmer-slider" min="0" max="90" value="70" oninput="updateCameraBrightness(this.value)">
+
         </div>
+
       </div>
+
       
+
       <div id="video-overlay-container">
+
         <button class="video-close-top-btn" onclick="closeVideoUI()">✕</button>
+
         
+
         <div class="video-wrapper">
+
           <video id="ar-video-player" playsinline></video>
+
           <div class="video-controls">
+
             <button id="video-play-btn" class="video-btn" onclick="toggleVideoPlay()">⏸</button>
+
             <input type="range" id="video-timeline" class="video-timeline" min="0" max="100" value="0" oninput="seekVideo(this.value)">
+
             <span id="video-time-text" class="video-time-text">0:00</span>
+
           </div>
+
         </div>
+
         <div id="subtitles-box"></div>
+
       </div>
+
+
 
       <button id="speak-ui-btn-1m" class="speak-btn-ui" onclick="speak1M()">🔊</button>
+
       <button id="speak-ui-btn-2m" class="speak-btn-ui" onclick="speak2M()">🔊</button>
+
       <button id="speak-ui-btn-3m" class="speak-btn-ui" onclick="speak3M()">🔊</button>
+
       <button id="speak-ui-btn-3_1m" class="speak-btn-ui" onclick="speak3_1M()">🔊</button>
+
       <button id="speak-ui-btn-3_2m" class="speak-btn-ui" onclick="speak3_2M()">🔊</button>
+
       <button id="speak-ui-btn-3_3m" class="speak-btn-ui" onclick="speak3_3M()">🔊</button>
+
       <button id="speak-ui-btn-1a" class="speak-btn-ui" onclick="speak1A()">🔊</button>
+
       <button id="speak-ui-btn-2a" class="speak-btn-ui" onclick="speak2A()">🔊</button>
 
+
+
       <button id="speak-ui-btn-1muda" class="speak-btn-ui" onclick="speak1MUDA()">🔊</button>
+
       <button id="speak-ui-btn-2muda" class="speak-btn-ui" onclick="speak2MUDA()">🔊</button>
+
       <button id="speak-ui-btn-3muda" class="speak-btn-ui" onclick="speak3MUDA()">🔊</button>
+
       <button id="speak-ui-btn-4muda" class="speak-btn-ui" onclick="speak4MUDA()">🔊</button>
+
       <button id="speak-ui-btn-5muda" class="speak-btn-ui" onclick="speak5MUDA()">🔊</button>
+
       <button id="speak-ui-btn-6muda" class="speak-btn-ui" onclick="speak6MUDA()">🔊</button>
+
       <button id="speak-ui-btn-7muda" class="speak-btn-ui" onclick="speak7MUDA()">🔊</button>
 
+
+
       <button id="speak-ui-btn-1value" class="speak-btn-ui" onclick="speak1VALUE()">🔊</button>
+
       <button id="speak-ui-btn-2value" class="speak-btn-ui" onclick="speak2VALUE()">🔊</button>
+
       <button id="speak-ui-btn-3value" class="speak-btn-ui" onclick="speak3VALUE()">🔊</button>
+
       <button id="speak-ui-btn-4value" class="speak-btn-ui" onclick="speak4VALUE()">🔊</button>
+
       <button id="speak-ui-btn-5value" class="speak-btn-ui" onclick="speak5VALUE()">🔊</button>
+
       <button id="speak-ui-btn-6value" class="speak-btn-ui" onclick="speak6VALUE()">🔊</button>
+
       <button id="speak-ui-btn-7value" class="speak-btn-ui" onclick="speak7VALUE()">🔊</button>
 
+
+
       <button id="freeze-btn" onclick="toggleFreeze()">📌 ล็อกภาพให้ค้างหน้าจอ</button>
+
     </div>
 
+
+
     <a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
       <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
+
+
       <a-entity id="ar-target-1" mindar-image-target="targetIndex: 0">
+
         <a-entity id="ar-content-1" visible="false"> 
+
           <a-image src="./Manu_Cost_sign.png" position="-0.27 0.095 0" scale="0.45 0.039 2"></a-image>
+
           <a-image src="./Admin_Cost_sign.png" position="0.23 0.09 0" scale="0.45 0.039 2"></a-image>
-          <a-image id="admin-1a" src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 2"></a-image>
 
           <a-image id="admin-1a" src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 2"></a-image>
+
+
+
+          <a-image id="admin-1a" src="./1A.png" position="0.10 0.05 0" scale="0.20 0.04 2"></a-image>
+
           <a-image src="./1_1A.png" position="0.16 0.01 0" scale="0.27 0.03 2"></a-image>
+
           <a-image src="./1_2A.png" position="0.16 -0.02 0" scale="0.27 0.03 2"></a-image>
+
           <a-image src="./1_3A.png" position="0.16 -0.05 0" scale="0.27 0.03 2"></a-image>
+
           
+
           <a-image src="./Office.png" position="0.41 -0.01 0.01" scale="0.19 0.12 0.01"></a-image>
+
           <a-image src="./Meeting.png" position="0.40 -0.17 0.01" scale="0.19 0.13 0"></a-image>
 
+
+
           <a-image id="admin-2a" src="./2A.png" position="0.10 -0.09 0" scale="0.20 0.04 1"></a-image>
+
           <a-image src="./2_1A.png" position="0.16 -0.13 0" scale="0.27 0.03 2"></a-image>
+
           <a-image src="./2_2A.png" position="0.16 -0.16 0" scale="0.27 0.03 2"></a-image>
+
           <a-image src="./2_3A.png" position="0.16 -0.19 0" scale="0.27 0.03 2"></a-image>
+
           <a-image src="./2_4A.png" position="0.16 -0.22 0" scale="0.27 0.03 2"></a-image>
 
+
+
           <a-image id="material-1m" src="./1M.png" position="-0.41 0.05 0" scale="0.18 0.05 2"></a-image>    
+
           <a-image src="./ingot.png" position="-0.38 -0.02 0" scale="0.09 0.07 2"></a-image> 
+
         
+
           <a-image id="labor-2m" src="./2M.png" position="-0.41 -0.08 0" scale="0.18 0.06 2"></a-image>
+
           <a-image src="./Direct_Labor.png" position="-0.40 -0.17 0" scale="0.17 0.11 2"></a-image>
 
+
+
           <a-image id="over-3m" src="./3M.png" position="-0.21 0.05 0" scale="0.21 0.05 4"></a-image>
+
           <a-image id="over-3_1m" src="./3_1M.png" position="-0.19 -0.03 0" scale="0.25 0.06 4"></a-image>
+
           <a-image id="over-3_2m" src="./3_2M.png" position="-0.22 -0.10 0" scale="0.20 0.06 4"></a-image>
+
           <a-image id="over-3_3m" src="./3_3M.png" position="-0.22 -0.19 0" scale="0.20 0.06 4"></a-image>                                                   
 
+
+
           <a-image src="./LPG.png" position="-0.07 0.08 0.01" scale="0.13 0.10 4"></a-image>
+
           <a-image src="./OtherExpen.png" position="-0.06 -0.01 0.02" scale="0.11 0.09 4"></a-image>
+
           <a-image src="./IndirectLabor.png" position="-0.06 -0.14 0" scale="0.09 0.12 4"></a-image>
+
           <a-image src="./IndirectMat.png" position="-0.07 -0.21 0.01" scale="0.12 0.06 4"></a-image>
+
         </a-entity>
+
       </a-entity>
+
+
 
        <a-entity id="ar-target-2" mindar-image-target="targetIndex: 1">
+
         <a-entity id="ar-content-2" visible="false">
+
           <a-image src="./MUDA.png" position="-0.26 0.32 0" scale="0.5 0.05 1"></a-image>
+
           
+
           <a-image id="muda-1" src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./1MUDA_PIC.png" position="-0.09 0.225 0" scale="0.15 0.10 1"></a-image> 
+
           <a-entity position="-0.25 0.23 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Overproduction" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="muda-2" src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./2MUDA_PIC.png" position="-0.09 0.145 0.01" scale="0.15 0.102 1"></a-image> 
+
           <a-entity position="-0.25 0.15 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Waiting" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
           
+
           <a-image id="muda-3" src="./3MUDA.png" position="-0.42 0.07 0" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./3MUDA_PIC.png" position="-0.09 0.065 0.02" scale="0.15 0.10 1"></a-image> 
+
           <a-entity position="-0.25 0.07 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Transportation" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="muda-4" src="./4MUDA.png" position="-0.42 -0.01 0" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./4MUDA_PIC.png" position="-0.09 -0.015 0.03" scale="0.15 0.10 1"></a-image> 
+
           <a-entity position="-0.25 -0.01 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Motion" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="muda-5" src="./5MUDA.png" position="-0.42 -0.09 0" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./5MUDA_PIC.png" position="-0.09 -0.095 0.04" scale="0.15 0.10 1"></a-image> 
+
           <a-entity position="-0.25 -0.09 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Over-processing" color="#000000" align="center" width="0.32" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="muda-6" src="./6MUDA.png" position="-0.42 -0.17 0" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./6MUDA_PIC.png" position="-0.09 -0.19 0.05" scale="0.15 0.10 1"></a-image> 
+
           <a-entity position="-0.25 -0.17 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Inventory" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="muda-7" src="./7MUDA.png" position="-0.42 -0.25 0" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./7MUDA_PIC.png" position="-0.09 -0.27 0.06" scale="0.15 0.10 1"></a-image>
+
           <a-entity position="-0.25 -0.25 0.01">
+
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Defects" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image src="./VALUE.png" position="0.25 0.32 0.01" scale="0.5 0.05 1"></a-image>
+
           
+
           <a-image id="value-1" src="./1VALUE.png" position="0.09   0.23 0.02" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./1VALUE_PIC.png" position="0.45 0.225 0.01" scale="0.14 0.09 1"></a-image>            
+
           <a-entity position="0.27 0.23 0.03">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Just in Time" color="#FFFFFF" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
           
+
           <a-image id="value-2" src="./2VALUE.png" position="0.09 0.15 0.03" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./2VALUE_PIC.png" position="0.45 0.145 0.02" scale="0.14 0.09 1"></a-image>              
+
           <a-entity position="0.27 0.15 0.04">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Continuous Flow" color="#FFFFFF" align="center" width="0.31" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="value-3" src="./3VALUE.png" position="0.09 0.07 0.04" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./3VALUE_PIC.png" position="0.45 0.065 0.03" scale="0.14 0.09 1"></a-image>                
+
           <a-entity position="0.27 0.07 0.05">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Point of Use" color="#FFFFFF" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
           
+
           <a-image id="value-4" src="./4VALUE.png" position="0.09 -0.01 0.05" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./4VALUE_PIC.png" position="0.45 -0.01 0.04" scale="0.14 0.09 1"></a-image>              
+
           <a-entity position="0.27 -0.01 0.06">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
-            <a-text value="Ergonomic Workstation" color="#FFFFFF" align="center" width="0.29" position="0 0 0.006" font="kelsonsans"></a-text>
+
+            <a-text value="Ergonomic Motion" color="#FFFFFF" align="center" width="0.29" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="value-5" src="./5VALUE.png" position="0.09 -0.09 0.06" scale="0.20 0.05 1"></a-image> 
+
           <a-image src="./5VALUE_PIC.png" position="0.45 -0.09 0.05" scale="0.14 0.09 1"></a-image>                  
+
           <a-entity position="0.27 -0.09 0.07">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Value-Added" color="#FFFFFF" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
           
+
           <a-image id="value-6" src="./6VALUE.png" position="0.09 -0.17 0.07" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./6VALUE_PIC.png" position="0.45 -0.17 0.06" scale="0.14 0.09 1"></a-image>
+
           <a-entity position="0.27 -0.17 0.08">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
-            <a-text value="Zero/Minimum Stock" color="#FFFFFF" align="center" width="0.32" position="0 0 0.006" font="kelsonsans"></a-text>
+
+            <a-text value="Lean Inventory" color="#FFFFFF" align="center" width="0.32" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
+
 
           <a-image id="value-7" src="./7VALUE.png" position="0.09 -0.25 0.08" scale="0.20 0.05 1"></a-image>
+
           <a-image src="./7VALUE_PIC.png" position="0.45 -0.27 0.07" scale="0.14 0.10 1"></a-image>
+
           <a-entity position="0.27 -0.25 0.09">
+
             <a-box color="#2A9D8F" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
+
             <a-text value="Right First Time" color="#FFFFFF" align="center" width="0.31" position="0 0 0.006" font="kelsonsans"></a-text>
+
           </a-entity>
+
         </a-entity>
+
       </a-entity>
-    </a-scene>
+
+
 
     <script>
+
       let isFrozen = false;
+
       let activeTargetIndex = -1; 
+
       let currentLang = 'th'; 
+
       let allVoices = []; 
+
       
+
       let currentSpeechText = "";
+
       let currentSpeechLang = "th-TH";
+
       
+
       let introSubtitlesData = [];
+
       let introAudio = null; 
 
+
+
       const sceneEl = document.getElementById('scene');
+
       const cameraEl = document.getElementById('camera');
+
       
+
       const arTarget1 = document.getElementById('ar-target-1');
+
       const arContent1 = document.getElementById('ar-content-1');
+
       
+
       const arTarget2 = document.getElementById('ar-target-2');
+
       const arContent2 = document.getElementById('ar-content-2');
 
+
+
       const freezeBtn = document.getElementById('freeze-btn');
+
       const voiceSelect = document.getElementById('voice-select'); 
+
       const speedSelect = document.getElementById('speed-select');
+
       const videoContainer = document.getElementById('video-overlay-container');
+
       const videoPlayer = document.getElementById('ar-video-player');
+
       const subtitlesBox = document.getElementById('subtitles-box');
 
+
+
       const videoPlayBtn = document.getElementById('video-play-btn');
+
       const videoTimeline = document.getElementById('video-timeline');
+
       const videoTimeText = document.getElementById('video-time-text');
 
+
+
       const introOverlay = document.getElementById('intro-video-overlay');
+
       const introSubtitles = document.getElementById('intro-subtitles');
+
       const introSkipText = document.getElementById('intro-skip-text');
+
       const introVideoElement = document.getElementById('intro-video-player');
 
+
+
       // Elements Target 1
+
       const ent1M = document.getElementById('material-1m');
+
       const ent2M = document.getElementById('labor-2m'); 
+
       const ent3M = document.getElementById('over-3m');
+
       const ent3_1M = document.getElementById('over-3_1m');
+
       const ent3_2M = document.getElementById('over-3_2m');
+
       const ent3_3M = document.getElementById('over-3_3m');
+
       const ent1A = document.getElementById('admin-1a');
+
       const ent2A = document.getElementById('admin-2a');
 
+
+
       // Elements Target 2 (7 MUDA)
+
       const entMuda1 = document.getElementById('muda-1'); const entMuda2 = document.getElementById('muda-2'); const entMuda3 = document.getElementById('muda-3'); const entMuda4 = document.getElementById('muda-4'); const entMuda5 = document.getElementById('muda-5'); const entMuda6 = document.getElementById('muda-6'); const entMuda7 = document.getElementById('muda-7');
 
+
+
       // Elements Target 2 (7 VALUE)
+
       const entValue1 = document.getElementById('value-1'); const entValue2 = document.getElementById('value-2'); const entValue3 = document.getElementById('value-3'); const entValue4 = document.getElementById('value-4'); const entValue5 = document.getElementById('value-5'); const entValue6 = document.getElementById('value-6'); const entValue7 = document.getElementById('value-7');
 
+
+
       // UI Buttons Target 1
+
       const btnUI1M = document.getElementById('speak-ui-btn-1m'); const btnUI2M = document.getElementById('speak-ui-btn-2m'); const btnUI3M = document.getElementById('speak-ui-btn-3m'); const btnUI3_1M = document.getElementById('speak-ui-btn-3_1m'); const btnUI3_2M = document.getElementById('speak-ui-btn-3_2m'); const btnUI3_3M = document.getElementById('speak-ui-btn-3_3m'); const btnUI1A = document.getElementById('speak-ui-btn-1a'); const btnUI2A = document.getElementById('speak-ui-btn-2a');
 
+
+
       // UI Buttons Target 2 (7 MUDA)
+
       const btnUI1Muda = document.getElementById('speak-ui-btn-1muda'); const btnUI2Muda = document.getElementById('speak-ui-btn-2muda'); const btnUI3Muda = document.getElementById('speak-ui-btn-3muda'); const btnUI4Muda = document.getElementById('speak-ui-btn-4muda'); const btnUI5Muda = document.getElementById('speak-ui-btn-5muda'); const btnUI6Muda = document.getElementById('speak-ui-btn-6muda'); const btnUI7Muda = document.getElementById('speak-ui-btn-7muda');
 
+
+
       // UI Buttons Target 2 (7 VALUE)
+
       const btnUI1Value = document.getElementById('speak-ui-btn-1value'); const btnUI2Value = document.getElementById('speak-ui-btn-2value'); const btnUI3Value = document.getElementById('speak-ui-btn-3value'); const btnUI4Value = document.getElementById('speak-ui-btn-4value'); const btnUI5Value = document.getElementById('speak-ui-btn-5value'); const btnUI6Value = document.getElementById('speak-ui-btn-6value'); const btnUI7Value = document.getElementById('speak-ui-btn-7value');
 
+
+
       const allSpeakBtnUIsT1 = [btnUI1M, btnUI2M, btnUI3M, btnUI3_1M, btnUI3_2M, btnUI3_3M, btnUI1A, btnUI2A];
+
       const allSpeakBtnUIsT2 = [
+
         btnUI1Muda, btnUI2Muda, btnUI3Muda, btnUI4Muda, btnUI5Muda, btnUI6Muda, btnUI7Muda,
+
         btnUI1Value, btnUI2Value, btnUI3Value, btnUI4Value, btnUI5Value, btnUI6Value, btnUI7Value
+
       ];
 
+
+
       function updateIntroSubtitles() {
+
         if (!introAudio) return;
+
         const currentTime = introAudio.currentTime;
+
         let activeHtml = "";
 
+
+
         for (let i = 0; i < introSubtitlesData.length; i++) {
+
           if (currentTime >= introSubtitlesData[i].time) {
+
             activeHtml = introSubtitlesData[i].html;
+
           }
+
         }
+
         introSubtitles.innerHTML = activeHtml;
+
         if (!introAudio.paused) {
+
           requestAnimationFrame(updateIntroSubtitles);
+
         }
+
       }
+
+
 
       function selectInitialLanguage(lang) {
+
         setLanguage(lang);
+
         document.getElementById('lang-select-overlay').style.display = 'none';
+
         introOverlay.style.display = 'flex';
 
+
+
         window.speechSynthesis.cancel();
+
         introVideoElement.muted = true;
 
+
+
         let audioSrc = "";
+
         if (lang === 'th') {
+
           audioSrc = "./INTRO_TH.mp3";
+
           introSkipText.innerText = "แตะหน้าจอตรงไหนก็ได้เพื่อเข้าสู่ระบบ AR ✕";
+
           introSubtitlesData = [
+
             { time: 0.0, html: "ยินดีต้อนรับสู่ <b>AR SMART BOARD</b> สแกนบน BOARD แล้วมาร่วมสนุกกับการเรียนรู้ไปด้วยกัน 🎉" }
+
           ];
+
         } else if (lang === 'en') {
+
           audioSrc = "./INTRO_ENG.mp3";
+
           introSkipText.innerText = "Tap anywhere to enter the AR system ✕";
+
           introSubtitlesData = [
+
             { time: 0.0, html: "Welcome to <b>AR SMART BOARD</b>! Scan the board, and let’s explore the fun of learning together! 🎉" }
+
           ];
+
         } else if (lang === 'jp') {
+
           audioSrc = "./INTRO_JP.mp3";
+
           introSkipText.innerText = "画面のどこでもタップしてARシステムに入ります ✕";
+
           introSubtitlesData = [
+
             { time: 0.0, html: "<b>ARスマートボード</b>へようこそ！ボードをスキャンして、一緒に楽しく学びましょう！ 🎉" }
+
           ];
+
         }
+
+
 
         if (introAudio) {
+
           introAudio.pause();
+
           introAudio = null;
+
         }
+
+
 
         introAudio = new Audio(audioSrc);
+
         introVideoElement.currentTime = 0;
+
         
+
         let playVideoPromise = introVideoElement.play();
+
         let playAudioPromise = introAudio.play();
 
+
+
         if (playVideoPromise !== undefined) {
+
           playVideoPromise.catch(e => console.log("Video playback delayed/blocked:", e));
+
         }
+
         if (playAudioPromise !== undefined) {
+
           playAudioPromise.then(() => { requestAnimationFrame(updateIntroSubtitles); })
+
                            .catch(e => console.log("Audio playback delayed/blocked:", e));
+
         }
+
       }
+
+
 
       function closeIntroVideo() {
+
         if(introVideoElement) { introVideoElement.pause(); }
+
         if(introAudio) { introAudio.pause(); }
+
         introOverlay.style.display = 'none';
+
         document.querySelector('.ar-ui-layer').style.display = 'block';
+
       }
+
+
 
       function updateCameraBrightness(val) {
+
         const mindarVideo = document.querySelector('body > video');
+
         if (mindarVideo) {
+
           const brightnessPercent = 100 - val;
+
           mindarVideo.style.filter = `brightness(${brightnessPercent}%)`;
+
         }
+
       }
+
+
 
       function updateVoiceList() {
+
         if (!('speechSynthesis' in window)) return;
+
         allVoices = window.speechSynthesis.getVoices();
+
         voiceSelect.innerHTML = ''; 
 
+
+
         let filterLang = 'th-TH';
+
         if (currentLang === 'en') filterLang = 'en-'; 
+
         if (currentLang === 'jp') filterLang = 'ja-JP';
+
         if (currentLang === 'cn') filterLang = 'zh-';
 
+
+
         let filteredVoices = allVoices.filter(voice => 
+
           voice.lang.toLowerCase().replace('_', '-').startsWith(filterLang.toLowerCase())
+
         );
 
+
+
         filteredVoices.forEach((voice) => {
+
           const option = document.createElement('option');
+
           option.value = voice.name;
+
           let genderLabel = "หญิง"; 
+
           if (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Kangkang')) {
+
             genderLabel = "ชาย";
+
           }
+
           option.innerText = `เสียง${genderLabel} (${voice.name.split(' ')[0]})`;
+
           voiceSelect.appendChild(option);
+
         });
 
+
+
         if(filteredVoices.length === 0) {
+
           const option = document.createElement('option');
+
           option.innerText = "ใช้เสียงมาตรฐานเครื่อง";
+
           voiceSelect.appendChild(option);
+
         }
+
       }
+
+
 
       if ('speechSynthesis' in window) {
+
         window.speechSynthesis.onvoiceschanged = updateVoiceList;
+
         updateVoiceList();
+
       }
+
+
 
       function getSelectedVoice() {
+
         const selectedName = voiceSelect.value;
+
         return allVoices.find(voice => voice.name === selectedName) || null;
+
       }
+
+
 
       function resetMediaUI() {
+
         window.speechSynthesis.cancel();
+
         subtitlesBox.style.display = "none";
+
         videoPlayer.pause();
+
         videoPlayer.src = "";
+
         videoContainer.style.display = "none";
+
         videoPlayBtn.innerText = "⏸"; 
+
         currentSpeechText = "";
+
       }
+
+
 
       function setLanguage(lang) {
+
         resetMediaUI(); 
+
         currentLang = lang;
+
         document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
+
         
+
         const flagBtn = document.getElementById(`flag-${lang}`);
+
         if(flagBtn) flagBtn.classList.add('active');
+
         
+
         updateVoiceList();
+
       }
+
+
 
       arTarget1.addEventListener("targetFound", () => {
+
         activeTargetIndex = 0;
+
         arContent1.setAttribute("visible", "true");
+
         allSpeakBtnUIsT1.forEach(btn => btn.style.display = "block");
+
       });
+
+
 
       arTarget1.addEventListener("targetLost", () => {
+
         if (!isFrozen) {
+
           arContent1.setAttribute("visible", "false");
+
           allSpeakBtnUIsT1.forEach(btn => btn.style.display = "none");
+
           resetMediaUI(); 
+
           if(activeTargetIndex === 0) activeTargetIndex = -1;
+
         }
+
       });
+
+
 
       arTarget2.addEventListener("targetFound", () => {
+
         activeTargetIndex = 1;
+
         arContent2.setAttribute("visible", "true");
+
         allSpeakBtnUIsT2.forEach(btn => btn.style.display = "block");
+
       });
+
+
 
       arTarget2.addEventListener("targetLost", () => {
+
         if (!isFrozen) {
+
           arContent2.setAttribute("visible", "false");
+
           allSpeakBtnUIsT2.forEach(btn => btn.style.display = "none");
+
           resetMediaUI();
+
           if(activeTargetIndex === 1) activeTargetIndex = -1;
+
         }
+
       });
 
+
+
       const tempV = new THREE.Vector3();
+
       function positionButton(entity, button, offsetX, offsetY) {
+
         if (entity && entity.object3D && cameraEl.components.camera) {
+
           entity.object3D.getWorldPosition(tempV);
+
           tempV.project(cameraEl.components.camera.camera);
+
           const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+
           const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+
           button.style.left = `${x + offsetX}px`; 
+
           button.style.top = `${y + offsetY}px`; 
+
         }
+
       }
+
+
+
+      /* =========================================================================
+
+         [แก้ไขจุดนี้] คืนค่าฟังก์ชันจัดตำแหน่งและค่าพิกเซล Offset ให้กลับไปอยู่หลังรูปภาพเป๊ะๆ เหมือนเดิม
+
+         ========================================================================= */
 
       function updateAllButtonPositions() {
+
         if (cameraEl) {
+
           if (activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) {
+
             positionButton(ent1M, btnUI1M, 70, -1);
+
             positionButton(ent2M, btnUI2M, 65, -1);
-            positionButton(ent3M, btnUI3M, 80, 0); 
+
+            positionButton(ent3M, btnUI3M, 80, 0);  // เรียกฟังก์ชันคืนพิกัด 3M ตัวหลักกลับเข้าระบบ
+
             positionButton(ent3_1M, btnUI3_1M, 90, -2);
+
             positionButton(ent3_2M, btnUI3_2M, 75, -2);
+
             positionButton(ent3_3M, btnUI3_3M, 70, -2);
+
             positionButton(ent1A, btnUI1A, 75, -2);
+
             positionButton(ent2A, btnUI2A, 75, -2);
+
           } else if (activeTargetIndex === 1 || (isFrozen && activeTargetIndex === 1)) {
+
             positionButton(entMuda1, btnUI1Muda, 75, -2);
+
             positionButton(entMuda2, btnUI2Muda, 75, -2);
+
             positionButton(entMuda3, btnUI3Muda, 75, -2);
+
             positionButton(entMuda4, btnUI4Muda, 75, -2);
+
             positionButton(entMuda5, btnUI5Muda, 75, -2);
+
             positionButton(entMuda6, btnUI6Muda, 75, -2);
+
             positionButton(entMuda7, btnUI7Muda, 75, -2);
 
+
+
             positionButton(entValue1, btnUI1Value, 75, -2);
+
             positionButton(entValue2, btnUI2Value, 75, -2);
+
             positionButton(entValue3, btnUI3Value, 75, -2);
+
             positionButton(entValue4, btnUI4Value, 75, -2);
+
             positionButton(entValue5, btnUI5Value, 75, -2);
+
             positionButton(entValue6, btnUI6Value, 75, -2);
+
             positionButton(entValue7, btnUI7Value, 75, -2);
+
           }
+
         }
+
         requestAnimationFrame(updateAllButtonPositions);
+
       }
+
       requestAnimationFrame(updateAllButtonPositions);
 
+
+
       function toggleFreeze() {
+
         const mindarSystem = sceneEl.systems["mindar-image-system"];
+
         isFrozen = !isFrozen;
+
         if (isFrozen) {
+
           if (mindarSystem) mindarSystem.pause(true); 
+
           freezeBtn.innerText = "🔄 ปล่อยภาพตามกล้อง";
+
           freezeBtn.classList.add("active");
+
         } else {
+
           arContent1.setAttribute("visible", "false");
+
           arContent2.setAttribute("visible", "false");
+
           allSpeakBtnUIsT1.forEach(btn => btn.style.display = "none");
+
           allSpeakBtnUIsT2.forEach(btn => btn.style.display = "none");
+
           resetMediaUI(); 
+
           activeTargetIndex = -1;
+
           
+
           if (mindarSystem) {
+
             mindarSystem.unpause();
+
             if (mindarSystem.imageTargeters && mindarSystem.imageTargeters[0]) {
+
               mindarSystem.activeTargetIndex = -1;
+
             }
+
           }
+
           freezeBtn.innerText = "📌 ล็อกภาพให้ค้างหน้าจอ";
+
           freezeBtn.classList.remove("active");
+
         }
+
       }
 
+
+
       function toggleVideoPlay() {
+
         if (videoPlayer.paused) {
+
           if (videoPlayer.currentTime === 0) {
+
             triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
+
           } else {
+
             if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
+
               window.speechSynthesis.resume();
+
             }
-          }
-          
-          // บังคับและตรวจสอบระบบเสียงคลิปทุกครั้งที่กด Play ป้องกันเสียงแทรก
-          if (currentLang === 'th') {
-            videoPlayer.muted = false;
-          } else {
-            videoPlayer.muted = true;
+
           }
 
           videoPlayer.play().catch(e => console.log(e));
+
           videoPlayBtn.innerText = "⏸";
+
         } else {
+
           videoPlayer.pause();
+
           videoPlayBtn.innerText = "▶";
+
           if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+
             window.speechSynthesis.pause();
+
           }
+
         }
+
       }
+
+
 
       function seekVideo(val) {
+
         if (videoPlayer.duration) {
+
           const seekTo = (val / 100) * videoPlayer.duration;
+
           videoPlayer.currentTime = seekTo;
+
           window.speechSynthesis.cancel();
-          
-          // ล็อกระบบ Mute ไว้เสมอเมื่อมีการขยับ Timeline
-          if (currentLang === 'th') {
-            videoPlayer.muted = false;
-          } else {
-            videoPlayer.muted = true;
-          }
 
           if (seekTo === 0 && !videoPlayer.paused) {
+
             triggerSpeechSynthesis(currentSpeechText, currentSpeechLang);
+
           } else if (seekTo === 0 && videoPlayer.paused) {
+
             videoPlayBtn.innerText = "▶";
+
           }
+
         }
+
       }
 
+
+
       function triggerSpeechSynthesis(text, lang) {
+
         window.speechSynthesis.cancel(); 
+
         if (!text) return;
+
         const utterance = new SpeechSynthesisUtterance();
+
         utterance.text = text;
+
         utterance.lang = lang;
+
         utterance.rate = parseFloat(speedSelect.value);
+
         utterance.voice = getSelectedVoice();
+
         setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
+
       }
+
+
 
       function closeVideoUI() { resetMediaUI(); }
 
+
+
       videoPlayer.addEventListener('timeupdate', () => {
+
         if (videoPlayer.duration) {
+
           const percentage = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+
           videoTimeline.value = percentage;
+
           const mins = Math.floor(videoPlayer.currentTime / 60);
+
           const secs = Math.floor(videoPlayer.currentTime % 60);
+
           videoTimeText.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
         }
+
       });
 
+
+
       function performSpeakAction(textMap, htmlMap, videoSrc) {
+
         window.speechSynthesis.cancel(); 
+
         if (currentLang === 'th') {
+
           currentSpeechText = textMap.th; currentSpeechLang = "th-TH"; subtitlesBox.innerHTML = htmlMap.th;
+
         } else if (currentLang === 'en') {
+
           currentSpeechText = textMap.en || textMap.th; currentSpeechLang = "en-US"; subtitlesBox.innerHTML = htmlMap.en || htmlMap.th;
+
         } else if (currentLang === 'jp') {
+
           currentSpeechText = textMap.jp || textMap.th; currentSpeechLang = "ja-JP"; subtitlesBox.innerHTML = htmlMap.jp || htmlMap.th;
+
         } else if (currentLang === 'cn') {
+
           currentSpeechText = textMap.cn || textMap.th; currentSpeechLang = "zh-CN"; subtitlesBox.innerHTML = htmlMap.cn || htmlMap.th;
+
         }
+
         subtitlesBox.style.display = "block";
+
         if(videoSrc) {
+
           videoPlayer.src = videoSrc;
+
           videoContainer.style.display = "block";
+
           videoPlayer.currentTime = 0; 
+
           videoPlayBtn.innerText = "⏸";
 
-          // ล็อกระบบ Muted ให้เหมาะสมกับสวิตช์ภาษาหลักที่ถูกเลือก
-          if (currentLang === 'th') {
-            videoPlayer.muted = false; 
-          } else {
-            videoPlayer.muted = true;  
-          }
-
           videoPlayer.play()
+
             .then(() => { triggerSpeechSynthesis(currentSpeechText, currentSpeechLang); })
+
             .catch(e => console.log("Video auto-play blocked:", e));
+
         }
+
       }
+
+
 
       sceneEl.addEventListener("arReady", () => { updateCameraBrightness(70); });
 
+
+
       function playCampaignEP1() {
+
         performSpeakAction(
+
           { th: "", en: "", jp: "", cn: "" }, 
+
           { 
+
             th: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 ละคร "ต้นทุน" คุณธรรม EP.1</span><span class="sub-description-text">ตอน: ก็แค่...บาทเดียว (It's just... One-BAHT)<br>💡 ร่วมสร้างจิตสำนึกและการตระหนักรู้เรื่องการลดความสูญเสียในองค์กร เริ่มต้นง่าย ๆ จากสิ่งรอบตัวที่มีมูลค่าเพียงแค่บาทเดียว</span>`, 
+
             en: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 Cost Awareness Drama EP.1</span><span class="sub-description-text">Episode: It's just... One-BAHT<br>💡 Building cost awareness and eliminating organizational waste. Big differences start from saving just a single Baht.</span>`,
+
             jp: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 「コスト」モラルドラマ EP.1</span><span class="sub-description-text">エピソード：たったの一バーツ (It's just... One-BAHT)<br>💡 組織内のムダ削減に対する意識向上และ啓発活動。身近にある、たった1バーツの価値から簡単に始められます。</span>`,
+
             cn: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 “成本”道德小剧场 第一集</span><span class="sub-description-text">剧集：仅仅……一泰铢 (It's just... One-BAHT)<br>💡 共同提升减少组织内浪费的意识。从身边仅值一泰铢的事物开始，轻松做起。</span>`
+
           }, 
+
           "./CR_AWARE_EP1.mp4"
+
         );
+
       }
+
+
+
+      // ดึงฟังก์ชันสปีช 3M ตัวหลักกลับเข้าทำระบบตาม Logic เดิม
 
       function speak3M() { 
+
         performSpeakAction(
+
           { 
+
             th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง", 
+
             en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
+
             jp: "製造間接費とは、直接材料費および直接労務費以外の、製品製造過程で発生するすべての製造費用のことです。",
+
             cn: "制造费用是指在产品生产过程中发生的、除直接材料和直接人工以外的所有生产费用。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span><span class="sub-description-text">ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง</span>`, 
+
             en: `<span class="sub-title-badge">🏭 Manufacturing Overhead</span><span class="sub-description-text">Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.</span>`,
+
             jp: `<span class="sub-title-badge">🏭 製造間接費 (Manufacturing Overhead)</span><span class="sub-description-text">製造間接費とは、直接材料費および直接労務費以外の、製品製造過程で発生するすべての製造費用のことです。</span>`,
-            cn: `<span class="sub-title-badge">🏭 制造费用 (Manufacturing Overhead)</span><span class="sub-description-text">制造费用是指在产品生产过程中发生的、除直接材料และ直接人工以外的所有生产费用。</span>`
+
+            cn: `<span class="sub-title-badge">🏭 制造费用 (Manufacturing Overhead)</span><span class="sub-description-text">制造费用是指在产品生产过程中发生的、除直接材料和直接人工以外的所有生产费用。</span>`
+
           }, 
+
           "./3M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak1M() { 
+
         performSpeakAction(
+
           { 
+
             th: "วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิตสินค้า เช่น อลูมิเนียม", 
+
             en: "Direct materials refer to the primary raw materials used in production, such as aluminum.",
+
             jp: "直接材料とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。",
+
             cn: "直接材料是指直接用于产品生产的主要原材料，例如铝材。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">📦 วัตถุดิบทางตรง (Direct Materials)</span><span class="sub-description-text">วัตถุดิบทางตรง หมายถึง วัตถุดิบหลักที่ใช้ในการผลิตสินค้า เช่น อลูมิเนียม</span>`, 
+
             en: `<span class="sub-title-badge">📦 Direct Materials</span><span class="sub-description-text">Direct materials refer to the primary raw materials used in production, such as aluminum.</span>`,
+
             jp: `<span class="sub-title-badge">📦 直接材料 (Direct Materials)</span><span class="sub-description-text">直接材料とは、アルミニウムなど、製品の製造に直接使用される主要な原材料のことです。</span>`,
+
             cn: `<span class="sub-title-badge">📦 直接材料 (Direct Materials)</span><span class="sub-description-text">直接材料是指直接用于产品生产的主要原材料，例如铝材。</span>`
+
           }, 
+
           "./1M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak2M() { 
+
         performSpeakAction(
+
           { 
+
             th: "ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง", 
+
             en: "Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.",
+
             jp: "直接労務費とは、製造ラインで直接作業を行う従業員の賃金や手当のことです。",
-            cn: "直接人工是指直接在生产线上工作的员工ของ工资或薪酬。"
+
+            cn: "直接人工是指直接在生产线上工作的员工的工资或薪酬。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">👥 ค่าแรงทางตรง (Direct Labor)</span><span class="sub-description-text">ค่าแรงทางตรง หมายถึง ค่าจ้างหรือค่าตอบแทนของพนักงานที่ทำงานในไลน์ผลิตโดยตรง</span>`, 
+
             en: `<span class="sub-title-badge">👥 Direct Labor</span><span class="sub-description-text">Direct labor refers to the wages or compensation paid to workers who are directly involved in the production line.</span>`,
+
             jp: `<span class="sub-title-badge">👥 直接労務費 (Direct Labor)</span><span class="sub-description-text">直接労務費とは、製造ラインで直接作業を行う従業員の賃金や手当のことです。</span>`,
+
             cn: `<span class="sub-title-badge">👥 直接人工 (Direct Labor)</span><span class="sub-description-text">直接人工是指直接在生产线上工作的员工的工资或薪酬。</span>`
+
           }, 
+
           "./2M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak3_1M() { 
+
         performSpeakAction(
+
           { 
+
             th: "ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟ้า ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบำรุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ", 
+
             en: "Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses.",
+
             jp: "その他の製造経費には、電気代、水道代、工場賃借料、保守費用、建物や機械の減価償却費、およびその他の工場諸経費が含まれます。",
+
             cn: "其他制造费用包括电费、水费、工厂租金、维修保养费、房屋建筑物折旧费、机器设备折旧费以及其他工厂费用。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">⚡ ค่าใช้จ่ายการผลิตอื่นๆ</span><span class="sub-description-text">ค่าใช้จ่ายการผลิตอื่น ๆ เช่น ค่าไฟฟ้า ค่าน้ำประปา ค่าเช่าโรงงาน ค่าซ่อมบำรุง ค่าเสื่อมอาคาร ค่าเสื่อมเครื่องจักร และค่าใช้จ่ายโรงงานอื่น ๆ</span>`, 
+
             en: `<span class="sub-title-badge">⚡ Other Manufacturing Costs</span><span class="sub-description-text">Other manufacturing costs such as electricity, water, factory rent, maintenance, building depreciation, machine depreciation, and other factory expenses.</span>`,
+
             jp: `<span class="sub-title-badge">⚡ その他の製造経費</span><span class="sub-description-text">その他の製造経費には、電気代、水道代、工場賃借料、保守費用、建物や機械の減価償却費、およびその他の工場諸経費が含まれます。</span>`,
+
             cn: `<span class="sub-title-badge">⚡ 其他制造费用</span><span class="sub-description-text">其他制造费用包括电费、水费、工厂租金、维修保养费、房屋建筑物折旧费、机器设备折旧费以及其他工厂费用。</span>`
+
           }, 
+
           "./3_1M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak3_2M() { 
+
         performSpeakAction(
+
           { 
+
             th: "ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต", 
+
             en: "Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.",
+
             jp: "間接労務費とは、スーパーバイザー、保守スタッフ、製造マネージャーなど、生産支援部門の賃金や報酬のことです。",
+
             cn: "间接人工是指生产 support 部门员工的工资或薪酬，例如主管、维修人员、生产经理等。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🛠️ ค่าแรงงานทางอ้อม (Indirect Labor)</span><span class="sub-description-text">ค่าแรงงานทางอ้อม เช่น ค่าจ้างหรือค่าตอบแทนของหน่วยงานสนับสนุนการผลิต เช่น หัวหน้างาน , พนักงานซ่อมบำรุง , ผู้จัดการฝ่ายผลิต</span>`, 
+
             en: `<span class="sub-title-badge">🛠️ Indirect Labor</span><span class="sub-description-text">Indirect labor such as wages or compensation for production support units like supervisors, maintenance staff, or production managers.</span>`,
+
             jp: `<span class="sub-title-badge">🛠️ 間接労務費 (Indirect Labor)</span><span class="sub-description-text">間接労務費とは、スーパーバイザー、保守スタッフ、製造マネージャーなど、生産支援部門の賃金や報酬のことです。</span>`,
+
             cn: `<span class="sub-title-badge">🛠️ 间接人工 (Indirect Labor)</span><span class="sub-description-text">间接人工是指生产 support 部门员工的工资或薪酬，例如主管、维修人员、生产经理等。</span>`
+
           }, 
+
           "./3_2M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak3_3M() { 
+
         performSpeakAction(
+
           { 
+
             th: "วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ", 
+
             en: "Indirect materials such as consumables used to support production like lubricants, inserts, or gloves.",
+
             jp: "間接材料とは、潤滑油、チップ、手袋など、生産を支援するために使用される消耗品のことです。",
+
             cn: "间接材料是指用于支持生产的消耗品，例如润滑油、刀片、手套等。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🧤 วัตถุดิบทางอ้อม (Indirect Materials)</span><span class="sub-description-text">วัตถุดิบทางอ้อม เช่น วัสดุสิ้นเปลืองที่ใช้สนับสนุนการผลิตเช่น น้ำมันหล่อลื่น , เม็ดมีด , ถุงมือ</span>`, 
+
             en: `<span class="sub-title-badge">🧤 Indirect Materials</span><span class="sub-description-text">Indirect materials such as consumables used to support production like lubricants, inserts, or gloves.</span>`,
+
             jp: `<span class="sub-title-badge">🧤 間接材料 (Indirect Materials)</span><span class="sub-description-text">間接材料とは、潤滑油、チップ、手袋など、生産を支援するために使用される消耗品のことです。</span>`,
+
             cn: `<span class="sub-title-badge">🧤 间接材料 (Indirect Materials)</span><span class="sub-description-text">间接材料是指用于支持生产的消耗品，例如润滑油、刀片、手套等。</span>`
+
           }, 
+
           "./3_3M_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak1A() { 
+
         performSpeakAction(
+
           { 
+
             th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า", 
+
             en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing.",
+
             jp: "販売費とは、売上を上げるために発生する費用、または顧客への製品配送に関連する費用のことで、販売コミッション、給与、マーケティング、広告、運賃、倉庫保管料などが含まれます。",
-            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上และ线下的营销与广告费、运费 and 仓储费等。"
+
+            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上和线下的营销与广告费、运费 and 仓储费等。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span><span class="sub-description-text">ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า</span>`, 
+
             en: `<span class="sub-title-badge">📈 Selling Expenses</span><span class="sub-description-text">Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing.</span>`,
+
             jp: `<span class="sub-title-badge">📈 販売費 (Selling Expenses)</span><span class="sub-description-text">販売費とは、売上を上げるために発生する費用、または顧客への製品配送に関連する費用のことで、販売コミッション、給与、マーケティング、広告、運賃、倉庫保管料などが含まれます。</span>`,
+
             cn: `<span class="sub-title-badge">📈 销售成本 (Selling Expenses)</span><span class="sub-description-text">销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金 and 工资、线上和线下的营销与广告费、运费和仓储费等。</span>`
+
           }, 
+
           "./1A_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak2A() { 
+
         performSpeakAction(
+
           { 
+
             th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ", 
+
             en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees.",
+
             jp: "管理費とは、管理、経営、および組織の支援に関連する一般費用のことで、支援スタッフの給与（経理、人事、役員）、オフィスの家賃、水道光熱費、インターネット料金、オフィス資産の減価償却費、および法的費用が含まれます。",
+
             cn: "管理成本是指与管理、行政和组织支持相关的经常性费用，例如支持部门（财务、人事、高管）的员工工资、办公室租金、水费、电费和网费、办公室及办公设备的折旧费、法律费用 and 专业服务费。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span><span class="sub-description-text">ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ</span>`, 
+
             en: `<span class="sub-title-badge">🏢 Administrative Expenses</span><span class="sub-description-text">Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees.</span>`,
+
             jp: `<span class="sub-title-badge">🏢 管理費 (Administrative Expenses)</span><span class="sub-description-text">管理費とは、管理、経営、および組織の支援に関連する一般費用のことで、支援スタッフの給与（経理、人事、役員）、オフィスの家賃、水道光熱費、インターネット料金、オフィス資産の減価償却費、および法的費用が含まれます。</span>`,
+
             cn: `<span class="sub-title-badge">🏢 管理成本 (Administrative Expenses)</span><span class="sub-description-text">管理成本是指与管理、行政和组织支持相关的经常性费用，例如支持部门（财务、人事、高管）的员工工资、办公室租金、水费、电费和网费、办公室及办公设备的折旧费、法律费用和专业服务费。</span>`
+
           }, 
+
           "./2A_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak1MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "การผลิตมากเกินไป หมายถึง การผลิตสินค้าออกมารอไว้เกินความต้องการจริง ปัญหาคือ เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก ทั้งยัง เพิ่มต้นทุนโดยไม่จำเป็น เช่น ค่าพลังงานเครื่องจักร และ ค่าล่วงเวลาพนักงานโดย ไม่เกิดรายได้ในทันที", 
+
             en: "Overproduction occurs when items are produced beyond actual demand, tying up capital in raw materials and excess inventory while causing unnecessary machine energy and overtime costs.",
+
             jp: "つくりすぎのムダとは、実際の需要を超えて製品を製造することです。問題は、資金が原材料や過剰在庫に拘束されるだけでなく、機械のエネルギー費や従業員の残業代など、すぐに利益を生まない不要なコストが増加することです。",
+
             cn: "过量生产是指产品的产量超过了实际需求。这导致资金滞留在原材料和库存中，同时也增加了不必要的成本，如机器能源消耗和未能立即转化为收入的员工加班费。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🏭 1. การผลิตมากเกินไป (Overproduction)</span><span class="sub-description-text">การผลิตมากเกินไป หมายถึง การผลิตสินค้าออกมารอไว้เกินความต้องการจริง ปัญหาคือ เงินจมไปกับวัตถุดิบและสินค้าค้างสต็อก ทั้งยัง เพิ่มต้นทุนโดยไม่จำเป็น เช่น ค่าพลังงานเครื่องจักร และ ค่าล่วงเวลาพนักงานโดย ไม่เกิดรายได้ในทันที</span>`, 
+
             en: `<span class="sub-title-badge">🏭 1. Overproduction</span><span class="sub-description-text">Overproduction occurs when items are produced beyond actual demand, tying up capital in raw materials and excess inventory while causing unnecessary machine energy and overtime costs.</span>`,
+
             jp: `<span class="sub-title-badge">🏭 1. つくりすぎのムダ (Overproduction)</span><span class="sub-description-text">つくりすぎのムダとは、実際の需要を超えて製品を製造することです。問題は、資金が原材料や過剰在庫に拘束されるだけでなく、機械のエネルギー費や従業員の残業代など、すぐに利益を生まない不要なコストが増加することです。</span>`,
+
             cn: `<span class="sub-title-badge">🏭 1. 过量生产 (Overproduction)</span><span class="sub-description-text">过量生产是指产品的产量超过了实际需求。这导致资金滞留在原材料和库存中，同时也增加了不必要的成本，如机器能源消耗 and 未能立即转化为收入的员工加班费。</span>`
+
           }, 
+
           "./1MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak2MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน", 
+
             en: "Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses.",
+
             jp: "手待ちのムダとは、前工程の完了を作業者や機械が待つことで、稼働が停止する状態です。問題は、勤務時間中に作業が進まないことで労務費が無駄になるだけでなく、生産を行っていない機械を起動したままにすることで電気代やメンテナンス費用が浪費される点です。",
+
             cn: "等待浪费是指由于等待前道工序而导致员工或机器处于停滞状态。这不仅使员工在工作时间内未能产出而浪费了人工成本，还因为机器空转而白白浪费了电费和日常维护费用。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span><span class="sub-description-text">การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน</span>`, 
+
             en: `<span class="sub-title-badge">⏳ 2. Waiting</span><span class="sub-description-text">Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses.</span>`,
+
             jp: `<span class="sub-title-badge">⏳ 2. 手待ちのムダ (Waiting)</span><span class="sub-description-text">手待ちのムダとは、前工程の完了を作業者や機械が待つことで、稼働が停止する状態です。問題は、勤務時間中に作業が進まないことで労務費が無駄になるだけでなく、生産を行っていない機械を起動したままにすることで電気代やメンテナンス費用が浪費される点です。</span>`,
+
             cn: `<span class="sub-title-badge">⏳ 2. 等待浪费 (Waiting)</span><span class="sub-description-text">等待浪费是指由于等待前道工序而导致员工或机器处于停滞状态。这不仅使员工ใน工作时间内未能产出而浪费了人工成本，还因为机器空转而白白浪费了电费和日常维护费用。</span>`
+
           }, 
+
           "./2MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak3MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น", 
+
             en: "Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor.",
+
             jp: "運搬のムダとは、工場内で原材料や製品を必要以上に頻繁に、または遠くまで移動させることです。問題は、過剰な運搬によって製品の破損リスクが高まり、エネルギーが浪費され、不要で重複した作業によって倉庫スタッフの労務費が発生することです。",
+
             cn: "搬运浪费是指在工厂内过于频繁地或超长距离地移动原材料或产品。搬运过于频繁会增加产品磕碰损坏的风险，白白耗费能源，并因为不必要的重复性劳动而增加仓库人员的人工成本。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🚚 3. ขนย้ายที่มากเกินไป (Transportation)</span><span class="sub-description-text">ขนย้ายที่มากเกินไป หมายถึง การเคลื่อนย้ายวัตถุดิบ หรือ สินค้าไปมาในโรงงานบ่อย ไกลเกินจำเป็น ปัญหาคือ การขนย้ายบ่อยเกินไป เพิ่มความเสี่ยง สินค้าชำรุดเสียหาย สิ้นเปลืองพลังงาน และ ค่าแรงพนักงานคลังสินค้าจากการทำงานที่ซ้ำซ้อนโดย ไม่จำเป็น</span>`, 
+
             en: `<span class="sub-title-badge">🚚 3. Transportation</span><span class="sub-description-text">Transportation waste is moving materials or products more than necessary within the factory, increasing risks of item damage and wasting forklift energy and labor.</span>`,
+
             jp: `<span class="sub-title-badge">🚚 3. 運搬のムダ (Transportation)</span><span class="sub-description-text">運搬のムダとは、工場内で原材料や製品を必要以上に頻繁に、または遠くまで移動させることです。問題は、過剰な運搬によって製品の破損リスクが高まり、エネルギーが浪費され、不要で重複した作業によって倉庫スタッフの労務費が発生することです。</span>`,
+
             cn: `<span class="sub-title-badge">🚚 3. 搬运浪费 (Transportation)</span><span class="sub-description-text">搬运浪费是指在工厂内过于频繁地或超长距离地移动原材料或产品。搬运过于频繁会增加产品磕碰损坏的风险，白白耗费能源，并因为不必要的重复性劳动而增加仓库人员的人工成本。</span>`
+
           }, 
+
           "./3MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak4MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "เคลื่อนไหวที่ไม่จำเป็น หมายถึง ต้องเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปเนื่องจากหน้างานจัดไม่ดี ปัญหาคือ ความเหนื่อยล้าจากการทำงานผิดหลักการยศาสตร์ ส่งผลให้ประสิทธิภาพลดลงเสี่ยงต่ออุบัติเหตุสูงขึ้น นำไปสู่ต้นทุนค่ารักษาพยาบาล การหยุดไลน์ผลิตฉุกเฉิน", 
+
             en: "Motion waste is excessive physical movement like bending or reaching due to poor workstation design, leading to worker fatigue, reduced efficiency, and higher accident risks.",
+
             jp: "動作のムダとは、ワークステーションの配置が悪いために、手を伸ばす、取る、かがむ、歩くなど、過剰な身体的動きが発生することです。問題は、人間工学に反した作業による疲労で効率が低下し、事故のリスクが高まることで、医療費の発生や緊急のライン停止につながる点です。",
+
             cn: "动作浪费是指由于工位布局不合理，导致员工需要过多地伸手、拿取、弯腰或走动。不符合人体工程学的反复动作容易引发过度疲劳，导致工作效率下降、安全风险上升，进而引发医疗费成本及非计划性的紧急停线。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">🚶 4. เคลื่อนไหวที่ไม่จำเป็น (Motion)</span><span class="sub-description-text">เคลื่อนไหวที่ไม่จำเป็น หมายถึง ต้องเอื้อม หยิบ ก้ม เดิน เคลื่อนไหวมากเกินไปเนื่องจากหน้างานจัดไม่ดี ปัญหาคือ ความเหนื่อยล้าจากการทำงานผิดหลักการยศาสตร์ ส่งผลให้ประสิทธิภาพลดลงเสี่ยงต่ออุบัติเหตุสูงขึ้น นำไปสู่ต้นทุนค่ารักษาพยาบาล การหยุดไลน์ผลิตฉุกเฉิน</span>`, 
+
             en: `<span class="sub-title-badge">🚶 4. Motion</span><span class="sub-description-text">Motion waste is excessive physical movement like bending or reaching due to poor workstation design, leading to worker fatigue, reduced efficiency, and higher accident risks.</span>`,
+
             jp: `<span class="sub-title-badge">🚶 4. 動作のムダ (Motion)</span><span class="sub-description-text">動作のムダとは、ワークステーションの配置が悪いために、手を伸ばす、取る、かがむ、歩くなど、過剰な身体的動きが発生することです。問題は、人間工学に反した作業による疲労で効率が低下し、事故のリスクが高まることで、医療費の発生や緊急のライン停止につながる点です。</span>`,
+
             cn: `<span class="sub-title-badge">🚶 4. 动作浪费 (Motion)</span><span class="sub-description-text">动作浪费是指由于工位布局不合理，导致员工需要过多地伸手、拿取、弯腰或走动。不符合人体工程学的反复动作容易引发过度疲劳，导致工作效率下降、安全风险上升，进而引发医疗费成本及非计划性的紧急停线。</span>`
+
           }, 
+
           "./4MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak5MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกกว่ากำหนด", 
+
             en: "Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value.",
+
             jp: "加工そのもののムダとは、不要な工程を追加したり、顧客が求めていない過剰な品質を作り込もうとすることです。問題は、無駄な工程によって労働時間が増え、機械の稼働時間が長くなるため、付加価値を生まないまま電気代が上昇し、機械の寿命が想定より短くなる点です。",
+
             cn: "加工浪费是指增加了不必要的加工步骤，或过度投入了客户并不需要的加工品质。这种无效的流程拉长了工作时间，导致机器运行周期延长、白白耗费了更多电费，且在未能创造额外价值的同时加速了机器设备的磨损。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">⚙️ 5. ขั้นตอนที่มากเกินไป (Over-processing)</span><span class="sub-description-text">ขั้นตอนที่มากเกินไป หมายถึง ขั้นตอนที่มากเกินความจำเป็น หรือ พยายามทำในสิ่งที่ลูกค้าไม่ได้ต้องการ ปัญหาคือ ขั้นตอนที่สูญเปล่าต้องเพิ่มชั่วโมงการทำงาน ใช้เครื่องจักรนานขึ้น ส่งผลให้ค่าไฟฟ้าสูงขึ้น โดยไม่สร้างมูลค่าเพิ่ม เครื่องจักรเสื่อมสภาพเร็วกกว่ากำหนด</span>`, 
+
             en: `<span class="sub-title-badge">⚙️ 5. Over-processing</span><span class="sub-description-text">Over-processing refers to adding unnecessary steps or qualities that customers do not demand, which lengthens production time, hikes utility bills, and wears out machinery without adding value.</span>`,
+
             jp: `<span class="sub-title-badge">⚙️ 5. 加工そのもののムダ (Over-processing)</span><span class="sub-description-text">加工そのもののムダとは、不要な工程を追加したり、顧客が求めていない過剰な品質を作り込もうとすることです。問題は、無駄な工程によって労働時間が増え、機械の稼働時間が長くなるため、付加価値を生まないまま電気代が上昇し、機械の寿命が想定より短くなる点です。</span>`,
+
             cn: `<span class="sub-title-badge">⚙️ 5. 加工浪费 (Over-processing)</span><span class="sub-description-text">加工浪费是指增加了不必要的加工步骤，或过度投入了客户并不需要的加工品质。这种无效的流程拉长了工作时间，导致机器运行周期延长、白白耗费了更多电费，且在未能创造额外价值的同时加速了机器设备的磨损。</span>`
+
           }, 
+
           "./5MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak6MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย", 
+
             en: "Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums.",
+
             jp: "在庫のムダとは、原材料、仕掛品、製品を倉庫に過剰に保管することです。問題は、長期在庫が劣化、期限切れ、型落ちにより廃棄されるリスクがあるだけでなく、倉庫の賃貸料、電気代、保険料などの保管コストが無駄に発生する点です。",
-            cn: "库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂ของ保险费。"
+
+            cn: "库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂的保险费。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย</span>`, 
+
             en: `<span class="sub-title-badge">📦 6. Inventory</span><span class="sub-description-text">Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums.</span>`,
+
             jp: `<span class="sub-title-badge">📦 6. 在庫のムダ (Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
+
             cn: `<span class="sub-title-badge">📦 6. 库存浪费 (Inventory)</span><span class="sub-description-text">库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂的保险费。</span>`
+
           }, 
+
           "./6MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak7MUDA() { 
+
         performSpeakAction(
+
           { 
+
             th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้", 
+
             en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time.",
+
             jp: "不良・手直しのムダとは、基準を満たさない製品を製造し、修理や廃棄が必要になることです。問題は、不良品の廃棄や手直しにより原材料費が無駄になり、新規発注費用、労働力、電気代、機械負荷などの重複コストが発生することです。また、QCチームが再検査に時間を取られ、本来の利益を生む生産活動に時間を割けなくなります。",
+
             cn: "不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工 and 电费），同时质检团队不得不耗费额外时间重复检验，严重挤占了原本用于正常生产创造价值的时间。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้</span>`, 
+
             en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span><span class="sub-description-text">Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time.</span>`,
+
             jp: `<span class="sub-title-badge">❌ 7. 不良・手直し (Defects / Rework)</span><span class="sub-description-text">不良・手直しのムダとは、基準を満たさない製品を製造し、修理や廃棄が必要になることです。問題は、不良品の廃棄や手直しにより原材料費が無駄になり、新規発注費用、労働力、電気代、機械負荷などの重複コストが発生することです。また、QCチームが再検査に時間を取られ、本来の利益を生む生産活動に時間を割けなくなります。</span>`,
+
             cn: `<span class="sub-title-badge">❌ 7. 不良与返工 (Defects / Rework)</span><span class="sub-description-text">不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
+
           }, 
+
           "./7MUDA_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak1VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา", 
+
             en: "Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs.",
+
             jp: "ジャストインタイム（適時生産）とは、顧客が必要とする時に、必要なものを、必要な量だけ製造することです。メリットは、実際の注文に応じて生産することでキャッシュフローが向上し、原材料や製品在庫の蓄積を抑え、機械のエネルギー費や残業代を削減できる点です。",
+
             cn: "准时化生产（JIT）是指在客户需要的时候，按照需要的品种和数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料 and 产成品的积压，并同步节省机器能耗与员工加班成本。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">💡 1. ผลิตพอดีตามต้องการ (Just in Time)</span><span class="sub-description-text">ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา</span>`, 
+
             en: `<span class="sub-title-badge value-badge">💡 1. Just-in-Time Production</span><span class="sub-description-text">Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">💡 1. ジャストインタイム (Just in Time)</span><span class="sub-description-text">ジャストインタイム（適時生産）とは、顧客が必要とする時に、必要なものを、必要な量だけ製造することです。メリットは、実際の注文に応じて生産することでキャッシュフローが向上し、原材料や製品在庫の蓄積を抑え、機械のエネルギー費や残業代を削減できる点です。</span>`,
+
             cn: `<span class="sub-title-badge value-badge">💡 1. 准时化生产 (Just in Time)</span><span class="sub-description-text">准时化生产（JIT）是指在客户需要的时候，按照需要的品种 and 数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料和产成品的积压，并同步节省机器能耗与员工加班成本。</span>`
+
           }, 
+
           "./1VALUE_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak2VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป", 
+
             en: "Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity.",
+
             jp: "一個流し（スムーズな生産）とは、工程から工程へ製品が1個ずつ連続して途切れることなく移動することです。メリットは、連続的な生産により機械を最大限に活用でき、待機時間がなくなるため、システムのアイドル状態による電気代を削減し、支払ったすべての労務費から効率的な成果を得られる点です。",
-            cn: "连续流是指产品在各工序之间呈单件连续传递，不发生 any 停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。"
+
+            cn: "连续流是指产品在各工序之间呈单件连续传递，不发生任何停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">🏃 2. งานไหลลื่น ไม่สะดุด (Continuous Flow)</span><span class="sub-description-text">งานไหลลื่น ไม่สะดุด หมายถึง เคลื่อนที่ส่งต่อจากที่หนึ่งไปยังอีกที่หนึ่งได้อย่างต่อเนื่องชิ้นต่อชิ้น ข้อดีคือ การผลิตที่ต่อเนื่องช่วยให้ใช้เครื่องจักรได้เต็มกำลัง โดยไม่มีเวลาสูญเสียจากการนั่งรอ ลดต้นทุนพลังงานจากการเปิดระบบทิ้งไว้ และได้ผลผลิตคุ้มค่าจากทุกค่าแรงที่จ่ายไป</span>`, 
+
             en: `<span class="sub-title-badge value-badge">🏃 2. Continuous Flow</span><span class="sub-description-text">Continuous flow means work moving smoothly piece-by-piece. It optimizes machine capacity, eliminates idle wait times, cuts standby energy costs, and maximizes labor productivity.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">🏃 2. 一个流し (Continuous Flow)</span><span class="sub-description-text">一個流し（スムーズな生産）とは、工程から工程へ製品が1個ずつ連続して途切れることなく移動することです。メリットは、連続的な生産により機械を最大限に活用でき、待機時間がなくなるため、システムのアイドル状態による電気代を削減し、支払ったすべての労務費から効率的な成果を得られる点です。</span>`,
-            cn: `<span class="sub-title-badge value-badge">🏃 2. 连续流 (Continuous Flow)</span><span class="sub-description-text">连续流是指产品在各工序之间呈单件连续传递，不发生 any 停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。</span>`
+
+            cn: `<span class="sub-title-badge value-badge">🏃 2. 连续流 (Continuous Flow)</span><span class="sub-description-text">连续流是指产品在各工序之间呈单件连续传递，不发生任何停顿或倒流。其优点是持续流动的流水线能实现机器产能的最大化释放，完全消除岗位等待时间，杜绝系统开启空转产生的电费浪费，让付出的每一分人工成本都转化为实质的产量回报。</span>`
+
           }, 
+
           "./2VALUE_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak3VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "จัดวางใกล้จุดใช้ หมายถึง วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็น อยู่ในตำแหน่งที่หยิบใช้ได้ทันที ข้อดีคือ การจัดไลน์ผลิตให้กระชับช่วยลดความเสี่ยงสินค้าชำรุดจากการขนย้าย ช่วยประมีความสูญเสีย ค่าน้ำมันและค่าบำรุงรักษารถยก ลดต้นทุนแรงงานจากการร่นระยะทางให้สั้นลง", 
+
             en: "Point-of-use storage places materials and tools right where they are needed. This tight layout prevents damage during transport, lowers forklift fuel/maintenance fees, and saves travel time.",
+
             jp: "使用場所への配置とは、必要な原材料、工具、器具を、すぐに手に取って使用できる位置に配置することです。メリットは、生産ラインをコンパクトに配置することで運搬時の製品破損リスクを軽減し、フォークリフトの燃料費やメンテナンス費用を抑え、移動距離を短縮して労務費を削減できる点です。",
+
             cn: "现场定位布置是指将所需的原材料、工具和设备固定存放在操作工序触手可及的地方。其优点是紧凑的紧凑型生产线设计能显著降低搬运过程中的产品碰撞损伤风险，省下叉车的燃油费与维保开支，通过缩短员工作业走动距离来降低无效人工损耗。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">📍 3. จัดวางใกล้จุดใช้ (Point of Use)</span><span class="sub-description-text">จัดวางใกล้จุดใช้ หมายถึง วัตถุดิบ เครื่องมือ อุปกรณ์ที่จำเป็น อยู่ในตำแหน่งที่หยิบใช้ได้ทันที ข้อดีคือ การจัดไลน์ผลิตให้กระชับช่วยลดความเสี่ยงสินค้าชำรุดจากการขนย้าย ช่วยประมีความสูญเสีย ค่าน้ำมันและค่าบำรุงรักษารถยก ลดต้นทุนแรงงานจากการร่นระยะทางให้สั้นลง</span>`, 
+
             en: `<span class="sub-title-badge value-badge">📍 3. Point-of-Use Storage</span><span class="sub-description-text">Point-of-use storage places materials and tools right where they are needed. This tight layout prevents damage during transport, lowers forklift fuel/maintenance fees, and saves travel time.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">📍 3. 使用場所への配置 (Point of Use)</span><span class="sub-description-text">使用場所への配置とは、必要な原材料、工具、器具を、すぐに手に取って使用できる位置に配置することです。メリットは、生産ラインをコンパクトに配置することで運搬時の製品破損リスクを軽減し、フォークリフトの燃料費やメンテナンス費用を抑え、移動距離を短縮して労務費を削減できる点です。</span>`,
+
             cn: `<span class="sub-title-badge value-badge">📍 3. 现场定位布置 (Point of Use)</span><span class="sub-description-text">现场定位布置是指将所需的原材料、工具和设备固定存放在操作工序触手可及的地方。其优点是紧凑的紧凑型生产线设计能显著降低搬运过程中的产品碰撞损伤风险，省下叉车的燃油费与维保开支，通过缩短员工作业走动距离来降低无效人工损耗。</span>`
+
           }, 
+
           "./3VALUE_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak4VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "หยิบจับง่าย สบายสรีระ หมายถึง พนักงานสามารถปฏิบัติงานได้ด้วยท่าทางที่เป็นธรรมชาติที่สุด ข้อดีคือ ช่วยลดความเหนื่อยล้า พนักงานทำงานได้เร็วขึ้น ประสิทธิภาพการผลิตคงที่ ช่วยลดอัตราการเกิดอุบัติเหตุ-ค่ารักษาพยาบาล ป้องกันการหยุดไลน์ผลิตฉุกเฉิน", 
+
             en: "Ergonomic movement allows operators to work in natural postures. This minimizes physical fatigue, stabilizes production speed, and cuts down safety accidents and sudden line stoppage costs.",
+
             jp: "エルゴノミクス（人間工学）的動作とは、作業者が最も自然な姿勢で業務を行えることです。メリットは、蓄積する疲労を軽減して作業速度を向上・維持できるだけでなく、労働災害の発生率や医療費を抑え、緊急のライン停止を防ぐことができる点です。",
+
             cn: "人体工程学动作是指使员工在作业时能够保持最舒适、最自然的身体姿态。其优点在于可大幅减轻因姿势不当造成的累积性疲劳，使作业速度更快、生产效率更稳定，有效降低工伤事故率与医疗费用，预防生产线发生突发性紧急停机。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">👌 4. หยิบจับง่าย สบายสรีระ (Ergonomic Motion)</span><span class="sub-description-text">หยิบจับง่าย สบายสรีระ หมายถึง พนักงานสามารถปฏิบัติงานได้ด้วยท่าทางที่เป็นธรรมชาติที่สุด ข้อดีคือ ช่วยลดความเหนื่อยล้า พนักงานทำงานได้เร็วขึ้น ประสิทธิภาพการผลิตคงที่ ช่วยลดอัตราการเกิดอุบัติเหตุ-ค่ารักษาพยาบาล ป้องกันการหยุดไลน์ผลิตฉุกเฉิน</span>`, 
+
             en: `<span class="sub-title-badge value-badge">👌 4. Ergonomic Motion</span><span class="sub-description-text">Ergonomic movement allows operators to work in natural postures. This minimizes physical fatigue, stabilizes production speed, and cuts down safety accidents and sudden line stoppage costs.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">👌 4. エルゴノミクス動作 (Ergonomic Motion)</span><span class="sub-description-text">エルゴノミクス（人間工学）的動作とは、作業者が最も自然な姿勢で業務を行えることです。メリットは、蓄積する疲労を軽減して作業速度を向上・維持できるだけでなく、労働災害の発生率や医療費を抑え、緊急のライン停止を防ぐことができる点です。</span>`,
+
             cn: `<span class="sub-title-badge value-badge">👌 4. 人体工程学动作 (Ergonomic Motion)</span><span class="sub-description-text">人体工程学动作是指使员工在作业时能够保持最舒适、最自然的身体姿态。其优点在于可大幅减轻因姿势不当造成的累积性疲劳，使作业速度更快、生产效率更稳定，有效降低工伤事故率与医疗费用，预防生产线发生突发性紧急停机。</span>`
+
           }, 
+
           "./4VALUE_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak5VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "ขั้นตอนที่สร้างคุณค่า หมายถึง ขั้นตอนที่ส่งผลต่อคุณภาพ คุณลักษณะสินค้าที่ลูกค้าพึงพอใจ ข้อดีคือ การตัดขั้นตอนที่ซ้ำซ้อนช่วยควบคุมและลดต้นทุนแรงงาน ช่วยลดชั่วโมงการทำงานของเครื่องจักร ทำให้ประหยัดค่าไฟและยืดอายุการใช้งานให้ยาวนานขึ้น", 
+
             en: "Value-added processing focuses strictly on steps that improve features the customer cares about. Cutting out non-value steps reduces labor cost, saves run-time electricity, and extends asset lifespan.",
+
             jp: "付加価値を生む工程とは、製品の品質や、顧客が満足する特性に直接影響を与える工程のことです。メリットは、重複する不要な工程を排除することで労務費を適切にコントロールし、機械の稼働時間を減らして電気代を節約し、機械の耐用年数を延ばせる点です。",
+
             cn: "增值加工流程是指精準聚焦于那些能提升产品质量、实现客户所需特定功能的工序。其优点在于通过大胆砍掉重叠、无效的非增值流程，实现总人工成本的精益控制，减少机器不必要的运转工时，不仅能省下大笔电费，更可显著延长设备的正常使用寿命。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">⚙️ 5. ขั้นตอนที่สร้างคุณค่า (Value-Added Processing)</span><span class="sub-description-text">ขั้นตอนที่สร้างคุณค่า หมายถึง ขั้นตอนที่ส่งผลต่อคุณภาพ คุณลักษณะสินค้าที่ลูกค้าพึงพอใจ ข้อดีคือ การตัดขั้นตอนที่ซ้ำซ้อนช่วยควบคุมและลดต้นทุนแรงงาน ช่วยลดชั่วโมงการทำงานของเครื่องจักร ทำให้ประหยัดค่าไฟและยืดอายุการใช้งานให้ยาวนานขึ้น</span>`, 
+
             en: `<span class="sub-title-badge value-badge">⚙️ 5. Value-Added Processing</span><span class="sub-description-text">Value-added processing focuses strictly on steps that improve features the customer cares about. Cutting out non-value steps reduces labor cost, saves run-time electricity, and extends asset lifespan.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">⚙️ 5. 付加価値を生む工程 (Value-Added Processing)</span><span class="sub-description-text">付加価値を生む工程とは、製品の品質や、顧客が満足する特性に直接影響を与える工程のことです。メリットは、重複する不要な工程を排除することで労務費を適切にコントロールし、機械の稼働時間を減らして電気代を節約し、機械の耐用年数を延ばせる点です。</span>`,
+
             cn: `<span class="sub-title-badge value-badge">⚙️ 5. 增值加工流程 (Value-Added Processing)</span><span class="sub-description-text">增值加工流程是指精準聚焦于那些能提升产品质量、实现客户所需特定功能的工序。其优点在于通过大胆砍掉重叠、无效的非增值流程，实现总人工成本的精益控制，减少机器不必要的运转工时，不仅能省下大笔电费，更可显著延长设备的正常使用寿命。</span>`
+
           }, 
+
           "./5VALUE_VDO.mp4"
+
         ); 
+
       }
+
+
 
       function speak6VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "สต็อกบาง หมุนเวียนไว หมายถึง วัตถุดิบ WIP สินค้าสำเร็จรูป อยู่ในระดับที่น้อยที่สุดแต่เพียงพอ ข้อดีคือ การบริหารคลังสินค้าอย่างมีประสิทธิภาพช่วยลดความเสี่ยงสินค้าเสื่อมสภาพตกรุ่น ลดค่าเช่าคลังสินค้าเพิ่มเติม ค่าไฟระบบปรับอากาศ และค่าเบี้ยประกันภัย", 
+
             en: "Lean inventory keeps raw materials, WIP, and finished goods at minimal yet sufficient levels, reducing risks of spoilage/obsolescence while cutting facility rent, cooling power, and insurance costs.",
+
             jp: "適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。",
+
             cn: "精益库存管理是指将原材料、在制品及产成品的库存控制在刚好满足连续生产的最低水平。其优点是能够从根本上避免物料因长期存放而产生的老化与过时风险，有效释放工厂空间，省去增租外部仓库的费用、恒温空调的电费支出，并降低物料保险费的计提金额。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">📦 6. สต็อกบาง หมุนเวียนไว (Lean Inventory)</span><span class="sub-description-text">สต็อกบาง หมุนเวียนไว หมายถึง วัตถุดิบ WIP สินค้าสำเร็จรูป อยู่ในระดับที่น้อยที่สุดแต่เพียงพอ ข้อดีคือ การบริหารคลังสินค้าอย่างมีประสิทธิภาพช่วยลดความเสี่ยงสินค้าเสื่อมสภาพตกรุ่น ลดค่าเช่าคลังสินค้าเพิ่มเติม ค่าไฟระบบปรับอากาศ และค่าเบี้ยประกันภัย</span>`, 
+
             en: `<span class="sub-title-badge value-badge">📦 6. Lean Inventory</span><span class="sub-description-text">Lean inventory keeps raw materials, WIP, and finished goods at minimal yet sufficient levels, reducing risks of spoilage/obsolescence while cutting facility rent, cooling power, and insurance costs.</span>`,
-            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
+
+            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限의レベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
+
             cn: `<span class="sub-title-badge value-badge">📦 6. 精益库存管理 (Lean Inventory)</span><span class="sub-description-text">精益库存管理是指将原材料、在制品及产成品的库存控制在刚好满足连续生产的最低水平。其优点是能够从根本上避免物料因长期存放而产生的老化与过时风险，有效释放工厂空间，省去增租外部仓库的费用、恒温空调的电费支出，并降低物料保险费的计提金额。</span>`
+
           }, 
+
           "./6VALUE_VDO.mp4"
+
         ); 
+
       }
 
+
+
       function speak7VALUE() { 
+
         performSpeakAction(
+
           { 
+
             th: "ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด", 
+
             en: "Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight.",
-            jp: "最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から搬滅できます。",
-            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免 any 下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
+
+            jp: "最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から撲滅できます。",
+
+            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
+
           }, 
+
           { 
+
             th: `<span class="sub-title-badge value-badge">🎯 7. ทำถูกต้อง ตั้งแต่แรก (Right First Time)</span><span class="sub-description-text">ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด</span>`, 
+
             en: `<span class="sub-title-badge value-badge">🎯 7. Right First Time</span><span class="sub-description-text">Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight.</span>`,
+
             jp: `<span class="sub-title-badge value-badge">🎯 7. 最初から正しく行う (Right First Time)</span><span class="sub-description-text">最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から撲滅できます。</span>`,
-            cn: `<span class="sub-title-badge value-badge">🎯 7. 第一次就做对 (Right First Time)</span><span class="sub-description-text">第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免 any 下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
+
+            cn: `<span class="sub-title-badge value-badge">🎯 7. 第一次就做对 (Right First Time)</span><span class="sub-description-text">第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
+
           }, 
+
           "./7VALUE_VDO.mp4"
+
         ); 
+
       }
+
     </script>
+
   </body>
+
 </html>
+
