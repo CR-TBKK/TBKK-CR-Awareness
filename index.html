@@ -1,8 +1,3 @@
-จัดให้ตามคำขอครับ! ผมได้ทำการแปลเนื้อหาทั้งส่วนของ **`textMap` (เสียงพูดสังเคราะห์)** และ **`htmlMap` (คำบรรยายบนหน้าจอ)** เพิ่มเติมสำหรับ **ภาษาญี่ปุ่น (jp)** และ **ภาษาจีน (cn)** โดยยึดข้อความหลักให้ตรงกับระบบเสียงสังเคราะห์ 100% เพื่อให้การแสดงผลลัพธ์บนแอปพลิเคชัน AR ของคุณลื่นไหลและเป็นมืออาชีพในทุก ๆ ภาษาครับ
-
-นี่คือ Source Code ฉบับสมบูรณ์ที่เพิ่มภาษาญี่ปุ่นและภาษาจีนเรียบร้อยแล้วครับ:
-
-```html
 <!DOCTYPE html>
 <html>
   <head>
@@ -879,11 +874,15 @@
         }
       }
 
+      /* =========================================================================
+         [แก้ไขจุดนี้] คืนค่าฟังก์ชันจัดตำแหน่งและค่าพิกเซล Offset ให้กลับไปอยู่หลังรูปภาพเป๊ะๆ เหมือนเดิม
+         ========================================================================= */
       function updateAllButtonPositions() {
         if (cameraEl) {
           if (activeTargetIndex === 0 || (isFrozen && activeTargetIndex === 0)) {
             positionButton(ent1M, btnUI1M, 70, -2);
             positionButton(ent2M, btnUI2M, 65, -2);
+            positionButton(ent3M, btnUI3M, 80, -2);  // เรียกฟังก์ชันคืนพิกัด 3M ตัวหลักกลับเข้าระบบ
             positionButton(ent3_1M, btnUI3_1M, 90, -2);
             positionButton(ent3_2M, btnUI3_2M, 75, -2);
             positionButton(ent3_3M, btnUI3_3M, 70, -2);
@@ -1020,20 +1019,34 @@
 
       function playCampaignEP1() {
         performSpeakAction(
-          { 
-            th: "", 
-            en: "", 
-            jp: "", 
-            cn: "" 
-          }, 
+          { th: "", en: "", jp: "", cn: "" }, 
           { 
             th: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 ละคร "ต้นทุน" คุณธรรม EP.1</span><span class="sub-description-text">ตอน: ก็แค่...บาทเดียว (It's just... One-BAHT)<br>💡 ร่วมสร้างจิตสำนึกและการตระหนักรู้เรื่องการลดความสูญเสียในองค์กร เริ่มต้นง่าย ๆ จากสิ่งรอบตัวที่มีมูลค่าเพียงแค่บาทเดียว</span>`, 
             en: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 Cost Awareness Drama EP.1</span><span class="sub-description-text">Episode: It's just... One-BAHT<br>💡 Building cost awareness and eliminating organizational waste. Big differences start from saving just a single Baht.</span>`,
-            jp: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 「コスト」モラルドラマ EP.1</span><span class="sub-description-text">エピソード：たったの一バーツ (It's just... One-BAHT)<br>💡 組織内のムダ削減に対する意識向上と啓発活動。身近にある、たった1バーツの価値から簡単に始められます。</span>`,
+            jp: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 「コスト」モラルドラマ EP.1</span><span class="sub-description-text">エピソード：たったの一バーツ (It's just... One-BAHT)<br>💡 組織内のムダ削減に対する意識向上และ啓発活動。身近にある、たった1バーツの価値から簡単に始められます。</span>`,
             cn: `<span class="sub-title-badge" style="background-color: #E63946;">🎬 “成本”道德小剧场 第一集</span><span class="sub-description-text">剧集：仅仅……一泰铢 (It's just... One-BAHT)<br>💡 共同提升减少组织内浪费的意识。从身边仅值一泰铢的事物开始，轻松做起。</span>`
           }, 
           "./CR_AWARE_EP1.mp4"
         );
+      }
+
+      // ดึงฟังก์ชันสปีช 3M ตัวหลักกลับเข้าทำระบบตาม Logic เดิม
+      function speak3M() { 
+        performSpeakAction(
+          { 
+            th: "ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง", 
+            en: "Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.",
+            jp: "製造間接費とは、直接材料費および直接労務費以外の、製品製造過程で発生するすべての製造費用のことです。",
+            cn: "制造费用是指在产品生产过程中发生的、除直接材料和直接人工以外的所有生产费用。"
+          }, 
+          { 
+            th: `<span class="sub-title-badge">🏭 ค่าใช้จ่ายในการผลิต (Manufacturing Overhead)</span><span class="sub-description-text">ค่าใช้จ่ายในการผลิต หมายถึง ค่าใช้จ่ายต่างๆ ที่เกิดขึ้นในระหว่างการผลิตสินค้านอกเหนือจากวัตถุดิบและค่าแรงงานทางตรง</span>`, 
+            en: `<span class="sub-title-badge">🏭 Manufacturing Overhead</span><span class="sub-description-text">Manufacturing overhead refers to all costs incurred during the production of goods other than direct materials and direct labor.</span>`,
+            jp: `<span class="sub-title-badge">🏭 製造間接費 (Manufacturing Overhead)</span><span class="sub-description-text">製造間接費とは、直接材料費および直接労務費以外の、製品製造過程で発生するすべての製造費用のことです。</span>`,
+            cn: `<span class="sub-title-badge">🏭 制造费用 (Manufacturing Overhead)</span><span class="sub-description-text">制造费用是指在产品生产过程中发生的、除直接材料和直接人工以外的所有生产费用。</span>`
+          }, 
+          "./3M_VDO.mp4"
+        ); 
       }
 
       function speak1M() { 
@@ -1132,7 +1145,7 @@
             th: "ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า", 
             en: "Selling expenses refer to costs incurred to generate sales or related to distributing products to customers, such as sales commissions, salaries, marketing, advertising, freight, and warehousing.",
             jp: "販売費とは、売上を上げるために発生する費用、または顧客への製品配送に関連する費用のことで、販売コミッション、給与、マーケティング、広告、運賃、倉庫保管料などが含まれます。",
-            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上和线下的营销与广告费、运费和仓储费等。"
+            cn: "销售成本是指为了获取销售额或与向客户分销产品相关的费用，例如销售人员的佣金和工资、线上和线下的营销与广告费、运费 and 仓储费等。"
           }, 
           { 
             th: `<span class="sub-title-badge">📈 ต้นทุนการขาย (Selling Expenses)</span><span class="sub-description-text">ต้นทุนการขาย หมายถึง ค่าใช้จ่ายที่เกิดขึ้นเพื่อให้ได้ยอดขาย หรือ เกี่ยวข้องกับการกระจายสินค้าไปยังลูกค้า เช่น ค่าคอมมิชชันและเงินเดือน ของพนักงานขาย ค่าการตลาดและโฆษณา ทั้งสื่อออนไลน์และออฟไลน์ ค่าขนส่งสินค้าและค่าคลังสินค้า เพื่อส่งมอบถึงมือลูกค้า</span>`, 
@@ -1150,7 +1163,7 @@
             th: "ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ", 
             en: "Administrative expenses refer to general costs related to management, administration, and organizational support, such as support staff salaries (accounting, HR, executives), office rent, utilities, internet, depreciation of office assets, and legal fees.",
             jp: "管理費とは、管理、経営、および組織の支援に関連する一般費用のことで、支援スタッフの給与（経理、人事、役員）、オフィスの家賃、水道光熱費、インターネット料金、オフィス資産の減価償却費、および法的費用が含まれます。",
-            cn: "管理成本是指与管理、行政和组织支持相关的经常性费用，例如支持部门（财务、人事、高管）的员工工资、办公室租金、水费、电费和网费、办公室及办公设备的折旧费、法律费用和专业服务费。"
+            cn: "管理成本是指与管理、行政和组织支持相关的经常性费用，例如支持部门（财务、人事、高管）的员工工资、办公室租金、水费、电费和网费、办公室及办公设备的折旧费、法律费用 and 专业服务费。"
           }, 
           { 
             th: `<span class="sub-title-badge">🏢 ต้นทุนการบริหาร (Administrative Expenses)</span><span class="sub-description-text">ต้นทุนการบริหาร หมายถึง ค่าใช้จ่ายทั่วไปที่เกี่ยวกับการจัดการ การบริหาร และ การสนับสนุนองค์กร เช่น เงินเดือนพนักงานฝ่ายสนับสนุน (บัญชี, บุคลากร, ผู้บริหาร) ค่าเช่าสำนักงาน ค่าน้ำ ค่าไฟ และค่าอินเทอร์เน็ต ค่าเสื่อมราคาของสำนักงานและอุปกรณ์สำนักงานต่างๆ ค่าใช้จ่ายทางกฎหมายและค่าธรรมเนียมวิชาชีพ</span>`, 
@@ -1192,7 +1205,7 @@
             th: `<span class="sub-title-badge">⏳ 2. การรอคอย (Waiting)</span><span class="sub-description-text">การรอคอย หมายถึง พนักงาน หรือ เครื่องจักรต้องหยุดชะงักเพื่อรอกระบวนการก่อนหน้า ปัญหาคือ ค่าแรงสูญเปล่าจากการที่พนักงานไม่ได้งานในเวลาทำงาน ซ้ำยังสิ้นเปลืองค่าไฟและ ค่าบำรุงรักษาจากการเปิดเครื่องจักรทิ้งไว้โดย ไม่ได้ผลิตชิ้นงาน</span>`, 
             en: `<span class="sub-title-badge">⏳ 2. Waiting</span><span class="sub-description-text">Waiting refers to idle workers or machines waiting for previous processes to complete, leading to wasted labor costs and unnecessary utility or maintenance expenses.</span>`,
             jp: `<span class="sub-title-badge">⏳ 2. 手待ちのムダ (Waiting)</span><span class="sub-description-text">手待ちのムダとは、前工程の完了を作業者や機械が待つことで、稼働が停止する状態です。問題は、勤務時間中に作業が進まないことで労務費が無駄になるだけでなく、生産を行っていない機械を起動したままにすることで電気代やメンテナンス費用が浪費される点です。</span>`,
-            cn: `<span class="sub-title-badge">⏳ 2. 等待浪费 (Waiting)</span><span class="sub-description-text">等待浪费是指由于等待前道工序而导致员工或机器处于停滞状态。这不仅使员工在工作时间内未能产出而浪费了人工成本，还因为机器空转而白白浪费了电费和日常维护费用。</span>`
+            cn: `<span class="sub-title-badge">⏳ 2. 等待浪费 (Waiting)</span><span class="sub-description-text">等待浪费是指由于等待前道工序而导致员工或机器处于停滞状态。这不仅使员工ใน工作时间内未能产出而浪费了人工成本，还因为机器空转而白白浪费了电费和日常维护费用。</span>`
           }, 
           "./2MUDA_VDO.mp4"
         ); 
@@ -1263,7 +1276,7 @@
           { 
             th: `<span class="sub-title-badge">📦 6. คงคลังมากเกินไป (Inventory)</span><span class="sub-description-text">คงคลังมากเกินไป หมายถึง การเก็บวัตถุดิบ งานระหว่างผลิต สินค้าสำเร็จรูปไว้ในโกดังมากเกินไป ปัญหาคือ สินค้าค้างสต็อกนานเสี่ยงเสื่อมสภาพ หมดอายุ ตกรุ่นจนสูญเปล่า เสียค่าใช้จ่ายในการจัดเก็บ ทั้งค่าเช่าโกดัง ค่าไฟ และ ค่าเบี้ยประกันภัย</span>`, 
             en: `<span class="sub-title-badge">📦 6. Inventory</span><span class="sub-description-text">Excess inventory is holding too much raw materials, WIP, or finished goods in storage, raising risks of obsolescence or damage, while inflating warehouse rent, electricity, and insurance premiums.</span>`,
-            jp: `<span class="sub-title-badge">📦 6. 在庫のムダ (Inventory)</span><span class="sub-description-text">在庫のムダとは、原材料、仕掛品、製品を倉庫に過剰に保管することです。問題は、長期在庫が劣化、期限切れ、型落ちにより廃棄されるリスクがあるだけでなく、倉庫の賃貸料、電気代、保険料などの保管コストが無駄に発生する点です。</span>`,
+            jp: `<span class="sub-title-badge">📦 6. 在庫のムダ (Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
             cn: `<span class="sub-title-badge">📦 6. 库存浪费 (Inventory)</span><span class="sub-description-text">库存浪费是指在仓库中囤积了过多的原材料、在制品或产成品。这不仅增加了物料长期滞留而导致老化变质、过期或被市场淘汰的贬值风险，还要持续支出仓库租金、照明空调电费及高昂的保险费。</span>`
           }, 
           "./6MUDA_VDO.mp4"
@@ -1276,13 +1289,13 @@
             th: "งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้", 
             en: "Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time.",
             jp: "不良・手直しのムダとは、基準を満たさない製品を製造し、修理や廃棄が必要になることです。問題は、不良品の廃棄や手直しにより原材料費が無駄になり、新規発注費用、労働力、電気代、機械負荷などの重複コストが発生することです。また、QCチームが再検査に時間を取られ、本来の利益を生む生産活動に時間を割けなくなります。",
-            cn: "不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工和电费），同时质检团队不得不耗费额外时间重复检验，严重挤占了原本用于正常生产创造价值的时间。"
+            cn: "不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工 and 电费），同时质检团队不得不耗费额外时间重复检验，严重挤占了原本用于正常生产创造价值的时间。"
           }, 
           { 
-            th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถุดิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้</span>`, 
+            th: `<span class="sub-title-badge">❌ 7. งานเสีย/แก้ไขงาน (Defects / Rework)</span><span class="sub-description-text">งานเสีย/แก้ไขงาน หมายถึง การผลิตสินค้าไม่ได้มาตรฐานจนต้องนำมาซ่อมหรือทิ้ง ปัญหาคือ การทิ้งงานเสียหรือแก้ไขสินค้าชำรุด ทำให้สูญเสียต้นทุนวัตถิบ เกิดต้นทุนซ้ำซ้อน ทั้งการจัดซื้อล็อตใหม่ ค่าแรงพนักงาน ค่าไฟ เครื่องจักร รวมถึงเวลาของทีม QC ที่ต้องตรวจสอบซ้ำ แทนที่จะนำเวลาไปผลิตเพื่อสร้างรายได้</span>`, 
             en: `<span class="sub-title-badge">❌ 7. Defects / Rework</span><span class="sub-description-text">Defects or rework mean producing substandard goods that require fixing or scrapping, wasting materials and doubling labor, machine power, and quality control sorting time.</span>`,
             jp: `<span class="sub-title-badge">❌ 7. 不良・手直し (Defects / Rework)</span><span class="sub-description-text">不良・手直しのムダとは、基準を満たさない製品を製造し、修理や廃棄が必要になることです。問題は、不良品の廃棄や手直しにより原材料費が無駄になり、新規発注費用、労働力、電気代、機械負荷などの重複コストが発生することです。また、QCチームが再検査に時間を取られ、本来の利益を生む生産活動に時間を割けなくなります。</span>`,
-            cn: `<span class="sub-title-badge">❌ 7. 不良与返工 (Defects / Rework)</span><span class="sub-description-text">不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工和电费），同时质检团队不得不耗费额外时间重复检验，严重挤占了原本用于正常生产创造价值的时间。</span>`
+            cn: `<span class="sub-title-badge">❌ 7. 不良与返工 (Defects / Rework)</span><span class="sub-description-text">不良与返工浪费是指生产出的产品未达到质量标准，从而必须进行报废或返工修复。这不仅浪费了原材料，还产生了重复的投入（如重新采购物料、二次加工的人工 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。</span>`
           }, 
           "./7MUDA_VDO.mp4"
         ); 
@@ -1294,13 +1307,13 @@
             th: "ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา", 
             en: "Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs.",
             jp: "ジャストインタイム（適時生産）とは、顧客が必要とする時に、必要なものを、必要な量だけ製造することです。メリットは、実際の注文に応じて生産することでキャッシュフローが向上し、原材料や製品在庫の蓄積を抑え、機械のエネルギー費や残業代を削減できる点です。",
-            cn: "准时化生产（JIT）是指在客户需要的时候，按照需要的品种和数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料和产成品的积压，并同步节省机器能耗与员工加班成本。"
+            cn: "准时化生产（JIT）是指在客户需要的时候，按照需要的品种和数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料 and 产成品的积压，并同步节省机器能耗与员工加班成本。"
           }, 
           { 
             th: `<span class="sub-title-badge value-badge">💡 1. ผลิตพอดีตามต้องการ (Just in Time)</span><span class="sub-description-text">ผลิตพอดีตามต้องการ หมายถึง ถูกประเภท ในปริมาณที่ใช่ และในเวลาที่ลูกค้าต้องการพอดี ข้อดีคือ ผลิตตามคำสั่งซื้อจริงช่วยเพิ่มกระแสเงินสดหมุนเวียน ลดการสะสมวัตถุดิบ และสินค้าค้างสต็อก ประหยัดต้นทุน ทั้งค่าพลังงานเครื่องจักรและค่าล่วงเวลา</span>`, 
             en: `<span class="sub-title-badge value-badge">💡 1. Just-in-Time Production</span><span class="sub-description-text">Just-in-time production means producing the right type, right amount, at the perfect time. This improves cash flow, minimizes stockpiling, and saves power and overtime costs.</span>`,
             jp: `<span class="sub-title-badge value-badge">💡 1. ジャストインタイム (Just in Time)</span><span class="sub-description-text">ジャストインタイム（適時生産）とは、顧客が必要とする時に、必要なものを、必要な量だけ製造することです。メリットは、実際の注文に応じて生産することでキャッシュフローが向上し、原材料や製品在庫の蓄積を抑え、機械のエネルギー費や残業代を削減できる点です。</span>`,
-            cn: `<span class="sub-title-badge value-badge">💡 1. 准时化生产 (Just in Time)</span><span class="sub-description-text">准时化生产（JIT）是指在客户需要的时候，按照需要的品种和数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料和产成品的积压，并同步节省机器能耗与员工加班成本。</span>`
+            cn: `<span class="sub-title-badge value-badge">💡 1. 准时化生产 (Just in Time)</span><span class="sub-description-text">准时化生产（JIT）是指在客户需要的时候，按照需要的品种 and 数量进行精準生产。其优点是基于真实订单组织生产，能大幅提升现金流回款速度、有效杜绝物料和产成品的积压，并同步节省机器能耗与员工加班成本。</span>`
           }, 
           "./1VALUE_VDO.mp4"
         ); 
@@ -1389,7 +1402,7 @@
           { 
             th: `<span class="sub-title-badge value-badge">📦 6. สต็อกบาง หมุนเวียนไว (Lean Inventory)</span><span class="sub-description-text">สต็อกบาง หมุนเวียนไว หมายถึง วัตถุดิบ WIP สินค้าสำเร็จรูป อยู่ในระดับที่น้อยที่สุดแต่เพียงพอ ข้อดีคือ การบริหารคลังสินค้าอย่างมีประสิทธิภาพช่วยลดความเสี่ยงสินค้าเสื่อมสภาพตกรุ่น ลดค่าเช่าคลังสินค้าเพิ่มเติม ค่าไฟระบบปรับอากาศ และค่าเบี้ยประกันภัย</span>`, 
             en: `<span class="sub-title-badge value-badge">📦 6. Lean Inventory</span><span class="sub-description-text">Lean inventory keeps raw materials, WIP, and finished goods at minimal yet sufficient levels, reducing risks of spoilage/obsolescence while cutting facility rent, cooling power, and insurance costs.</span>`,
-            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限のレベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
+            jp: `<span class="sub-title-badge value-badge">📦 6. 在庫のスリム化 (Lean Inventory)</span><span class="sub-description-text">適正な在庫管理（在庫のスリム化）とは、原材料、仕掛品、製品を、生産を維持できる最小限의レベルに保つことです。メリットは、効果的な倉庫管理により在庫の劣化や型落ちのリスクを軽減し、追加の倉庫賃帯料、空調システムの電気代、および保険料を削減できる点です。</span>`,
             cn: `<span class="sub-title-badge value-badge">📦 6. 精益库存管理 (Lean Inventory)</span><span class="sub-description-text">精益库存管理是指将原材料、在制品及产成品的库存控制在刚好满足连续生产的最低水平。其优点是能够从根本上避免物料因长期存放而产生的老化与过时风险，有效释放工厂空间，省去增租外部仓库的费用、恒温空调的电费支出，并降低物料保险费的计提金额。</span>`
           }, 
           "./6VALUE_VDO.mp4"
@@ -1402,7 +1415,7 @@
             th: "ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด", 
             en: "Right first time ensures 100% quality on the very first run. It minimizes unit costs, utilizes raw materials completely, and fully avoids rework wages, utility waste, QC re-checks, claims, and return freight.",
             jp: "最初から正しく行う（一発良品化）とは、製造工程の最初の段階から100%の品質を満たす製品を作ることです。メリットは、製品1個あたりの製造コストを最小限に抑え、原材料を100%有効活用してムダを排除できる点です。また、手直しにかかる労務費、電気代、QCチームの再検査時間などの重複コストを削減し、製品クレーム対応費用や顧客からの返品輸送費を根本から撲滅できます。",
-            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费和质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
+            cn: "第一次就做对（一次做对）是指制造过程能确保在首轮生产中便产出100%完全符合质量标准的合格品。其优点是能将单件产品制造成本压缩至极限，使原材料利用率达到100%从而避免任何下脚料浪费，彻底消除因二次返工产生的重复劳务、电费 and 质检二次复核时间，并从源头上消灭客户索赔和逆向退货物流成本。"
           }, 
           { 
             th: `<span class="sub-title-badge value-badge">🎯 7. ทำถูกต้อง ตั้งแต่แรก (Right First Time)</span><span class="sub-description-text">ทำถูกต้อง ตั้งแรก หมายถึง กระบวนการผลิต ผลิตชิ้นงานที่ได้คุณภาพ 100% ตั้งแต่รอบแรก ข้อดีคือ ช่วยลดต้นทุนต่อชิ้นให้ต่ำที่สุด ใชวัตถุดิบได้เต็ม 100% ไม่มีความสูญเสีย ลดต้นทุนการทำงานซ้ำซ้อน เช่น ค่าแรงซ่อมงาน ค่าไฟ เวลาตรวจสอบของทีมQC ตัดค่าใช้จ่ายในการเคลม และลดค่าขนส่งสินค้ากลับจากลูกค้าได้อย่างเด็ดขาด</span>`, 
@@ -1416,5 +1429,3 @@
     </script>
   </body>
 </html>
-
-```
