@@ -574,14 +574,17 @@
         <a-entity id="ar-content-2" visible="false">
           <a-image src="./MUDA.png" position="-0.26 0.32 0" scale="0.5 0.05 1"></a-image>
           
+<!-- หมวด MUDA 1 -->
           <a-image id="muda-1" src="./1MUDA.png" position="-0.42 0.23 0" scale="0.20 0.05 1"></a-image> 
           <a-image src="./1MUDA_PIC.png" position="-0.09 0.225 0" scale="0.15 0.10 1"></a-image> 
-
+          
+          <!-- กล่องข้อความ Overproduction (ปรับสเกลตัวอักษรใหม่) -->
           <a-entity position="-0.25 0.23 0.01">
+            <!-- ตัวกล่องสี่เหลี่ยมพื้นหลัง -->
             <a-box color="#FFCC00" scale="0.16 0.04 0.01" material="opacity: 0.9; shader: flat;"></a-box>
-            <a-text value="Overproduction" color="#000000" align="center" width="0.75" position="0 0 0.006" font="kelsonsans"></a-text>
+            <!-- ตัวอักษร (ปรับ width จาก 0.75 เป็น 0.33 เพื่อให้พอดีกล่อง) -->
+            <a-text value="Overproduction" color="#000000" align="center" width="0.33" position="0 0 0.006" font="kelsonsans"></a-text>
           </a-entity>
-
 
           <a-image id="muda-2" src="./2MUDA.png" position="-0.42 0.15 0" scale="0.20 0.05 1"></a-image>
           <a-image src="./2MUDA_PIC.png" position="-0.09 0.145 0.01" scale="0.15 0.102 1"></a-image> 
