@@ -762,6 +762,21 @@
       }
 
       function selectInitialLanguage(lang) {
+      
+        // 1. สั่งยกเลิกเสียงเก่าที่ค้างอยู่ก่อน (ถ้ามี)
+        window.speechSynthesis.cancel();
+      
+        // 2. แทรกโค้ดปลดล็อกระบบเสียงสำหรับ iOS ทันทีหลังจากยกเลิกตัวเก่า
+        try {
+          if ('speechSynthesis' in window) {
+            const unlockUtterance = new SpeechSynthesisUtterance(' ');
+            unlockUtterance.volume = 0; // เงียบที่สุด ไม่รบกวนผู้ใช้
+            window.speechSynthesis.speak(unlockUtterance);
+          }
+        } catch(e) { 
+          console.log("iOS Unlock Failed:", e); 
+        }
+        // 3. ทำงานอื่น ๆ ตามโค้ดเดิมของคุณ
         setLanguage(lang);
         document.getElementById('lang-select-overlay').style.display = 'none';
         introOverlay.style.display = 'flex';
