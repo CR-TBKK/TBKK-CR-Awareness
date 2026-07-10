@@ -1061,7 +1061,7 @@
         utterance.lang = lang;
         utterance.rate = parseFloat(speedSelect.value);
         utterance.voice = getSelectedVoice();
-        setTimeout(() => { window.speechSynthesis.speak(utterance); }, 50);
+        setTimeout(() => { window.speechSynthesis.speak(utterance); }, 200);
       }
 
       function closeVideoUI() { resetMediaUI(); }
