@@ -1015,7 +1015,11 @@
           }
           
           // บังคับและตรวจสอบระบบเสียงคลิปทุกครั้งที่กด Play ป้องกันเสียงแทรก
-          if (currentLang === 'th') {
+          // ตรวจสอบชื่อไฟล์วิดีโอที่กำลังเล่นอยู่ปัจจุบัน
+          const currentVideoSrc = videoPlayer.getAttribute('src');
+          if (currentVideoSrc === "./CR_AWARE_EP1.mp4") {
+            videoPlayer.muted = false;
+          } else if (currentLang === 'th') {
             videoPlayer.muted = false;
           } else {
             videoPlayer.muted = true;
@@ -1039,7 +1043,11 @@
           window.speechSynthesis.cancel();
           
           // ล็อกระบบ Mute ไว้เสมอเมื่อมีการขยับ Timeline
-          if (currentLang === 'th') {
+          // ล็อกระบบ Mute ไว้เสมอเมื่อมีการขยับ Timeline (ยกเว้นคลิปละครคุณธรรม)
+          const currentVideoSrc = videoPlayer.getAttribute('src');
+          if (currentVideoSrc === "./CR_AWARE_EP1.mp4") {
+            videoPlayer.muted = false;
+          } else if (currentLang === 'th') {
             videoPlayer.muted = false;
           } else {
             videoPlayer.muted = true;
@@ -1095,7 +1103,10 @@
           videoPlayBtn.innerText = "⏸";
 
           // ล็อกระบบ Muted ให้เหมาะสมกับสวิตช์ภาษาหลักที่ถูกเลือก
-          if (currentLang === 'th') {
+                  // ถ้าเป็นคลิปละครคุณธรรม ให้เปิดเสียงเสมอ (muted = false) ไม่ว่าจะเลือกภาษาอะไร
+          if (videoSrc === "./CR_AWARE_EP1.mp4") {
+            videoPlayer.muted = false;
+          } else if (currentLang === 'th') {
             videoPlayer.muted = false; 
           } else {
             videoPlayer.muted = true;  
